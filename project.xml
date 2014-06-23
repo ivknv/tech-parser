@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='utf-8'?>
+<project>
+<version>
+1.0
+</version>
+<name>
+SiteParse
+</name>
+<language>
+Python
+</language>
+<authors>
+Ivan Konovalov
+</authors>
+<description>
+Get data from sites.
+</description>
+<date>
+<day>
+23
+</day>
+<month>
+6
+</month>
+<year>
+2014
+</year>
+<weekday>
+Monday
+</weekday>
+<hour>
+18
+</hour>
+<minute>
+28
+</minute>
+<second>
+56
+</second>
+</date>
+<referenced>
+
+</referenced>
+</project>
