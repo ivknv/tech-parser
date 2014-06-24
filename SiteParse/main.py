@@ -5,6 +5,7 @@ import habrahabr
 import engadget
 import slashdot
 import venturebeat
+import gizmodo
 
 import os
 
@@ -36,8 +37,11 @@ if __name__ == "__main__":
 	print("Parsing articles from Slashdot...")
 	slashdot_articles = slashdot.get_articles()
 	
+	print("Parsing articles from Gizmodo...")
+	gizmodo_articles = gizmodo.get_articles()
+	
 	articles = habrahabr_articles + engadget_articles + \
-	slashdot_articles + venturebeat_articles
+	slashdot_articles + venturebeat_articles + gizmodo_articles
 	
 	shuffle(articles)
 	
