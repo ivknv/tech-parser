@@ -1,0 +1,29 @@
+#main {
+	max-width: 1200px;
+	margin: 0 auto;
+}
+
+#pagination {
+	margin-top: 20px;
+}
+
+a {
+	color: #0044CC;
+	text-decoration: none;
+}
+
+.article h3 {
+	margin: 5px;
+}
+
+.article h3 a {
+	color: rgb(102, 102, 102);
+}
+
+.article h3 a:hover {
+	color: rgb(132, 132, 132);
+}
+
+a:hover {
+	text-decoration: underline;
+}

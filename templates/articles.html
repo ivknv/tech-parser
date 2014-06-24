@@ -1,0 +1,25 @@
+<%inherit file="base.html"/>
+<%block name="title">Articles from some sites</%block>
+<%block name="content">
+	% for article in articles:
+		<div class="article">
+			<h3>
+				<img src="icons/${ article['source'] }.ico" width="16" />
+				<a href="${ article['link'] }">${ article["title"] }</a>
+			</h3>
+		</div>
+	% endfor
+	<div id="pagination">
+		% if previous_page is not None:
+			<a href="output${ previous_page }.html">Previous page</a>
+		%endif
+		
+		% if previous_page is not None and next_page is not None:
+			|
+		% endif
+		
+		% if next_page is not None:
+			<a href="output${ next_page }.html">Next page</a>
+		%endif
+	</div>
+</%block>
