@@ -6,6 +6,7 @@ import engadget
 import slashdot
 import venturebeat
 import gizmodo
+import techcrunch
 
 import os
 
@@ -40,12 +41,16 @@ if __name__ == "__main__":
 	print("Parsing articles from Gizmodo...")
 	gizmodo_articles = gizmodo.get_articles()
 	
+	print("Parsing articles from TechCrunch...")
+	techcrunch_articles = techcrunch.get_articles()
+	
 	articles = habrahabr_articles + engadget_articles + \
-	slashdot_articles + venturebeat_articles + gizmodo_articles
+	slashdot_articles + venturebeat_articles + \
+	gizmodo_articles + techcrunch_articles
 	
 	shuffle(articles)
 	
-	articles = Paginator(articles, 20)
+	articles = Paginator(articles, 30)
 	
 	print("Writting data...")
 	
