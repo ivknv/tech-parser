@@ -7,6 +7,7 @@ import slashdot
 import venturebeat
 import gizmodo
 import techcrunch
+import readwrite
 
 import os
 
@@ -44,9 +45,12 @@ if __name__ == "__main__":
 	print("Parsing articles from TechCrunch...")
 	techcrunch_articles = techcrunch.get_articles()
 	
+	print("Parsing articles from Read/Write Web...")
+	readwrite_articles = readwrite.get_articles()
+	
 	articles = habrahabr_articles + engadget_articles + \
 	slashdot_articles + venturebeat_articles + \
-	gizmodo_articles + techcrunch_articles
+	gizmodo_articles + techcrunch_articles + readwrite_articles
 	
 	shuffle(articles)
 	
