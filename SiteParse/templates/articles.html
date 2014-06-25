@@ -5,7 +5,9 @@
 		<div class="article">
 			<h3>
 				<img src="icons/${ article['source'] }.ico" width="16" />
-				<a href="${ article['link'] }">${ article["title"] }</a>
+				<a class="${article['source']}" href="${ article['link'] }">
+					${ article["title"] }
+				</a>
 			</h3>
 		</div>
 	% endfor

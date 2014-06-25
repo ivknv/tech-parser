@@ -13,17 +13,45 @@ a {
 }
 
 .article h3 {
-	margin: 5px;
+	margin: 20px;
 }
 
-.article h3 a {
-	color: rgb(102, 102, 102);
-}
+/*.article h3 a {*/
+/*	color: rgb(102, 102, 102);*/
+/*}*/
 
-.article h3 a:hover {
-	color: rgb(132, 132, 132);
-}
+/*.article h3 a:hover {*/
+/*	color: rgb(132, 132, 132);*/
+/*}*/
 
 a:hover {
 	text-decoration: underline;
+}
+
+.habrahabr {
+	color: #7FA0B0;
+}
+
+.readwrite {
+	color: rgb(200, 15, 50);
+}
+
+.techcrunch {
+	color: #078000;
+}
+
+.venturebeat {
+	color: #EF3B29;
+}
+
+.slashdot {
+	color: #105454;
+}
+
+.engadget {
+	color: #3498DB;
+}
+
+.gizmodo {
+	color: #464646;
 }
