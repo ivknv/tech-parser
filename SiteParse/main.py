@@ -44,7 +44,7 @@ def dump_articles():
 	engadget_articles = engadget.get_articles()
 	
 	print("Parsing articles from Slashdot...")
-	slashdot_articles = slashdot.get_articles()
+	slashdot_articles = slashdot.get_articles(end_page=3)
 	
 	print("Parsing articles from Gizmodo...")
 	gizmodo_articles = gizmodo.get_articles()
