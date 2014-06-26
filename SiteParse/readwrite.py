@@ -3,6 +3,11 @@
 
 import grab
 
+try:
+	unicode_ = unicode
+except NameError:
+	unicode_ = str
+
 def get_articles():
 	g = grab.Grab()
 	g.go("http://readwrite.com")
@@ -12,8 +17,11 @@ def get_articles():
 	top_story = g.css(".story.view-hero header")
 	
 	top_title = top_story.cssselect("h1 a")[0]
-	top_link = top_title.text_content()
-	top_title = top_title.text_content()
+	top_link = unicode_(top_title.text_content())
+	top_title = unicode_(top_title.text_content())
+	
+	if top_link.startswith("/"):
+		top_link = "http://readwrite.com" + top_link
 	
 	articles.append(
 		{
@@ -27,10 +35,14 @@ def get_articles():
 	
 	for article in stories:
 		try:
-			category = article.cssselect("h3")[0].text_content()
+			category = unicode_(article.cssselect("h3")[0].text_content())
 		except IndexError:
 			try:
-				category = article.cssselect("header .meta .section .dd a.parsed")[0].text_content()
+				category = unicode_(
+					article.cssselect(
+						"header .meta .section .dd a.parsed"
+					)[0].text_content()
+				)
 			except IndexError:
 				category = ""
 		
@@ -40,10 +52,18 @@ def get_articles():
 			title = article.cssselect("header .grid-item h1 a")[0]
 		
 		link = title.get("href")
-		title = title.text_content()
+		
+		if link.startswith("/"):
+			link = "http://readwrite.com" + link
+		
+		title = unicode_(title.text_content())
 		
 		try:
-			date = article.cssselect("header .meta .publish-date")[0].text_content()
+			date = unicode_(
+				article.cssselect(
+					"header .meta .publish-date"
+				)[0].text_content()
+			)
 		except IndexError:
 			date = ""
 		

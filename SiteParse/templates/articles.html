@@ -4,7 +4,7 @@
 	% for article in articles:
 		<div class="article">
 			<h3>
-				<img src="icons/${ article['source'] }.ico" width="16" />
+				<img src="/static/icons/${ article['source'] }.ico" width="16" />
 				<a class="${article['source']}" href="${ article['link'] }">
 					${ article["title"] }
 				</a>
@@ -12,16 +12,14 @@
 		</div>
 	% endfor
 	<div id="pagination">
-		% if previous_page is not None:
-			<a href="output${ previous_page }.html">Previous page</a>
-		%endif
-		
-		% if previous_page is not None and next_page is not None:
-			|
+		% if page_num > 1:
+			<a href="/${ page_num-1 }">Previous</a>
 		% endif
 		
-		% if next_page is not None:
-			<a href="output${ next_page }.html">Next page</a>
-		%endif
+		<a class="current">${ page_num }</a>
+		
+		% if page_num < num_pages:
+			<a href="/${  page_num+1}">Next</a>
+		% endif
 	</div>
 </%block>
