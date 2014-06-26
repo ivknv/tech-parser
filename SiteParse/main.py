@@ -8,6 +8,7 @@ import venturebeat
 import gizmodo
 import techcrunch
 import readwrite
+import techrepublic
 
 from random import shuffle
 
@@ -54,29 +55,45 @@ def dump_articles():
 	print("Parsing articles from Read/Write Web...")
 	readwrite_articles = readwrite.get_articles()
 	
+	print("Parsing articles from TechRepublic...")
+	
+	techrepublic_articles = techrepublic.get_articles()
+	
+	print("Concatenating data...")
+	
 	articles = habrahabr_articles + engadget_articles + \
 	slashdot_articles + venturebeat_articles + \
-	gizmodo_articles + techcrunch_articles + readwrite_articles
+	gizmodo_articles + techcrunch_articles + \
+	readwrite_articles + techrepublic_articles
+	
+	print("Shuffling articles...")
 	
 	shuffle(articles)
+	
+	print("Dumping data to file: articles_dumped...")
 	
 	dumped = pickle.dumps(articles)
 	f = open("articles_dumped", "w")
 	f.write(dumped)
 	f.close()
+	
+	print("Done!")
 
 def dump_articles_per_sec(s=30*60):
 	while True:
 		if int(time()) % s == 0:
 			dump_articles()
-		sleep(0.5)
+		sleep(1)
 
 def load_articles():
+	print("Reading articles from file: articles_dumped...")
 	f = open("articles_dumped")
 	dumped = f.read()
 	f.close()
 	
 	articles = pickle.loads(dumped)
+	
+	print("Done!")
 	
 	return articles
 
@@ -94,7 +111,7 @@ def articles_list(page_number=1):
 	except TypeError:
 		page_number = 1
 	
-	try:	
+	try:
 		articles = load_articles()
 	except IOError:
 		dump_articles()
