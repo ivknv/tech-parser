@@ -16,14 +16,6 @@ a {
 	margin: 20px;
 }
 
-/*.article h3 a {*/
-/*	color: rgb(102, 102, 102);*/
-/*}*/
-
-/*.article h3 a:hover {*/
-/*	color: rgb(132, 132, 132);*/
-/*}*/
-
 a:hover {
 	text-decoration: underline;
 }
@@ -54,4 +46,8 @@ a:hover {
 
 .gizmodo {
 	color: #464646;
+}
+
+.techrepublic {
+	color: #78C3F1;
 }
