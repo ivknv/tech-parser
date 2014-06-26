@@ -10,6 +10,9 @@ except NameError:
 
 def get_articles(start_page=1, end_page=5):
 	g = grab.Grab()
+	
+	g.setup(hammer_mode=True, hammer_timeouts=((10, 15), (20, 30), (25, 40)))
+	
 	articles = []
 	
 	for page_num in range(start_page, end_page+1):
