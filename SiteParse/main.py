@@ -9,22 +9,28 @@ import gizmodo
 import techcrunch
 import readwrite
 
-import os
-
 from random import shuffle
 
-from distutils.dir_util import copy_tree
+import pickle
+
+import sys
+
+from time import time, sleep
+
+from threading import Thread
 
 from django.core.paginator import Paginator
 
 from mako.template import Template
 from mako.lookup import TemplateLookup
 
+from bottle import route, run, static_file, default_app
+
 mylookup = TemplateLookup(directories="templates", default_filters=["decode.utf8"], input_encoding="utf-8", output_encoding="utf-8")
 
-main_page = mylookup.get_template("articles.html")
+articles = []
 
-if __name__ == "__main__":
+def dump_articles():
 	print("Please wait...")
 	
 	print("Parsing articles from Habrahabr...")
@@ -54,36 +60,60 @@ if __name__ == "__main__":
 	
 	shuffle(articles)
 	
+	dumped = pickle.dumps(articles)
+	f = open("articles_dumped", "w")
+	f.write(dumped)
+	f.close()
+
+def dump_articles_per_sec(s=30*60):
+	while True:
+		if int(time()) % s == 0:
+			dump_articles()
+		sleep(0.5)
+
+def load_articles():
+	f = open("articles_dumped")
+	dumped = f.read()
+	f.close()
+	
+	articles = pickle.loads(dumped)
+	
+	return articles
+
+@route('/static/<filename:path>')
+def serve_static(filename):
+	return static_file(filename, root="static")
+
+@route("/")
+@route("/<page_number>")
+def articles_list(page_number=1):
+	main_page = mylookup.get_template("articles.html")
+	
+	try:
+		page_number = int(page_number)
+	except TypeError:
+		page_number = 1
+	
+	try:	
+		articles = load_articles()
+	except IOError:
+		dump_articles()
+		articles = load_articles()
+	
 	articles = Paginator(articles, 30)
+	requested_page = articles.page(page_number)
 	
-	print("Writting data...")
-	
-	if not os.path.exists("output"):
-		os.mkdir("output")
-	
-	copy_tree(src="templates/icons", dst="output/icons")
-	
-	styles = open("templates/style.css")
-	styles_content = styles.read()
-	styles.close()
-	
-	styles = open("output/style.css", "w")
-	styles.write(styles_content)
-	styles.close()
-	
-	for i in range(1, articles.num_pages+1):
-		page = articles.page(i)
-		
-		next_page = i+1 if i < articles.num_pages else None
-		previous_page = i-1 if i > 1 else None
-		
-		f = open("output/output%s.html" %i, "w")
-		f.write(
-			main_page.render(
-				articles=page,
-				next_page=next_page,
-				previous_page=previous_page
-			)
-		)
-		f.close()
-	print("Go check output/output1.html")
+	return main_page.render(
+		articles=requested_page,
+		num_pages=articles.num_pages,
+		page_num=page_number,
+	)
+
+t1 = Thread(target=dump_articles_per_sec)
+t1.daemon = True
+t1.start()
+
+if __name__ == "__main__":	
+	run(host="0.0.0.0", port="8080", server="gunicorn")
+
+app = default_app()
