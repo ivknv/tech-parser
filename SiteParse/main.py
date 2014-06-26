@@ -9,6 +9,7 @@ import gizmodo
 import techcrunch
 import readwrite
 import techrepublic
+import smashingmagazine
 
 from random import shuffle
 
@@ -72,6 +73,11 @@ def dump_articles():
 		"Tech Republic": {
 			"module": techrepublic,
 			"kwargs": {}
+		},
+		
+		"Smashing Magazine": {
+			"module": smashingmagazine,
+			"kwargs": {}
 		}
 	}
 	
@@ -92,7 +98,7 @@ def dump_articles():
 			print(error)
 		
 		counter += 1
-		completed = round(100.0 / 8.0 * counter, 1)
+		completed = round(100.0 / len(tasks) * counter, 1)
 	
 	print("\033[0;32m[{}%]\033[0m".format(completed))
 		
