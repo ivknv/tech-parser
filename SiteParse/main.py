@@ -14,7 +14,7 @@ from random import shuffle
 
 import pickle
 
-import sys
+from grab.error import GrabError
 
 from time import time, sleep
 
@@ -32,40 +32,70 @@ mylookup = TemplateLookup(directories="templates", default_filters=["decode.utf8
 articles = []
 
 def dump_articles():
-	print("Please wait...")
 	
-	print("Parsing articles from Habrahabr...")
-	habrahabr_articles = habrahabr.get_articles()
+	tasks = {
+		"Habrahabr": {
+			"module": habrahabr,
+			"kwargs": {}
+		},
+		
+		"VentureBeat": {
+			"module": venturebeat,
+			"kwargs": {}
+		},
+		
+		"Engadget": {
+			"module": engadget,
+			"kwargs": {}
+		},
+		
+		"Slashdot": {
+			"module": slashdot,
+			"kwargs": {"end_page": 3}
+		},
+		
+		"Gizmodo": {
+			"module": gizmodo,
+			"kwargs": {}
+		},
+		
+		"TechCrunch": {
+			"module": techcrunch,
+			"kwargs": {}
+		},
+		
+		"Read/Write Web": {
+			"module": readwrite,
+			"kwargs": {}
+		},
+		
+		"Tech Republic": {
+			"module": techrepublic,
+			"kwargs": {}
+		}
+	}
 	
-	print("Parsing articles from VentureBeat...")
-	venturebeat_articles = venturebeat.get_articles()
+	articles = []
 	
-	print("Parsing articles from Engadget...")
-	engadget_articles = engadget.get_articles()
+	counter = 0
+	completed = 0
 	
-	print("Parsing articles from Slashdot...")
-	slashdot_articles = slashdot.get_articles(end_page=3)
+	for task in tasks:
+		print("\033[0;32m[{}%]\033[0m Parsing articles from {}...".format(completed, task))
+		
+		module = tasks[task]["module"]
+		kwargs = tasks[task]["kwargs"]
+		
+		try:
+			articles += module.get_articles(**kwargs)
+		except GrabError as error:
+			print(error)
+		
+		counter += 1
+		completed = round(100.0 / 8.0 * counter, 1)
 	
-	print("Parsing articles from Gizmodo...")
-	gizmodo_articles = gizmodo.get_articles()
-	
-	print("Parsing articles from TechCrunch...")
-	techcrunch_articles = techcrunch.get_articles()
-	
-	print("Parsing articles from Read/Write Web...")
-	readwrite_articles = readwrite.get_articles()
-	
-	print("Parsing articles from TechRepublic...")
-	
-	techrepublic_articles = techrepublic.get_articles()
-	
-	print("Concatenating data...")
-	
-	articles = habrahabr_articles + engadget_articles + \
-	slashdot_articles + venturebeat_articles + \
-	gizmodo_articles + techcrunch_articles + \
-	readwrite_articles + techrepublic_articles
-	
+	print("\033[0;32m[{}%]\033[0m".format(completed))
+		
 	print("Shuffling articles...")
 	
 	shuffle(articles)
