@@ -11,6 +11,8 @@ except NameError:
 def get_articles():
 	g = grab.Grab()
 	
+	g.setup(hammer_mode=True, hammer_timeouts=((10, 15), (20, 30), (25, 40)))
+	
 	g.go("http://habrahabr.ru")
 	
 	pages = g.css_list("#nav-pages li a")
