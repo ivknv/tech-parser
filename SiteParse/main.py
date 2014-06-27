@@ -122,6 +122,6 @@ t1.daemon = True
 t1.start()
 
 if __name__ == "__main__":	
-	run(host="0.0.0.0", port="8080", server="gunicorn")
+	run(host="0.0.0.0", port="8080")
 
 app = default_app()
