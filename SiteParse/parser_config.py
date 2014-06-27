@@ -10,6 +10,7 @@ import readwrite
 import smashingmagazine
 import gizmodo
 import slashdot
+import androidcentral
 
 sites_to_parse = {
 		"Habrahabr": {
@@ -64,7 +65,16 @@ sites_to_parse = {
 			"link": "www.smashingmagazine.com",
 			"module": smashingmagazine,
 			"kwargs": {}
+		},
+		
+		"Android Central": {
+			"link": "www.androidcentral.com",
+			"module": androidcentral,
+			"kwargs": {"start_page": 1, "end_page": 5}
 		}
 	}
 
-update_every = 1800 # Update every 30 minutes
+update_interval = 1800 # Parse articles every 30 minutes
+
+host = "0.0.0.0" # Server host
+port = "8080" # Server port

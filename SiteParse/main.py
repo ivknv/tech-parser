@@ -1,16 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import habrahabr
-import engadget
-import slashdot
-import venturebeat
-import gizmodo
-import techcrunch
-import readwrite
-import techrepublic
-import smashingmagazine
-
 from parser_config import *
 
 from random import shuffle
@@ -70,7 +60,7 @@ def dump_articles():
 	
 	print("Done!")
 
-def dump_articles_per_sec(s=30*60):
+def dump_articles_per_sec(s=update_interval):
 	while True:
 		if int(time()) % s == 0:
 			dump_articles()
@@ -122,6 +112,6 @@ t1.daemon = True
 t1.start()
 
 if __name__ == "__main__":	
-	run(host="0.0.0.0", port="8080")
+	run(host=host, port=port)
 
 app = default_app()
