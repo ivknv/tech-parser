@@ -11,6 +11,7 @@ import smashingmagazine
 import gizmodo
 import slashdot
 import androidcentral
+import verge
 
 sites_to_parse = {
 		"Habrahabr": {
@@ -71,6 +72,12 @@ sites_to_parse = {
 			"link": "www.androidcentral.com",
 			"module": androidcentral,
 			"kwargs": {"start_page": 1, "end_page": 5}
+		},
+		
+		"The Verge": {
+			"link": "www.theverge.com",
+			"module": verge,
+			"kwargs": {}
 		}
 	}
 
