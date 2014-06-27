@@ -5,17 +5,17 @@ Parses articles from 11 sites and outputs it into HTML.
 
 Current list of sites:
 <ul>
-	<li>habrahabr.ru</li>
-	<li>venturebeat.com</li>
-	<li>engadget.com</li>
-	<li>techrepublic.com</li>
-	<li>techcrunch.com</li>
-	<li>smashingmagazine.com</li>
-	<li>theverge.com</li>
-	<li>slashdot.org</li>
-	<li>gizmodo.com</li>
-	<li>androidcentral.com</li>
-	<li>readwrite.com</li>
+	<ol>habrahabr.ru</ol>
+	<ol>venturebeat.com</ol>
+	<ol>engadget.com</ol>
+	<ol>techrepublic.com</ol>
+	<ol>techcrunch.com</ol>
+	<ol>smashingmagazine.com</ol>
+	<ol>theverge.com</ol>
+	<ol>slashdot.org</ol>
+	<ol>gizmodo.com</ol>
+	<ol>androidcentral.com</ol>
+	<ol>readwrite.com</ol>
 </ul>
 
 ## Requirements ##
