@@ -34,7 +34,6 @@ def get_articles():
 		articles.append({
 			"link": link,
 			"title": title,
-			"date": "",
 			"source": "techcrunch"
 		})
 	
@@ -50,7 +49,6 @@ def get_articles():
 		articles.append({
 			"link": link,
 			"title": title,
-			"date": "",
 			"source": "techcrunch"
 		})
 	
@@ -79,7 +77,6 @@ def get_articles():
 			{
 				"link": link,
 				"title": title,
-				"date": "",
 				"tags": tags,
 				"source": "techcrunch"
 			}
@@ -104,7 +101,6 @@ def get_articles():
 			{
 				"link": link,
 				"title": title,
-				"date": "",
 				"source": "techcrunch"
 			}
 		)

@@ -23,7 +23,6 @@ def get_articles(start_page=1, end_page=5):
 			post_link = post.cssselect("header h2.story span a")[0]
 			
 			title = unicode_(post_link.text_content())
-			date = unicode_(post.cssselect("header .details time")[0].text_content())
 			
 			link = post_link.get("href")
 			
@@ -34,7 +33,6 @@ def get_articles(start_page=1, end_page=5):
 				{
 					"link": link,
 					"title": title,
-					"date": date,
 					"source": "slashdot"
 				}
 			)

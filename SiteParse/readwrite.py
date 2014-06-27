@@ -61,20 +61,10 @@ def get_articles():
 		
 		title = unicode_(title.text_content())
 		
-		try:
-			date = unicode_(
-				article.cssselect(
-					"header .meta .publish-date"
-				)[0].text_content()
-			)
-		except IndexError:
-			date = ""
-		
 		articles.append(
 			{
 				"link": link,
 				"title": title,
-				"date": date,
 				"category": category,
 				"source": "readwrite"
 			}

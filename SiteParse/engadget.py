@@ -24,16 +24,12 @@ def get_articles(start_page=1, end_page=5):
 			article_link = article.cssselect(".headline .h2 a")[0]
 			
 			title = unicode_(article_link.text_content())
-			date = unicode_(article.cssselect(
-				".info .byline .timeago")[0].text_content()
-			)
 			link = article_link.get("href")
 		
 			articles.append(
 				{
 					"link": link,
 					"title": title,
-					"date": date,
 					"source": "engadget"
 				}
 			)

@@ -32,7 +32,6 @@ def get_articles():
 			{
 				"link": link,
 				"title": title,
-				"date": "",
 				"source": "gizmodo"
 			}
 		)
@@ -51,7 +50,6 @@ def get_articles():
 			{
 				"link": link,
 				"title": title,
-				"date": "",
 				"source": "gizmodo"
 			}
 		)

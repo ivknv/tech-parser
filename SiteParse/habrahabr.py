@@ -26,14 +26,12 @@ def get_articles():
 		for post in articles:
 			post_link = post.cssselect(".title .post_title")[0].get("href")
 			title = post.cssselect(".title .post_title")[0].text_content()
-			date = post.cssselect(".published")[0].text_content()
 			tags = post.cssselect(".tags li a")
 			hubs = post.cssselect(".hubs")
 			
 			posts.append(
 				{
 					"title": unicode_(title),
-					"date": unicode_(date),
 					"tags": [[tag.get('href'), unicode_(tag.text_content())] for tag in tags],
 					"hubs": [[hub.get('href'), unicode_(hub.text_content())] for hub in hubs],
 					"link": post_link,
