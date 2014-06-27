@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from SiteParse import habrahabr
-from SiteParse import venturebeat
-from SiteParse import engadget
-from SiteParse import techcrunch
-from SiteParse import techrepublic
-from SiteParse import readwrite
-from SiteParse import smashingmagazine
-from SiteParse import gizmodo
-from SiteParse import slashdot
-from SiteParse import androidcentral
-from SiteParse import verge
+from TechParser import habrahabr
+from TechParser import venturebeat
+from TechParser import engadget
+from TechParser import techcrunch
+from TechParser import techrepublic
+from TechParser import readwrite
+from TechParser import smashingmagazine
+from TechParser import gizmodo
+from TechParser import slashdot
+from TechParser import androidcentral
+from TechParser import verge
 
 sites_to_parse = {
 		"Habrahabr": {
