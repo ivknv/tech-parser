@@ -31,7 +31,6 @@ def get_articles(start_page=1, end_page=5):
 				{
 					"link": link,
 					"title": title,
-					"date": "",
 					"source": "androidcentral"
 				}
 			)

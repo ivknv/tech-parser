@@ -28,9 +28,6 @@ def get_articles(start_page=1, end_page=3):
 		title = unicode_(article_link.cssselect(
 			"span.snipe-wrapper h2.title"
 		)[0].text_content())
-		date = unicode_(article_link.cssselect(
-			"span.snipe-wrapper span.date"
-		)[0].text_content())
 		
 		link = article_link.get("href")
 		
@@ -38,7 +35,6 @@ def get_articles(start_page=1, end_page=3):
 			{
 				"link": link,
 				"title": title,
-				"date": date,
 				"source": "venturebeat"
 			}
 		)
@@ -51,7 +47,6 @@ def get_articles(start_page=1, end_page=3):
 			{
 				"link": link,
 				"title": title,
-				"date": "",
 				"source": "venturebeat"
 			}
 		)
@@ -64,7 +59,6 @@ def get_articles(start_page=1, end_page=3):
 			{
 				"link": link,
 				"title": title,
-				"date": "",
 				"source": "venturebeat"
 			}
 		)
@@ -75,9 +69,6 @@ def get_articles(start_page=1, end_page=3):
 		)[0]
 		
 		title = unicode_(article_link.text_content())
-		date = unicode_(article.cssselect(
-			".entry-header .entry-meta .the-time"
-		)[0].text_content())
 		
 		link = article_link.get("href")
 		
@@ -85,7 +76,6 @@ def get_articles(start_page=1, end_page=3):
 			{
 				"link": link,
 				"title": title,
-				"date": date,
 				"source": "venturebeat"
 			}
 		)
@@ -108,7 +98,6 @@ def get_articles(start_page=1, end_page=3):
 				{
 					"link": link,
 					"title": title,
-					"date": date,
 					"source": "venturebeat"
 				}
 			)

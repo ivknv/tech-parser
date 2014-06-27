@@ -46,7 +46,6 @@ def get_articles():
 				{
 					"link": link,
 					"title": title,
-					"date": "",
 					"source": "techrepublic"
 				}
 			)
