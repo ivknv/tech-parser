@@ -22,8 +22,6 @@ from mako.lookup import TemplateLookup
 
 from bottle import route, run, static_file, default_app
 
-os.chdir(os.path.dirname(__file__))
-
 mylookup = TemplateLookup(directories="templates", default_filters=["decode.utf8"], input_encoding="utf-8", output_encoding="utf-8")
 
 articles = []
