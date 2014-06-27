@@ -85,3 +85,6 @@ update_interval = 1800 # Parse articles every 30 minutes
 
 host = "0.0.0.0" # Server host
 port = "8080" # Server port
+
+# Server to use
+server = "auto" # See http://bottlepy.org/docs/dev/deployment.html#switching-the-server-backend
