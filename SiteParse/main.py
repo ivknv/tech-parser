@@ -11,6 +11,8 @@ import readwrite
 import techrepublic
 import smashingmagazine
 
+from parser_config import *
+
 from random import shuffle
 
 import pickle
@@ -34,63 +36,16 @@ articles = []
 
 def dump_articles():
 	
-	tasks = {
-		"Habrahabr": {
-			"module": habrahabr,
-			"kwargs": {}
-		},
-		
-		"VentureBeat": {
-			"module": venturebeat,
-			"kwargs": {}
-		},
-		
-		"Engadget": {
-			"module": engadget,
-			"kwargs": {}
-		},
-		
-		"Slashdot": {
-			"module": slashdot,
-			"kwargs": {"end_page": 3}
-		},
-		
-		"Gizmodo": {
-			"module": gizmodo,
-			"kwargs": {}
-		},
-		
-		"TechCrunch": {
-			"module": techcrunch,
-			"kwargs": {}
-		},
-		
-		"Read/Write Web": {
-			"module": readwrite,
-			"kwargs": {}
-		},
-		
-		"Tech Republic": {
-			"module": techrepublic,
-			"kwargs": {}
-		},
-		
-		"Smashing Magazine": {
-			"module": smashingmagazine,
-			"kwargs": {}
-		}
-	}
-	
 	articles = []
 	
 	counter = 0
 	completed = 0
 	
-	for task in tasks:
-		print("\033[0;32m[{}%]\033[0m Parsing articles from {}...".format(completed, task))
+	for site in sites_to_parse:
+		print("\033[0;32m[{}%]\033[0m Parsing articles from {}...".format(completed, site))
 		
-		module = tasks[task]["module"]
-		kwargs = tasks[task]["kwargs"]
+		module = sites_to_parse[site]["module"]
+		kwargs = sites_to_parse[site]["kwargs"]
 		
 		try:
 			articles += module.get_articles(**kwargs)
@@ -98,7 +53,7 @@ def dump_articles():
 			print(error)
 		
 		counter += 1
-		completed = round(100.0 / len(tasks) * counter, 1)
+		completed = round(100.0 / len(sites_to_parse) * counter, 1)
 	
 	print("\033[0;32m[{}%]\033[0m".format(completed))
 		

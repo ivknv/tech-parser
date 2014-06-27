@@ -8,7 +8,7 @@ try:
 except NameError:
 	unicode_ = str
 
-def get_articles():
+def get_articles(start_page=1, end_page=3):
 	g = grab.Grab()
 	
 	g.setup(hammer_mode=True, hammer_timeouts=((10, 15), (20, 30), (25, 40)))
@@ -89,5 +89,28 @@ def get_articles():
 				"source": "venturebeat"
 			}
 		)
+	
+	for i in range(start_page+1, end_page+1):
+		g.go("http://venturebeat.com/page/%i" %i)
+		
+		articles_1 = g.css_list("#content .post .entry-wrapper .entry-header")
+		
+		for article in articles_1:
+			date = unicode_(article.cssselect(
+				".entry-meta .the-time"
+			)[0].text_content())
+			
+			title = article.cssselect(".entry-title a")[0]
+			link = title.get("href")
+			title = unicode_(title.text_content())
+			
+			articles.append(
+				{
+					"link": link,
+					"title": title,
+					"date": date,
+					"source": "venturebeat"
+				}
+			)
 	
 	return articles
