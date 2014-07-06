@@ -70,7 +70,7 @@ filters = {
 ```or```: title has some of these words<br/>
 ```not```: title doesn't have any of these words<br/>
 
-#### examples ####
+#### Examples ####
 articles, containing words "google" and "android", but not containing "apple":
 ```python
 filters = {
