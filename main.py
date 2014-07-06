@@ -15,8 +15,6 @@ from time import time, sleep
 
 from threading import Thread
 
-from django.core.paginator import Paginator
-
 from mako.template import Template
 from mako.lookup import TemplateLookup
 
@@ -25,6 +23,23 @@ from bottle import route, run, static_file, default_app
 mylookup = TemplateLookup(directories="templates", default_filters=["decode.utf8"], input_encoding="utf-8", output_encoding="utf-8")
 
 articles = []
+
+def split_into_pages(articles, n=30):
+	pages = []
+	i = 0
+	
+	for j in articles:
+		if i >= n:
+			i = 0
+		
+		if i == 0:
+			pages.append([j])
+		else:
+			pages[-1].append(j)
+		
+		i+=1
+	
+	return pages
 
 def dump_articles():
 	
@@ -134,12 +149,12 @@ def articles_list(page_number=1):
 		articles = load_articles()
 	
 	articles = filter_articles(articles)
-	articles = Paginator(articles, 30)
-	requested_page = articles.page(page_number)
+	articles = split_into_pages(articles, 30)
+	requested_page = articles[page_number]
 	
 	return main_page.render(
 		articles=requested_page,
-		num_pages=articles.num_pages,
+		num_pages=len(articles),
 		page_num=page_number,
 	)
 
