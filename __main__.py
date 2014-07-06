@@ -68,6 +68,39 @@ def dump_articles_per_sec(s=update_interval):
 			dump_articles()
 		sleep(1)
 
+def filter_articles(articles):
+	articles_filtered = []
+	
+	for article in articles:
+		passing = True
+		
+		words_len = len(filters["All"]["or"])
+		
+		for word in filters["All"]["or"]:
+			if word.lower() in article["title"].lower():
+				passing = True
+				break
+			else:
+				words_len -= 1
+			
+			if words_len == 0:
+				passing = False
+				
+		if passing:
+			for word in filters["All"]["not"]:
+				if word.lower() in article["title"].lower():
+					passing = False
+					break
+		if passing:	
+			for word in filters["All"]["has"]:
+				if word.lower() not in article["title"].lower():
+					passing = False
+					break	
+		if passing:
+			articles_filtered.append(article)
+	
+	return articles_filtered
+
 def load_articles():
 	print("Reading articles from file: articles_dumped...")
 	f = open("articles_dumped")
@@ -100,6 +133,7 @@ def articles_list(page_number=1):
 		dump_articles()
 		articles = load_articles()
 	
+	articles = filter_articles(articles)
 	articles = Paginator(articles, 30)
 	requested_page = articles.page(page_number)
 	
