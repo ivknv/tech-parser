@@ -81,6 +81,14 @@ sites_to_parse = {
 		}
 	}
 
+filters = {
+	"All": {
+		"has": [],
+		"or": [],
+		"not": []
+	}
+}
+
 update_interval = 1800 # Parse articles every 30 minutes
 
 host = "0.0.0.0" # Server host
