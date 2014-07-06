@@ -19,10 +19,8 @@ Current list of sites:
 </ol>
 
 ## Requirements ##
-Django (for pagination)<br/>
 mako<br/>
 bottle<br/>
-lxml<br/>
 grab<br/>
 
 ## How to use ##
