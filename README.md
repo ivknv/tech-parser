@@ -54,6 +54,45 @@ and make it look like this:
 		#},
 ```
 
+### Filters ###
+Find fragment of code like this:
+```python
+filters = {
+	"All": {
+		"has": [],
+		"or": [],
+		"not": []
+	}
+}
+```
+
+```has```: title has all of these words<br/>
+```or```: title has some of these words<br/>
+```not```: title doesn't have any of these words<br/>
+
+#### examples ####
+articles, containing words "google" and "android", but not containing "apple":
+```python
+filters = {
+	"All": {
+		"has": ["google", "android"],
+		"or": [],
+		"not": ["apple"]
+	}
+}
+```
+
+Articles, containing words "htc" or "android l":
+```python
+filters = {
+	"All": {
+		"has": [],
+		"or": ["htc", "android l"],
+		"not": []
+	}
+}
+```
+
 ### Update interval ###
 Find the line of code in ```parser_config.py``` like this:
 
