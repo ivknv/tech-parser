@@ -2,52 +2,31 @@
 # -*- coding: utf-8 -*-
 
 import grab
-
-try:
-	unicode_ = unicode
-except NameError:
-	unicode_ = str
+import parser
 
 def get_articles():
 	g = grab.Grab()
 	
-	g.setup(hammer_mode=True, hammer_timeouts=((10, 15), (20, 30), (25, 40)))
+	parser.setup_grab(g)
 	
 	g.go("http://techrepublic.com")
 	
-	articles = []
+	posts = []
 	
-	articles_1 = g.css_list(
-		"#haccordion .viewport section .slide .lead-in h3 a"
-	)
-	editors_pick = g.css_list(
-		"#feature-hubs .item-list .row .item .title a"
-	)
-	latest = g.css_list(
-		"#article-river #tab-content-1 .items li .item-content .title a"
-	)
-	
-	most_popular = g.css_list(
+	css_paths = ["#haccordion .viewport section .slide .lead-in h3 a",
+		"#feature-hubs .item-list .row .item .title a",
+		"#article-river #tab-content-1 .items li .item-content .title a",
 		"#article-river #tab-content-2 .items li .item-content .title a"
-	)
+	]
 	
-	articles_parsed = [articles_1, editors_pick, latest, most_popular]
+	for css_path in css_paths:
+		posts += parser.get_articles(g, css_path, css_path, "techrepublic")
 	
-	for articles_list in articles_parsed:
-		for article_title in articles_list:
-			link = article_title.get("href")
-			
-			if link.startswith("/"):
-				link = "http://techrepublic.com" + link
-			
-			title = unicode_(article_title.text_content())
-			
-			articles.append(
-				{
-					"link": link,
-					"title": title,
-					"source": "techrepublic"
-				}
-			)
+	for i in range(len(posts)):
+		link = posts[i]["link"]
+		
+		if link.startswith("/"):
+			link = "http://techrepublic.com" + link
+			posts[i]["link"] = link
 	
-	return articles
+	return posts

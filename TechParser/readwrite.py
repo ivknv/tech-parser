@@ -2,72 +2,32 @@
 # -*- coding: utf-8 -*-
 
 import grab
-
-try:
-	unicode_ = unicode
-except NameError:
-	unicode_ = str
+import parser
 
 def get_articles():
 	g = grab.Grab()
 	
-	g.setup(hammer_mode=True, hammer_timeouts=((10, 15), (20, 30), (25, 40)))
+	parser.setup_grab(g)
 	
 	g.go("http://readwrite.com")
 	
-	articles = []
+	posts = []
 	
-	top_story = g.css(".story.view-hero header")
+	top_story_path = ".story.view-hero header h1 a"
 	
-	top_title = top_story.cssselect("h1 a")[0]
-	top_link = unicode_(top_title.text_content())
-	top_title = unicode_(top_title.text_content())
+	posts += parser.get_articles(g,
+		top_story_path, top_story_path, "readwrite")
 	
-	if top_link.startswith("/"):
-		top_link = "http://readwrite.com" + top_link
+	css_path1 = "article h1 a"
+	css_path2 = "article header .grid-item h1 a"
 	
-	articles.append(
-		{
-			"link": top_link,
-			"title": top_title,
-			"source": "readwrite"
-		}
-	)
-	
-	stories = g.css_list("article")
-	
-	for article in stories:
-		try:
-			category = unicode_(article.cssselect("h3")[0].text_content())
-		except IndexError:
-			try:
-				category = unicode_(
-					article.cssselect(
-						"header .meta .section .dd a.parsed"
-					)[0].text_content()
-				)
-			except IndexError:
-				category = ""
+	posts += parser.get_articles(g, css_path1, css_path1, "readwrite")
+	posts += parser.get_articles(g, css_path2, css_path2, "readwrite")
 		
-		try:
-			title = article.cssselect("h1 a")[0]
-		except IndexError:
-			title = article.cssselect("header .grid-item h1 a")[0]
-		
-		link = title.get("href")
-		
+	for i in range(len(posts)):
+		link = posts[i]["link"]
 		if link.startswith("/"):
 			link = "http://readwrite.com" + link
-		
-		title = unicode_(title.text_content())
-		
-		articles.append(
-			{
-				"link": link,
-				"title": title,
-				"category": category,
-				"source": "readwrite"
-			}
-		)
+			posts[i]["link"] = link
 	
-	return articles
+	return posts
