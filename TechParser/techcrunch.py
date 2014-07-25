@@ -2,107 +2,37 @@
 # -*- coding: utf-8 -*-
 
 import grab
-
-try:
-	unicode_ = unicode
-except NameError:
-	unicode_ = str
+import parser
 
 def get_articles():
 	g = grab.Grab()
 	
-	g.setup(hammer_mode=True, hammer_timeouts=((10, 15), (20, 30), (25, 40)))
+	parser.setup_grab(g)
 	
 	g.go("http://techcrunch.com")
 	
-	articles = []
+	posts = []
 	links = []
 	
-	articles_1 = g.css_list(".island .plain-feature a")
-	articles_2 = g.css_list(".island .plain-item-list li a")
-	latest = g.css_list(".river .river-block .block")
+	css_paths = [(".island .plain-feature a", ".block-title h2"),
+		(".island .plain-item-list li a", ".plain-title h2"),]
 	
-	for article in articles_1:
-		link = article.get("href")
-		if not link in links:
-			links.append(link)
-		else:
-			continue
-		
-		title = unicode_(article.cssselect(".block-title h2")[0].text_content())
-		
-		articles.append({
-			"link": link,
-			"title": title,
-			"source": "techcrunch"
-		})
-	
-	for article in articles_2:
-		link = article.get("href")
-		if not link in links:
-			links.append(link)
-		else:
-			continue
-		
-		title = unicode_(article.cssselect(".plain-title h2")[0].text_content())
-		
-		articles.append({
-			"link": link,
-			"title": title,
-			"source": "techcrunch"
-		})
-	
-	for article in latest:
-		try:
-			title = article.cssselect(".block-content .post-title a")[0]
-		except IndexError:
-			title = article.cssselect(".block-content-brief .post-title a")[0]
-		
-		link = title.get("href")
-		if not link in links:
-			links.append(link)
-		else:
-			continue
-		
-		title = unicode_(title.text_content())
-		
-		tags = article.cssselect(".tags .tag")
-		tags = [
-				[tag.get("href"),
-				unicode_(tag.cssselect("span")[0].text_content())]
-				for tag in tags
-				]
-		
-		articles.append(
-			{
-				"link": link,
-				"title": title,
-				"tags": tags,
-				"source": "techcrunch"
-			}
-		)
+	for (link_path, title_path) in css_paths:
+		posts += parser.get_articles(
+			g, link_path, link_path+title_path, "techcrunch")
 	
 	g.go("http://techcrunch.com/popular")
 	
-	popular = g.css_list("ul.river .river-block .block .block-content")
+	css_path1 = ".river .river-block .block .block-content h2.post-title a"
 	
-	for article in popular:
-		title = article.cssselect(".post-title a")[0]
-		link = title.get("href")
+	posts += parser.get_articles(
+		g, css_path1, css_path1, "techcrunch")
+	
+	for post in posts:
 		
-		if not link in links:
-			links.append(link)
+		if not post["link"] in links:
+			links.append(post["link"])
 		else:
-			continue
+			posts.remove(post)
 		
-		title = unicode_(title.text_content())
-		
-		articles.append(
-			{
-				"link": link,
-				"title": title,
-				"source": "techcrunch"
-			}
-		)
-	
-	return articles
+	return posts

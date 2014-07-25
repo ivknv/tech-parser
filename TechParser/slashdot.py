@@ -2,38 +2,26 @@
 # -*- coding: utf-8 -*-
 
 import grab
-
-try:
-	unicode_ = unicode
-except NameError:
-	unicode_ = str
+import parser
 
 def get_articles(start_page=1, end_page=5):
 	g = grab.Grab()
 	
-	g.setup(hammer_mode=True, hammer_timeouts=((10, 15), (20, 30), (25, 40)))
+	parser.setup_grab(g)
 	
-	articles = []
+	posts = []
+	css_path = ".article header h2.story span a"	
 	
 	for i in range(start_page, end_page+1):
 		g.go("http://slashdot.org?page=%i" %i)
-		posts = g.css_list(".article")
 		
-		for post in posts:
-			post_link = post.cssselect("header h2.story span a")[0]
-			
-			title = unicode_(post_link.text_content())
-			
-			link = post_link.get("href")
+		posts += parser.get_articles(g, css_path, css_path, "slashdot")
+		
+		for i in range(len(posts)):
+			link = posts[i]["link"]
 			
 			if link.startswith("//"):
 				link = "http:%s" %link
-			
-			articles.append(
-				{
-					"link": link,
-					"title": title,
-					"source": "slashdot"
-				}
-			)
-	return articles
+				posts[i]["link"] = link
+	
+	return posts
