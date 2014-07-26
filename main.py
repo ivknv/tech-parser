@@ -7,7 +7,7 @@ from random import shuffle
 
 import pickle
 
-import os
+import os, sys, re
 
 from grab.error import GrabError
 
@@ -22,9 +22,21 @@ from bottle import route, run, static_file, default_app
 
 from Daemo import Daemon
 
+running_as_daemon = False
+
 mylookup = TemplateLookup(directories="templates", default_filters=["decode.utf8"], input_encoding="utf-8", output_encoding="utf-8")
 
 articles = []
+
+def log(text, f=sys.stdout, add_newline=True, clear_str=running_as_daemon):
+	if add_newline:
+		text += "\n"
+	
+	if clear_str:
+		text = re.sub(r"\033\[(\d+|;\d+)m", "", text)
+	
+	f.write(text)
+	f.flush()
 
 def split_into_pages(articles, n=30):
 	pages = []
@@ -51,7 +63,10 @@ def dump_articles():
 	completed = 0
 	
 	for site in sites_to_parse:
-		print("\033[0;32m[{}%]\033[0m Parsing articles from {}...".format(completed, site))
+		
+		s = "\033[0;32m[{}%]\033[0m Parsing articles from {}..."
+		
+		log(s.format(completed, site))
 		
 		module = sites_to_parse[site]["module"]
 		kwargs = sites_to_parse[site]["kwargs"]
@@ -59,25 +74,25 @@ def dump_articles():
 		try:
 			articles += module.get_articles(**kwargs)
 		except GrabError as error:
-			print(error)
+			log(error)
 		
 		counter += 1
 		completed = round(100.0 / len(sites_to_parse) * counter, 1)
 	
-	print("\033[0;32m[{}%]\033[0m".format(completed))
+	log("\033[0;32m[{}%]\033[0m".format(completed))
 		
-	print("Shuffling articles...")
+	log("Shuffling articles...")
 	
 	shuffle(articles)
 	
-	print("Dumping data to file: articles_dumped...")
+	log("Dumping data to file: articles_dumped...")
 	
 	dumped = pickle.dumps(articles)
 	f = open("articles_dumped", "w")
 	f.write(dumped)
 	f.close()
 	
-	print("Done!")
+	log("Done!")
 
 def dump_articles_per_sec(s=update_interval):
 	while True:
@@ -119,14 +134,16 @@ def filter_articles(articles):
 	return articles_filtered
 
 def load_articles():
-	print("Reading articles from file: articles_dumped...")
+	log("Reading articles from file: articles_dumped...")
 	f = open("articles_dumped")
 	dumped = f.read()
 	f.close()
 	
 	articles = pickle.loads(dumped)
 	
-	print("Done!")
+	log("Done!")
+	sys.stdout.write("Done!\n")
+	sys.stdout.flush()
 	
 	return articles
 
@@ -162,12 +179,16 @@ def articles_list(page_number=1):
 
 class ParserDaemon(Daemon):
 	def __init__(self):
-		pidfile = os.path.expanduser("~/tech-parser.pid")
+		logdir = os.path.expanduser("~/.tech-parser")
 		
-		super(ParserDaemon, self).__init__(pidfile, True)
+		if not os.path.isdir(logdir):
+			os.mkdir(logdir)
 		
-		sys.stdout = open(os.devnull, "w")
-		sys.stderr = open(os.devnull, "w")
+		pidfile = os.path.join(logdir, "tech-parser.pid")
+		so = file(os.path.join(logdir, "output.log"), "a+")
+		se = file(os.path.join(logdir, "error.log"), "a+")
+		
+		super(ParserDaemon, self).__init__(pidfile, True, stdout=so, stderr=se)
 	
 	def onStart(self):
 		t1 = Thread(target=dump_articles_per_sec)
@@ -176,17 +197,16 @@ class ParserDaemon(Daemon):
 		run(host=host, port=port, server=server)
 
 if __name__ == "__main__":
-	import sys
-	
 	if len(sys.argv) == 1:
-		print("usage: %s start|stop|restart" %sys.argv[0])
+		log("usage: %s start|stop|restart" %sys.argv[0])
 	else:
 		command = sys.argv[1].lower()
 		
 		if command in ["start", "stop", "restart"]:
 			parser_daemon = ParserDaemon()
+			running_as_daemon = True
 		else:
-			print("usage: %s start|stop|restart" %sys.argv[0])
+			log("usage: %s start|stop|restart" %sys.argv[0])
 		
 		if command == "start":
 			parser_daemon.start()
