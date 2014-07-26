@@ -20,6 +20,8 @@ from mako.lookup import TemplateLookup
 
 from bottle import route, run, static_file, default_app
 
+from Daemo import Daemon
+
 mylookup = TemplateLookup(directories="templates", default_filters=["decode.utf8"], input_encoding="utf-8", output_encoding="utf-8")
 
 articles = []
@@ -158,11 +160,42 @@ def articles_list(page_number=1):
 		page_num=page_number,
 	)
 
-t1 = Thread(target=dump_articles_per_sec)
-t1.daemon = True
-t1.start()
+class ParserDaemon(Daemon):
+	def __init__(self):
+		pidfile = os.path.expanduser("~/tech-parser.pid")
+		
+		super(ParserDaemon, self).__init__(pidfile, True)
+		
+		sys.stdout = open(os.devnull, "w")
+		sys.stderr = open(os.devnull, "w")
+	
+	def onStart(self):
+		t1 = Thread(target=dump_articles_per_sec)
+		t1.daemon = True
+		t1.start()
+		run(host=host, port=port, server=server)
 
-if __name__ == "__main__":	
-	run(host=host, port=port, server=server)
+if __name__ == "__main__":
+	import sys
+	
+	if len(sys.argv) == 1:
+		print("usage: %s start|stop|restart" %sys.argv[0])
+	else:
+		command = sys.argv[1].lower()
+		
+		if command in ["start", "stop", "restart"]:
+			parser_daemon = ParserDaemon()
+		else:
+			print("usage: %s start|stop|restart" %sys.argv[0])
+		
+		if command == "start":
+			parser_daemon.start()
+		elif command == "stop":
+			parser_daemon.stop()
+		elif command == "restart":
+			parser_daemon.restart()
+		elif command == "update":
+			dump_articles()
 
-app = default_app()
+else:
+	app = default_app()
