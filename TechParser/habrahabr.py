@@ -11,7 +11,8 @@ def get_articles():
 	
 	g.go("http://habrahabr.ru")
 	
-	pages = [page.get("href") for page in g.css_list("#nav-pages li a")]
+	pages = [""]
+	pages += [page.get("href") for page in g.css_list("#nav-pages li a")]
 	
 	posts = []
 	
