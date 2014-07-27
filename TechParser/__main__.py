@@ -208,6 +208,10 @@ class ParserDaemon(Daemon):
 		pidfile = os.path.join(logdir, "tech-parser.pid")
 		so = file(os.path.join(logdir, "output.log"), "a+")
 		se = file(os.path.join(logdir, "error.log"), "a+")
+		if os.stat(so.name).st_size > 102400:
+			so.truncate()
+		if os.stat(se.name).st_size > 102400:
+			se.truncate()
 		
 		super(ParserDaemon, self).__init__(pidfile, True, stdout=so, stderr=se)
 	
