@@ -52,12 +52,12 @@ mylookup = TemplateLookup(directories=template_dir_path,
 		default_filters=["decode.utf8"],
 		input_encoding="utf-8", output_encoding="utf-8")
 
-def log(text, f=sys.stdout, add_newline=True, clear_str=running_as_daemon):
+def log(text, f=sys.stdout, add_newline=True, clear_str=False):
 	if add_newline:
 		text += "\n"
 	
-	if clear_str:
-		text = re.sub(r"\033\[(\d+|;\d+)m", "", text)
+	if clear_str or running_as_daemon:
+		text = re.sub(r"\033\[(\d+|\d+;\d+)m", "", text)
 	
 	f.write(text)
 	f.flush()
