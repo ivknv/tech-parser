@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from parser_config import *
-
 from random import shuffle
 
 import pickle
@@ -22,11 +20,33 @@ from bottle import route, run, static_file, default_app
 
 from Daemo import Daemon
 
+sys.path.append(os.path.expanduser("~/.tech-parser"))
+
+try:
+	from user_parser_config import *
+except ImportError:
+	from parser_config import *
+
 running_as_daemon = False
 
 module_path = os.path.dirname(os.path.realpath(__file__))
 template_dir_path = os.path.join(module_path, "templates")
 static_dir_path = os.path.join(module_path, "static")
+logdir = os.path.expanduser("~")
+logdir = os.path.join(logdir, ".tech-parser")
+
+if not os.path.exists(logdir):
+	os.mkdir(logdir)
+
+if not os.path.exists(os.path.join(logdir, "__init__.py")):
+	open(os.path.join(logdir, "__init__.py"), "w").close()
+
+if not os.path.exists(os.path.join(logdir, "user_parser_config.py")):
+	f = open(os.path.join(logdir, "user_parser_config.py"), "w")
+	default_config = open(os.path.join(module_path, "parser_config.py"))
+	f.write(default_config.read())
+	default_config.close()
+	f.close()
 
 mylookup = TemplateLookup(directories=template_dir_path,
 		default_filters=["decode.utf8"],
@@ -92,7 +112,9 @@ def dump_articles():
 	log("Dumping data to file: articles_dumped...")
 	
 	dumped = pickle.dumps(articles)
-	f = open("articles_dumped", "w")
+	path = os.path.join(os.path.expanduser("~"), ".tech-parser")
+	path = os.path.join(path, "articles_dumped")
+	f = open(path, "w")
 	f.write(dumped)
 	f.close()
 	
@@ -139,7 +161,7 @@ def filter_articles(articles):
 
 def load_articles():
 	log("Reading articles from file: articles_dumped...")
-	f = open("articles_dumped")
+	f = open(os.path.join(logdir, "articles_dumped"))
 	dumped = f.read()
 	f.close()
 	
@@ -173,7 +195,7 @@ def articles_list(page_number=1):
 	
 	articles = filter_articles(articles)
 	articles = split_into_pages(articles, 30)
-	requested_page = articles[page_number]
+	requested_page = articles[page_number-1]
 	
 	return main_page.render(
 		articles=requested_page,
@@ -183,11 +205,6 @@ def articles_list(page_number=1):
 
 class ParserDaemon(Daemon):
 	def __init__(self):
-		logdir = os.path.expanduser("~/.tech-parser")
-		
-		if not os.path.isdir(logdir):
-			os.mkdir(logdir)
-		
 		pidfile = os.path.join(logdir, "tech-parser.pid")
 		so = file(os.path.join(logdir, "output.log"), "a+")
 		se = file(os.path.join(logdir, "error.log"), "a+")
