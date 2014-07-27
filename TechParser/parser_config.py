@@ -50,11 +50,12 @@ sites_to_parse = {
 			"kwargs": {}
 		},
 		
-		"Read/Write Web": {
-			"link": "readwrite.com",
-			"module": readwrite,
-			"kwargs": {}
-		},
+		# Doesn't work anymore
+		#"Read/Write Web": {
+		#	"link": "readwrite.com",
+		#	"module": readwrite,
+		#	"kwargs": {}
+		#},
 		
 		"Tech Republic": {
 			"link": "techrepublic.com",
