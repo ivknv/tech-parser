@@ -24,9 +24,13 @@ from Daemo import Daemon
 
 running_as_daemon = False
 
-mylookup = TemplateLookup(directories="templates", default_filters=["decode.utf8"], input_encoding="utf-8", output_encoding="utf-8")
+module_path = os.path.dirname(os.path.realpath(__file__))
+template_dir_path = os.path.join(module_path, "templates")
+static_dir_path = os.path.join(module_path, "static")
 
-articles = []
+mylookup = TemplateLookup(directories=template_dir_path,
+		default_filters=["decode.utf8"],
+		input_encoding="utf-8", output_encoding="utf-8")
 
 def log(text, f=sys.stdout, add_newline=True, clear_str=running_as_daemon):
 	if add_newline:
@@ -149,7 +153,7 @@ def load_articles():
 
 @route('/static/<filename:path>')
 def serve_static(filename):
-	return static_file(filename, root="static")
+	return static_file(filename, root=static_dir_path)
 
 @route("/")
 @route("/<page_number>")
