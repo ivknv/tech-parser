@@ -63,11 +63,13 @@ def setup_db():
 	con.commit()
 	con.close()
 
-def log(text, f=sys.stdout, add_newline=True, clear_str=False):
+def log(text, f=sys.stdout, add_newline=True, clear_str=False,
+	ignore_daemon=False):
+	
 	if add_newline:
 		text += "\n"
 	
-	if clear_str or running_as_daemon:
+	if (clear_str or running_as_daemon) and not ignore_daemon:
 		text = re.sub(r"\033\[(\d+|\d+;\d+)m", "", text)
 	
 	f.write(text)
@@ -255,24 +257,29 @@ class ParserDaemon(Daemon):
 
 if __name__ == "__main__":
 	if len(sys.argv) == 1:
-		log("usage: %s start|stop|restart" %sys.argv[0])
+		log("usage: %s start|stop|restart|update" %sys.argv[0])
 	else:
 		command = sys.argv[1].lower()
 		
-		if command in ["start", "stop", "restart"]:
-			parser_daemon = ParserDaemon()
-			running_as_daemon = True
-		else:
-			log("usage: %s start|stop|restart" %sys.argv[0])
+		parser_daemon = ParserDaemon()
+		running_as_daemon = True
 		
-		if command == "start":
-			parser_daemon.start()
-		elif command == "stop":
-			parser_daemon.stop()
-		elif command == "restart":
-			parser_daemon.restart()
-		elif command == "update":
-			dump_articles()
-
+		commands_available = {
+			"start": parser_daemon.start,
+			"stop": parser_daemon.stop,
+			"restart": parser_daemon.restart,
+			"update": dump_articles}
+		
+		if command not in commands_available:
+			log("usage: %s start|stop|restart|update" %sys.argv[0])
+			sys.exit(1)
+		
+		if command == "update":
+			oldlog = log
+			def log(*args, **kwargs):
+				kwargs["ignore_daemon"] = True
+				oldlog(*args, **kwargs)
+		
+		commands_available[command]()
 else:
 	app = default_app()
