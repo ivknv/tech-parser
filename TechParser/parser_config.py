@@ -61,6 +61,11 @@ try:
 except ImportError:
 	import topdesignmag
 
+try:
+	from TechParser import flowa
+except ImportError:
+	import flowa
+
 sites_to_parse = {
 		"Habrahabr": { # habrahabr.ru
 			"module": habrahabr,
@@ -121,6 +126,11 @@ sites_to_parse = {
 		"Top Design Magazine": { # www.topdesignmag.com
 			"module": topdesignmag,
 			"kwargs": {"start_page": 1, "end_page": 1}
+		},
+		
+		"Flowa": { # flowa.fi
+			"module": flowa,
+			"kwargs": {}
 		}
 	}
 
