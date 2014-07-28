@@ -109,7 +109,7 @@ def dump_articles():
 		try:
 			articles += module.get_articles(**kwargs)
 		except GrabError as error:
-			log(error)
+			log(str(error))
 		
 		counter += 1
 		completed = round(100.0 / len(sites_to_parse) * counter, 1)

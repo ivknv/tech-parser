@@ -1,84 +1,126 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from TechParser import habrahabr
-from TechParser import venturebeat
-from TechParser import engadget
-from TechParser import techcrunch
-from TechParser import techrepublic
-from TechParser import readwrite
-from TechParser import smashingmagazine
-from TechParser import gizmodo
-from TechParser import slashdot
-from TechParser import androidcentral
-from TechParser import verge
+try:
+	from TechParser import habrahabr
+except ImportError:
+	import habrahabr
+
+try:
+	from TechParser import venturebeat
+except ImportError:
+	import venturebeat
+
+try:
+	from TechParser import engadget
+except ImportError:
+	import engadget
+
+try:
+	from TechParser import techcrunch
+except ImportError:
+	import techcrunch
+
+try:
+	from TechParser import techrepublic
+except ImportError:
+	import techrepublic
+
+try:
+	from TechParser import readwrite
+except ImportError:
+	import readwrite
+
+try:
+	from TechParser import smashingmagazine
+except ImportError:
+	import smashingmagazine
+
+try:
+	from TechParser import gizmodo
+except ImportError:
+	import gizmodo
+
+try:
+	from TechParser import slashdot
+except ImportError:
+	import slashdot
+
+try:
+	from TechParser import androidcentral
+except ImportError:
+	import androidcentral
+
+try:
+	from TechParser import verge
+except ImportError:
+	import verge
+
+try:
+	from TechParser import topdesignmag
+except ImportError:
+	import topdesignmag
 
 sites_to_parse = {
-		"Habrahabr": {
-			"link": "habrahabr.ru",
+		"Habrahabr": { # habrahabr.ru
 			"module": habrahabr,
 			"kwargs": {}
 		},
 		
-		"VentureBeat": {
-			"link": "venturebeat.com",
+		"VentureBeat": { # venturebeat.com
 			"module": venturebeat,
 			"kwargs": {"start_page": 1, "end_page": 3}
 		},
 		
-		"Engadget": {
-			"link": "engadget.com",
+		"Engadget": { # engadget.com
 			"module": engadget,
 			"kwargs": {"start_page": 1, "end_page": 5}
 		},
 		
-		"Slashdot": {
-			"link": "slashdot.org",
+		"Slashdot": { # slashdot.org
 			"module": slashdot,
 			"kwargs": {"start_page": 1, "end_page": 3}
 		},
 		
-		"Gizmodo": {
-			"link": "gizmodo.com",
+		"Gizmodo": { # gizmodo.com
 			"module": gizmodo,
 			"kwargs": {}
 		},
 		
-		"TechCrunch": {
-			"link": "techcrunch.com",
+		"TechCrunch": { # techcrunch.com
 			"module": techcrunch,
 			"kwargs": {}
 		},
 		
 		# Doesn't work anymore
-		#"Read/Write Web": {
-		#	"link": "readwrite.com",
+		#"Read/Write Web": { # readwrite.com
 		#	"module": readwrite,
 		#	"kwargs": {}
 		#},
 		
-		"Tech Republic": {
-			"link": "techrepublic.com",
+		"Tech Republic": { # techrepublic.com
 			"module": techrepublic,
 			"kwargs": {}
 		},
 		
-		"Smashing Magazine": {
-			"link": "www.smashingmagazine.com",
+		"Smashing Magazine": { # www.smashingmagazine.com
 			"module": smashingmagazine,
 			"kwargs": {}
 		},
 		
-		"Android Central": {
-			"link": "www.androidcentral.com",
+		"Android Central": { # www.androidcentral.com
 			"module": androidcentral,
 			"kwargs": {"start_page": 1, "end_page": 5}
 		},
 		
-		"The Verge": {
-			"link": "www.theverge.com",
+		"The Verge": { # www.theverge.com
 			"module": verge,
 			"kwargs": {}
+		},
+		
+		"Top Design Magazine": { # www.topdesignmag.com
+			"module": topdesignmag,
+			"kwargs": {"start_page": 1, "end_page": 1}
 		}
 	}
 
