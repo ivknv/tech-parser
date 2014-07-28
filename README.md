@@ -1,7 +1,7 @@
 tech-parser
 ===========
 
-Parses articles from 14 sites and outputs it into HTML.
+Parses articles from 15 sites and outputs it into HTML.
 
 Current list of sites:
 <ol>
