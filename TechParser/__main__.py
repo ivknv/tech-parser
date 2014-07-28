@@ -20,6 +20,8 @@ from bottle import route, run, static_file, default_app
 
 from Daemo import Daemon
 
+import sqlite3
+
 sys.path.append(os.path.expanduser("~/.tech-parser"))
 
 try:
@@ -51,6 +53,15 @@ if not os.path.exists(os.path.join(logdir, "user_parser_config.py")):
 mylookup = TemplateLookup(directories=template_dir_path,
 		default_filters=["decode.utf8"],
 		input_encoding="utf-8", output_encoding="utf-8")
+
+def setup_db():
+	con = sqlite3.connect(os.path.join(logdir, "archive.db"))
+	cur = con.cursor()
+	cur.execute("""CREATE TABLE IF NOT EXISTS articles
+		(id INTEGER PRIMARY KEY AUTOINCREMENT,
+			title TEXT, link TEXT, source TEXT, UNIQUE(link));""")
+	con.commit()
+	con.close()
 
 def log(text, f=sys.stdout, add_newline=True, clear_str=False):
 	if add_newline:
@@ -104,7 +115,28 @@ def dump_articles():
 		completed = round(100.0 / len(sites_to_parse) * counter, 1)
 	
 	log("\033[0;32m[{}%]\033[0m".format(completed))
+	
+	if save_articles:
+		log("Saving articles to archive...")
 		
+		setup_db()
+		con = sqlite3.connect(os.path.join(logdir, "archive.db"))
+		cur = con.cursor()
+		
+		for article in articles:
+			title = article["title"]
+			link = article["link"]
+			source = article["source"]
+			
+			try:
+				cur.execute("""INSERT INTO articles(title, link, source)
+					values(?, ?, ?);""", (title, link, source))
+			except sqlite3.IntegrityError:
+				pass
+		
+		con.commit()
+		con.close()
+	
 	log("Shuffling articles...")
 	
 	shuffle(articles)
