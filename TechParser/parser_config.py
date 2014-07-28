@@ -71,6 +71,11 @@ try:
 except ImportError:
 	import ittoolbox
 
+try:
+	from TechParser import dzone
+except ImportError:
+	import dzone
+
 sites_to_parse = {
 		"Habrahabr": { # habrahabr.ru
 			"module": habrahabr,
@@ -140,6 +145,11 @@ sites_to_parse = {
 		
 		"IT Toolbox": { # it.toolbox.com
 			"module": ittoolbox,
+			"kwargs": {}
+		},
+		
+		"DZone": { # www.dzone.com
+			"module": dzone,
 			"kwargs": {}
 		}
 	}
