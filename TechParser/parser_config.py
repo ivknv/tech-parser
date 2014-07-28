@@ -76,6 +76,11 @@ try:
 except ImportError:
 	import dzone
 
+try:
+	from TechParser import codeproject
+except ImportError:
+	import codeproject
+
 sites_to_parse = {
 		"Habrahabr": { # habrahabr.ru
 			"module": habrahabr,
@@ -151,6 +156,11 @@ sites_to_parse = {
 		"DZone": { # www.dzone.com
 			"module": dzone,
 			"kwargs": {}
+		},
+		
+		"Code Project": { # www.codeproject.com
+			"module": codeproject,
+			"kwargs": {"start_page": 1, "end_page": 1}
 		}
 	}
 
