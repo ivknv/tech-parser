@@ -1,7 +1,7 @@
 tech-parser
 ===========
 
-Parses articles from 13 sites and outputs it into HTML.
+Parses articles from 14 sites and outputs it into HTML.
 
 Current list of sites:
 <ol>
@@ -18,6 +18,7 @@ Current list of sites:
 	<li>topdesignmag.com</li>
 	<li>flowa.fi</li>
 	<li>it.toolbox.com</li>
+	<li>www.dzone.com</li>
 	<li>readwrite.com (no longer available)</li>
 </ol>
 
