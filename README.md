@@ -19,6 +19,7 @@ Current list of sites:
 	<li>flowa.fi</li>
 	<li>it.toolbox.com</li>
 	<li>dzone.com</li>
+	<li>codeproject.com</li>
 	<li>readwrite.com (no longer available)</li>
 </ol>
 
