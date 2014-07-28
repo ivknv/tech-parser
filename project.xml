@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project>
 <version>
-1.1
+1.2
 </version>
 <name>
 SiteParse
@@ -13,7 +13,7 @@ Python
 Ivan Konovalov
 </authors>
 <description>
-Get data from sites.
+Lets You parse articles from various IT related sites.
 </description>
 <date>
 <day>
