@@ -1,7 +1,7 @@
 tech-parser
 ===========
 
-Parses articles from 11 (10 actually) sites and outputs it into HTML.
+Parses articles from 11 sites and outputs it into HTML.
 
 Current list of sites:
 <ol>
@@ -15,6 +15,7 @@ Current list of sites:
 	<li>slashdot.org</li>
 	<li>gizmodo.com</li>
 	<li>androidcentral.com</li>
+	<li>topdesignmag.com</li>
 	<li>readwrite.com (no longer available)</li>
 </ol>
 
