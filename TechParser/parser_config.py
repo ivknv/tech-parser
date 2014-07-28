@@ -97,3 +97,6 @@ port = "8080" # Server port
 
 # Server to use
 server = "auto" # See http://bottlepy.org/docs/dev/deployment.html#switching-the-server-backend
+
+save_articles = False # Save articles into db.
+# Can be found at ~/.tech-parser/archive.db
