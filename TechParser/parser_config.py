@@ -66,6 +66,11 @@ try:
 except ImportError:
 	import flowa
 
+try:
+	from TechParser import ittoolbox
+except ImportError:
+	import ittoolbox
+
 sites_to_parse = {
 		"Habrahabr": { # habrahabr.ru
 			"module": habrahabr,
@@ -130,6 +135,11 @@ sites_to_parse = {
 		
 		"Flowa": { # flowa.fi
 			"module": flowa,
+			"kwargs": {}
+		},
+		
+		"IT Toolbox": { # it.toolbox.com
+			"module": ittoolbox,
 			"kwargs": {}
 		}
 	}
