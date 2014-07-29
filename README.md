@@ -35,7 +35,9 @@ Grab<br/>
 All these modules can be installed with pip or easy_install.
 
 ### How to install ###
-Run ```python setup.py install```.<br/>
+You can install TechParser by running<br/>
+```pip install TechParser```<br/> or<br/>
+```python setup.py install```<br/>
 And also, to make it easier to use I recommend to make an alias like this:<br/>
 ```alias tech-parser="python -m TechParser"``` on \*nix based OS or<br/>
 ```doskey tech-parser=python -m TechParser $*``` on Windows<br/>

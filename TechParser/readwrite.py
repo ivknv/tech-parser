@@ -14,6 +14,8 @@ def get_articles(browser="firefox"):
 	
 	g = grab.Grab(driver.page_source)
 	
+	driver.quit()
+	
 	posts = []
 	
 	css_path = ".m-story.mm-feature .m-item--hed a"
