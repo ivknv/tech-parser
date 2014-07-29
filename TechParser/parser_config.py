@@ -86,6 +86,11 @@ try:
 except ImportError:
 	import hackernews
 
+try:
+	from TechParser import mashable
+except ImportError:
+	import mashable
+
 sites_to_parse = {
 		"Habrahabr": { # habrahabr.ru
 			"module": habrahabr,
@@ -171,6 +176,11 @@ sites_to_parse = {
 		"Hacker News": { # news.ycombinator.com/newest
 			"module": hackernews,
 			"kwargs": {"start_page": 1, "end_page": 5}
+		},
+		
+		"Mashable": { # mashable.com
+			"module": mashable,
+			"kwargs": {}
 		}
 	}
 
