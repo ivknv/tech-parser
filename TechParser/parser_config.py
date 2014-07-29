@@ -112,7 +112,7 @@ sites_to_parse = {
 			"kwargs": {}
 		},
 		
-		# Doesn't work anymore
+		# Works only with Selenium (opens REAL browser)
 		#"Read/Write Web": { # readwrite.com
 		#	"module": readwrite,
 		#	"kwargs": {"browser": "firefox"}
