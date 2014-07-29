@@ -3,14 +3,17 @@
 
 from distutils.core import setup
 
+v = "1.2.1"
+
 setup(name="TechParser",
-	version="1.2",
+	version=v,
 	author="Ivan Konovalov",
 	author_email="rvan.mega@gmail.com",
 	description="Lets You parse articles from various related to IT sites.",
 	url="https://github.com/SPython/tech-parser",
-	download_url="https://github.com/SPython/tech-parser/tarball/1.2",
+	download_url="https://github.com/SPython/tech-parser/tarball/"+v,
 	keywords=["parser", "article", "web"],
+	requires=["grab", "mako", "bottle", "Daemo"],
 	classifiers=[],
 	packages=["TechParser"],
 	package_data={"TechParser": ["templates/*",
