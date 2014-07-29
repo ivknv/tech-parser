@@ -16,13 +16,7 @@ def get_articles(start_page=1, end_page=1):
 		
 		css_path = "tr td .content-list-item .title a"
 		
-		posts += parser.get_articles(g, css_path, css_path, "codeproject")
-	
-	for i in range(len(posts)):
-		link = posts[i]["link"]
-		
-		if link.startswith("/"):
-			link = "http://www.codeproject.com" + link
-			posts[i]["link"] = link
+		posts += parser.get_articles(g, css_path, css_path,
+			"codeproject", "www.codeproject.com")
 	
 	return posts

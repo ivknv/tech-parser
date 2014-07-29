@@ -23,13 +23,9 @@ def get_articles(browser="firefox"):
 	posts += parser.get_articles(g,
 		css_path, css_path, "readwrite")
 	
-	posts += parser.get_articles(g, css_path, css_path, "readwrite")
-	posts += parser.get_articles(g, css_path, css_path, "readwrite")
-		
-	for i in range(len(posts)):
-		link = posts[i]["link"]
-		if link.startswith("/"):
-			link = "http://readwrite.com" + link
-			posts[i]["link"] = link
+	posts += parser.get_articles(g, css_path, css_path, "readwrite",
+		"readwrite.com")
+	posts += parser.get_articles(g, css_path, css_path, "readwrite",
+		"readwrite.com")
 	
 	return posts

@@ -20,13 +20,7 @@ def get_articles():
 	]
 	
 	for css_path in css_paths:
-		posts += parser.get_articles(g, css_path, css_path, "techrepublic")
-	
-	for i in range(len(posts)):
-		link = posts[i]["link"]
-		
-		if link.startswith("/"):
-			link = "http://techrepublic.com" + link
-			posts[i]["link"] = link
+		posts += parser.get_articles(g, css_path, css_path,
+			"techrepublic", "techrepublic.com")
 	
 	return posts
