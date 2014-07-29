@@ -1,7 +1,7 @@
 tech-parser
 ===========
 
-Parses articles from 15 sites and outputs it into HTML.
+Parses articles from 16 sites and outputs it into HTML.
 
 You can see it in action [here](http://tech-parser.herokuapp.com).
 And [here's](https://github.com/SPython/web-tech-parser) repo for that Heroku app.
@@ -23,6 +23,7 @@ Current list of sites:
 	<li>it.toolbox.com</li>
 	<li>dzone.com</li>
 	<li>codeproject.com</li>
+	<li>news.ycombinator.com</li>
 </ol>
 
 ## Installation ##
