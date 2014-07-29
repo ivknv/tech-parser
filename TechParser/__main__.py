@@ -20,6 +20,8 @@ from bottle import route, run, static_file, default_app
 
 from Daemo import Daemon
 
+import argparse
+
 import sqlite3
 
 sys.path.append(os.path.expanduser("~/.tech-parser"))
@@ -255,31 +257,68 @@ class ParserDaemon(Daemon):
 		t1.start()
 		run(host=host, port=port, server=server)
 
+def is_hostname(hostname):
+	if len(hostname) > 255:
+		return False
+	if hostname[-1] == ".":
+		hostname = hostname[:-1]
+	allowed = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
+	return all(allowed.match(x) for x in hostname.split("."))
+
+def run_server(host, port):
+	t1 = Thread(target=dump_articles_per_sec)
+	t1.daemon = True
+	t1.start()
+	run(host=host, port=port)
+
 if __name__ == "__main__":
-	if len(sys.argv) == 1:
-		log("usage: %s start|stop|restart|update" %sys.argv[0])
-	else:
-		command = sys.argv[1].lower()
+	parser_daemon = ParserDaemon()
+	running_as_daemon = True
+	
+	arg_parser = argparse.ArgumentParser(description="""\
+Article parser.
+Available commands: start|stop|restart|update|run HOST:PORT""")
+	
+	arg_parser.add_argument("action", nargs="+",
+		action="store", default=[], help="Action to run")
+	
+	args = arg_parser.parse_args()
+	
+	if args.action:
+		if args.action[0] == "run":
+			addr = args.action[1]
+			if not ":" in addr:
+				addr += ":80"
+			elif addr.endswith(":"):
+				addr += "80"
 		
-		parser_daemon = ParserDaemon()
-		running_as_daemon = True
-		
-		commands_available = {
-			"start": parser_daemon.start,
-			"stop": parser_daemon.stop,
-			"restart": parser_daemon.restart,
-			"update": dump_articles}
-		
-		if command not in commands_available:
-			log("usage: %s start|stop|restart|update" %sys.argv[0])
-			sys.exit(1)
-		
-		if command == "update":
+			host, port = addr.split(":")
+			is_host_correct = is_hostname(host)
+			
+			try:
+				is_port_correct = int(port) <= 65535
+			except ValueError:
+				is_port_correct = True
+				
+			if not is_host_correct:
+				log("Incorrect hostname", f=sys.stderr)
+				sys.exit(1)
+			elif not is_port_correct:
+				log("Incorrect port", f=sys.stderr)
+				sys.exit(1)
+			else:
+				run_server(host, port)
+		elif args.action[0] == "update":
 			oldlog = log
 			def log(*args, **kwargs):
 				kwargs["ignore_daemon"] = True
 				oldlog(*args, **kwargs)
-		
-		commands_available[command]()
+			dump_articles()
+		elif args.action[0] == "start":
+			parser_daemon.start()
+		elif args.action[0] == "stop":
+			parser_daemon.stop()
+		elif args.action[0] == "restart":
+			parser_daemon.restart()
 else:
 	app = default_app()
