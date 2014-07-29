@@ -16,14 +16,8 @@ def get_articles(start_page=1, end_page=5):
 		
 		css_path = ".node-article .node-inner .title-byline .title a"
 		
-		articles = parser.get_articles(g, css_path, css_path, "androidcentral")
-		
-		for j in range(len(articles)):
-			link = articles[j]["link"]
-			
-			if link.startswith("/"):
-				link = "http://www.androidcentral.com" + link
-				articles[j]["link"] = link
+		articles = parser.get_articles(g, css_path, css_path,
+			"androidcentral", "www.androidcentral.com")
 		
 		posts += articles
 	
