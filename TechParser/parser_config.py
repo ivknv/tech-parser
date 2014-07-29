@@ -26,10 +26,10 @@ try:
 except ImportError:
 	import techrepublic
 
-try:
-	from TechParser import readwrite
-except ImportError:
-	import readwrite
+#try:
+#	from TechParser import readwrite
+#except ImportError:
+#	import readwrite
 
 try:
 	from TechParser import smashingmagazine
@@ -115,7 +115,7 @@ sites_to_parse = {
 		# Doesn't work anymore
 		#"Read/Write Web": { # readwrite.com
 		#	"module": readwrite,
-		#	"kwargs": {}
+		#	"kwargs": {"browser": "firefox"}
 		#},
 		
 		"Tech Republic": { # techrepublic.com

@@ -1,28 +1,28 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from selenium import webdriver
 import grab
 import parser
 
-def get_articles():
-	g = grab.Grab()
+def get_articles(browser="firefox"):
+	browsers = {"firefox": webdriver.Firefox,
+		"chrome": webdriver.Chrome}
 	
-	parser.setup_grab(g)
+	driver = browsers[browser]()
+	driver.get("http://readwrite.com")
 	
-	g.go("http://readwrite.com")
+	g = grab.Grab(driver.page_source)
 	
 	posts = []
 	
-	top_story_path = ".story.view-hero header h1 a"
+	css_path = ".m-story.mm-feature .m-item--hed a"
 	
 	posts += parser.get_articles(g,
-		top_story_path, top_story_path, "readwrite")
+		css_path, css_path, "readwrite")
 	
-	css_path1 = "article h1 a"
-	css_path2 = "article header .grid-item h1 a"
-	
-	posts += parser.get_articles(g, css_path1, css_path1, "readwrite")
-	posts += parser.get_articles(g, css_path2, css_path2, "readwrite")
+	posts += parser.get_articles(g, css_path, css_path, "readwrite")
+	posts += parser.get_articles(g, css_path, css_path, "readwrite")
 		
 	for i in range(len(posts)):
 		link = posts[i]["link"]
