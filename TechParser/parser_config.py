@@ -81,6 +81,11 @@ try:
 except ImportError:
 	import codeproject
 
+try:
+	from TechParser import hackernews
+except ImportError:
+	import hackernews
+
 sites_to_parse = {
 		"Habrahabr": { # habrahabr.ru
 			"module": habrahabr,
@@ -161,6 +166,11 @@ sites_to_parse = {
 		"Code Project": { # www.codeproject.com
 			"module": codeproject,
 			"kwargs": {"start_page": 1, "end_page": 1}
+		},
+		
+		"Hacker News": { # news.ycombinator.com/newest
+			"module": hackernews,
+			"kwargs": {"start_page": 1, "end_page": 5}
 		}
 	}
 
