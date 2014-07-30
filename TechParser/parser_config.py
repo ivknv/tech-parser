@@ -91,6 +91,11 @@ try:
 except ImportError:
 	import mashable
 
+try:
+	from TechParser import maketecheasier
+except ImportError:
+	import maketecheasier
+
 sites_to_parse = {
 		"Habrahabr": { # habrahabr.ru
 			"module": habrahabr,
@@ -180,6 +185,11 @@ sites_to_parse = {
 		
 		"Mashable": { # mashable.com
 			"module": mashable,
+			"kwargs": {}
+		},
+		
+		"Make Tech Easier": { # www.maketecheasier.com
+			"module": maketecheasier,
 			"kwargs": {}
 		}
 	}
