@@ -10,7 +10,7 @@ def get_articles(start_page=1, end_page=5):
 	parser.setup_grab(g)
 	
 	posts = []
-	css_path = "article header h1 a"
+	css_path = "article header h2 span a"
 	
 	for i in range(start_page, end_page+1):
 		g.go("http://slashdot.org?page=%i" %i)

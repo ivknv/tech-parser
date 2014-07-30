@@ -94,6 +94,13 @@ def split_into_pages(articles, n=30):
 	
 	return pages
 
+def simple_plural(n, s):
+	n = str(n)
+	if n.endswith("1"):
+		return s
+	else:
+		return s + "s"
+
 def dump_articles():
 	
 	articles = []
@@ -103,22 +110,30 @@ def dump_articles():
 	
 	for site in sites_to_parse:
 		
-		s = "\033[0;32m[{}%]\033[0m Parsing articles from {}..."
+		s = "\033[0;32m[{}%]\033[0m Parsing articles from {}... "
 		
-		log(s.format(completed, site))
+		log(s.format(completed, site), add_newline=False)
 		
 		module = sites_to_parse[site]["module"]
 		kwargs = sites_to_parse[site]["kwargs"]
 		
 		try:
+			before = len(articles)
 			articles += module.get_articles(**kwargs)
+			after = len(articles)
+			difference = after - before
+			log("Found %d %s" %(difference,
+				simple_plural(difference, "article")))
 		except GrabError as error:
-			log(str(error))
+			log("Fail")
+			log(str(error), f=sys.stderr)
 		
 		counter += 1
 		completed = round(100.0 / len(sites_to_parse) * counter, 1)
 	
 	log("\033[0;32m[{}%]\033[0m".format(completed))
+	
+	log("Total articles: %d" %(len(articles)))
 	
 	if save_articles:
 		log("Saving articles to archive...")
