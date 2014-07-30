@@ -101,6 +101,11 @@ try:
 except ImportError:
 	import digg
 
+try:
+	from TechParser import wired
+except ImportError:
+	import wired
+
 sites_to_parse = {
 		"Habrahabr": { # habrahabr.ru
 			"module": habrahabr,
@@ -200,6 +205,11 @@ sites_to_parse = {
 		
 		"Digg": { # digg.com
 			"module": digg,
+			"kwargs": {}
+		},
+		
+		"Wired": { # www.wired.com
+			"module": wired,
 			"kwargs": {}
 		}
 	}
