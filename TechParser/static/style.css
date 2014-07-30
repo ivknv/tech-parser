@@ -1,10 +1,20 @@
 #main {
-	max-width: 1200px;
 	margin: 0 auto;
+	max-width: 1200px;
 }
 
 #pagination {
-	margin-top: 20px;
+	font-size: 20px;
+	margin-left: 20px;
+	margin-top: 25px;
+}
+
+#pagination a {
+	color: #7A9BAC;
+}
+
+.current {
+	color: #476879 !important;
 }
 
 a {
@@ -102,4 +112,17 @@ a:hover {
 
 .wired {
 	color: #4F4F4F;
+}
+
+.habrahabr:after, .wired:after, .mashable:after,
+.hackernews:after, .maketecheasier:after, .digg:after,
+.codeproject:after, .smashingmagazine:after,
+.androidcentral:after, .engadget:after, .techrepublic:after,
+.readwrite:after, .dzone:after, .gizmodo:after, .venturebeat:after,
+.ittoolbox:after, .flowa:after, .topdesignmagazine:after,
+.theverge:after, .slashdot:after, .techcrunch:after {
+	content: "(" attr(class) ")";
+	color: #999;
+	font-size: 12px;
+	vertical-align: top;
 }
