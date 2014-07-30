@@ -96,6 +96,11 @@ try:
 except ImportError:
 	import maketecheasier
 
+try:
+	from TechParser import digg
+except ImportError:
+	import digg
+
 sites_to_parse = {
 		"Habrahabr": { # habrahabr.ru
 			"module": habrahabr,
@@ -190,6 +195,11 @@ sites_to_parse = {
 		
 		"Make Tech Easier": { # www.maketecheasier.com
 			"module": maketecheasier,
+			"kwargs": {}
+		},
+		
+		"Digg": { # digg.com
+			"module": digg,
 			"kwargs": {}
 		}
 	}
