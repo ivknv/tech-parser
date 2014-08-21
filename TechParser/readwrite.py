@@ -3,7 +3,7 @@
 
 from selenium import webdriver
 import grab
-import parser
+from TechParser import parser
 
 def get_articles(browser="firefox"):
 	browsers = {"firefox": webdriver.Firefox,

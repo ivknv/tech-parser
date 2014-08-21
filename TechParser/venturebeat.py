@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import grab
-import parser
+from TechParser import parser
 
 def get_articles(start_page=1, end_page=3):
 	g = grab.Grab()

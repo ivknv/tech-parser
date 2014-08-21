@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import parser
 import grab
+from TechParser import parser
 
 def get_articles():
 	g = grab.Grab()
