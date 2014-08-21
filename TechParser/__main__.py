@@ -165,7 +165,7 @@ def dump_articles():
 	dumped = pickle.dumps(articles)
 	path = os.path.join(os.path.expanduser("~"), ".tech-parser")
 	path = os.path.join(path, "articles_dumped")
-	f = open(path, "w")
+	f = open(path, "wb")
 	f.write(dumped)
 	f.close()
 	
@@ -212,7 +212,7 @@ def filter_articles(articles):
 
 def load_articles():
 	log("Reading articles from file: articles_dumped...")
-	f = open(os.path.join(logdir, "articles_dumped"))
+	f = open(os.path.join(logdir, "articles_dumped"), 'rb')
 	dumped = f.read()
 	f.close()
 	
@@ -257,8 +257,8 @@ def articles_list(page_number=1):
 class ParserDaemon(Daemon):
 	def __init__(self):
 		pidfile = os.path.join(logdir, "tech-parser.pid")
-		so = file(os.path.join(logdir, "output.log"), "a+")
-		se = file(os.path.join(logdir, "error.log"), "a+")
+		so = open(os.path.join(logdir, "output.log"), "a+")
+		se = open(os.path.join(logdir, "error.log"), "a+")
 		if os.stat(so.name).st_size > 102400:
 			so.truncate()
 		if os.stat(se.name).st_size > 102400:

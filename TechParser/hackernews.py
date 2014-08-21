@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import parser
 import grab
+from TechParser import parser
 
 def get_articles(start_page=1, end_page=5):
 	g = grab.Grab()
@@ -11,14 +11,13 @@ def get_articles(start_page=1, end_page=5):
 	
 	posts = []
 	
-	css_path = ".title a:not()"
+	css_path = "tr .title a"
 	
-	for i in range(start_page-1, end_page+1):
-		n = 30 * i
+	for i in range(start_page, end_page+1):
+		g.go("https://news.ycombinator.com/news?p=%d" %i)
 		
-		g.go("https://news.ycombinator.com/newest?n=%d" %n)
-		
-		posts += parser.get_articles(g, css_path, css_path, "hackernews")
+		posts += parser.get_articles(g, css_path, css_path,
+			"hackernews", "news.ycombinator.com")
 	
 	for post in posts:
 		if post["title"].lower() == "more":
