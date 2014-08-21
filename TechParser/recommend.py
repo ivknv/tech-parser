@@ -29,7 +29,7 @@ def find_similiar(articles, sim=get_similarity):
 		for interesting_article in interesting_articles:
 			score = sim(article, interesting_article)
 			scores.append(score)
-		average = sum(scores) / len(scores)
+		average = sum(scores) / len(scores) if len(scores) > 0 else 0.0
 		if [article, average] not in similiar_articles:
 			similiar_articles.append([article, average])
 	
