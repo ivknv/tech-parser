@@ -16,13 +16,15 @@ from threading import Thread
 from mako.template import Template
 from mako.lookup import TemplateLookup
 
-from bottle import route, run, static_file, default_app
+from bottle import route, run, static_file, default_app, redirect
 
 from Daemo import Daemon
 
 import argparse
 
 import sqlite3
+
+from TechParser import recommend
 
 sys.path.append(os.path.expanduser("~/.tech-parser"))
 
@@ -159,6 +161,8 @@ def dump_articles():
 	log("Shuffling articles...")
 	
 	shuffle(articles)
+	articles = recommend.find_similiar(articles)
+	articles.sort(key=lambda x: x[1], reverse=True)
 	
 	log("Dumping data to file: articles_dumped...")
 	
@@ -228,6 +232,11 @@ def load_articles():
 def serve_static(filename):
 	return static_file(filename, root=static_dir_path)
 
+@route('/go/<addr:path>')
+def go_to_url(addr):
+	recommend.add_article(addr)
+	redirect(addr)
+
 @route("/")
 @route("/<page_number>")
 def articles_list(page_number=1):
@@ -248,11 +257,9 @@ def articles_list(page_number=1):
 	articles = split_into_pages(articles, 30)
 	requested_page = articles[page_number-1]
 	
-	return main_page.render(
-		articles=requested_page,
+	return main_page.render(articles=requested_page,
 		num_pages=len(articles),
-		page_num=page_number,
-	)
+		page_num=page_number)
 
 class ParserDaemon(Daemon):
 	def __init__(self):
