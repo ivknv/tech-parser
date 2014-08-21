@@ -4,22 +4,22 @@
 	% for article in articles:
 		<div class="article">
 			<h3>
-				<img src="/static/icons/${ article['source'] }.ico" width="16" />
-				<a class="${article['source']}" href="${ article['link'] }">
-					${ article["title"] }
+				<img src="/static/icons/${article[0]['source']}.ico" width="16" />
+				<a class="${article[0]['source']}" href="/go/${article[0]['link']}">
+					${article[0]['title']}
 				</a>
 			</h3>
 		</div>
 	% endfor
 	<div id="pagination">
 		% if page_num > 1:
-			<a href="/${ page_num-1 }">Previous</a>
+			<a href="/${page_num-1}">Previous</a>
 		% endif
 		
 		<a class="current">${ page_num }</a>
 		
 		% if page_num < num_pages:
-			<a href="/${  page_num+1}">Next</a>
+			<a href="/${page_num+1}">Next</a>
 		% endif
 	</div>
 </%block>
