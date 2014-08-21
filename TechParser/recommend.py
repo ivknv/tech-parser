@@ -62,6 +62,7 @@ def get_words(s, exclude=["a", "an", "the"]):
 	return words
 
 def get_interesting_articles():
+	setup_db()
 	con = sqlite3.connect(os.path.join(logdir, 'interesting.db'))
 	cur = con.cursor()
 	cur.execute('SELECT * FROM interesting_articles;')
