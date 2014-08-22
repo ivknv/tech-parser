@@ -1,6 +1,16 @@
 <%inherit file="base.html"/>
 <%block name="title">Articles from some sites</%block>
 <%block name="content">
+	<div id="searchbox">
+		<form method="get">
+			<input name="q" type="search" placeholder="Search articles" value='${q}'>
+			<button type="submit">Search</button>
+		</form>
+		% if q:
+			<br/>
+			<a href="/">Go back</a>
+		% endif
+	</div>
 	% for article in articles:
 		<div class="article">
 			<h3>

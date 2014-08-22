@@ -1,4 +1,5 @@
 #main {
+	font-family: Arial, Verdana;
 	margin: 0 auto;
 	max-width: 1200px;
 }
@@ -15,6 +16,43 @@
 
 .current {
 	color: #476879 !important;
+}
+
+#searchbox input {
+	border: 1px solid #AAB2BD;
+	border-radius: 1px;
+	font-size: 14px;
+	height: 23px;
+	outline: 0;
+	padding-bottom: 1px;
+	padding-left: 8px;
+	padding-right: 4px;
+	padding-top: 1px;
+}
+
+#searchbox input:focus {
+	border-color: #3399FF;
+}
+
+#searchbox button {
+	background: #3399FF;
+	border: 2px solid #2288EE;
+	border-radius: 4px;
+	color: #FFF;
+	cursor: pointer;
+	font-size: 14px;
+	height: 26px;
+	margin-left: -1px;
+	outline: 0;
+	padding: 1px 6px;
+}
+
+#searchbox button:hover {
+	border-color: #147ADF;
+}
+
+#searchbox button:active {
+	background: #44AAFF
 }
 
 a {

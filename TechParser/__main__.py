@@ -16,7 +16,7 @@ from threading import Thread
 from mako.template import Template
 from mako.lookup import TemplateLookup
 
-from bottle import route, run, static_file, default_app, redirect
+from bottle import route, run, static_file, default_app, redirect, request
 
 from Daemo import Daemon
 
@@ -237,10 +237,19 @@ def go_to_url(addr):
 	recommend.add_article(addr)
 	redirect(addr)
 
+def has_words(qs, article):
+	title = article[0]['title'].lower()
+	
+	for i in qs:
+		if i not in title:
+			return False
+	return True
+
 @route("/")
 @route("/<page_number>")
-def articles_list(page_number=1):
+def article_list(page_number=1):
 	main_page = mylookup.get_template("articles.html")
+	q = request.GET.get('q', '').lower()
 	
 	try:
 		page_number = int(page_number)
@@ -254,12 +263,20 @@ def articles_list(page_number=1):
 		articles = load_articles()
 	
 	articles = filter_articles(articles)
+	if q:
+		qs = q.split()
+		articles = filter(lambda x: has_words(qs, x), articles)
+	
 	articles = split_into_pages(articles, 30)
-	requested_page = articles[page_number-1]
+	try:
+		requested_page = articles[page_number-1]
+	except IndexError:
+		requested_page = []
 	
 	return main_page.render(articles=requested_page,
 		num_pages=len(articles),
-		page_num=page_number)
+		page_num=page_number,
+		q=q)
 
 class ParserDaemon(Daemon):
 	def __init__(self):
