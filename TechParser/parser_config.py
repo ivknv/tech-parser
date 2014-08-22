@@ -1,110 +1,28 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-try:
-	from TechParser import habrahabr
-except ImportError:
-	import habrahabr
-
-try:
-	from TechParser import venturebeat
-except ImportError:
-	import venturebeat
-
-try:
-	from TechParser import engadget
-except ImportError:
-	import engadget
-
-try:
-	from TechParser import techcrunch
-except ImportError:
-	import techcrunch
-
-try:
-	from TechParser import techrepublic
-except ImportError:
-	import techrepublic
-
-#try:
-#	from TechParser import readwrite
-#except ImportError:
-#	import readwrite
-
-try:
-	from TechParser import smashingmagazine
-except ImportError:
-	import smashingmagazine
-
-try:
-	from TechParser import gizmodo
-except ImportError:
-	import gizmodo
-
-try:
-	from TechParser import slashdot
-except ImportError:
-	import slashdot
-
-try:
-	from TechParser import androidcentral
-except ImportError:
-	import androidcentral
-
-try:
-	from TechParser import verge
-except ImportError:
-	import verge
-
-try:
-	from TechParser import topdesignmag
-except ImportError:
-	import topdesignmag
-
-try:
-	from TechParser import flowa
-except ImportError:
-	import flowa
-
-try:
-	from TechParser import ittoolbox
-except ImportError:
-	import ittoolbox
-
-try:
-	from TechParser import dzone
-except ImportError:
-	import dzone
-
-try:
-	from TechParser import codeproject
-except ImportError:
-	import codeproject
-
-try:
-	from TechParser import hackernews
-except ImportError:
-	import hackernews
-
-try:
-	from TechParser import mashable
-except ImportError:
-	import mashable
-
-try:
-	from TechParser import maketecheasier
-except ImportError:
-	import maketecheasier
-
-try:
-	from TechParser import digg
-except ImportError:
-	import digg
-
-try:
-	from TechParser import wired
-except ImportError:
-	import wired
+from TechParser import habrahabr
+from TechParser import venturebeat
+from TechParser import engadget
+from TechParser import techcrunch
+from TechParser import techrepublic
+#from TechParser import readwrite
+from TechParser import smashingmagazine
+from TechParser import gizmodo
+from TechParser import slashdot
+from TechParser import androidcentral
+from TechParser import verge
+from TechParser import topdesignmag
+from TechParser import flowa
+from TechParser import ittoolbox
+from TechParser import dzone
+from TechParser import codeproject
+from TechParser import hackernews
+from TechParser import mashable
+from TechParser import maketecheasier
+from TechParser import digg
+from TechParser import wired
+from TechParser import medium
 
 sites_to_parse = {
 		"Habrahabr": { # habrahabr.ru
@@ -211,6 +129,11 @@ sites_to_parse = {
 		"Wired": { # www.wired.com
 			"module": wired,
 			"kwargs": {}
+		},
+		
+		"Medium": { # medium.com
+			"module": medium,
+			"kwargs": {"collections": []}
 		}
 	}
 
