@@ -114,13 +114,17 @@ a:hover {
 	color: #4F4F4F;
 }
 
+.medium {
+	color: #222222;
+}
+
 .habrahabr:after, .wired:after, .mashable:after,
 .hackernews:after, .maketecheasier:after, .digg:after,
 .codeproject:after, .smashingmagazine:after,
 .androidcentral:after, .engadget:after, .techrepublic:after,
 .readwrite:after, .dzone:after, .gizmodo:after, .venturebeat:after,
 .ittoolbox:after, .flowa:after, .topdesignmagazine:after,
-.theverge:after, .slashdot:after, .techcrunch:after {
+.theverge:after, .slashdot:after, .techcrunch:after, .medium:after {
 	content: "(" attr(class) ")";
 	color: #999;
 	font-size: 12px;
