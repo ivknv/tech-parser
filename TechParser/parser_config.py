@@ -23,6 +23,7 @@ from TechParser import maketecheasier
 from TechParser import digg
 from TechParser import wired
 from TechParser import medium
+from TechParser import planetclojure
 
 sites_to_parse = {
 		"Habrahabr": { # habrahabr.ru
@@ -134,6 +135,11 @@ sites_to_parse = {
 		"Medium": { # medium.com
 			"module": medium,
 			"kwargs": {"collections": []}
+		},
+		
+		"Planet Clojure": { # planet.clojure.in
+			"module": planetclojure,
+			"kwargs": {}
 		}
 	}
 
