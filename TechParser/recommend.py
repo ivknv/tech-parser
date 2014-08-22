@@ -12,11 +12,17 @@ logdir = os.path.join(logdir, ".tech-parser")
 def get_similarity(article1, article2):
 	words1 = get_words(article1['title'])
 	words2 = get_words(article2['title'])
+	
 	len_all_words = len(words1) + len(words2)
-	len_shrd = len([word for word in words1 if word in words2])
-	return 2.0 * len_shrd / len_all_words
+	shrd = []
+	for word in words1:
+		if word in words2:
+			if shrd.count(word) < min(words1.count(word), words2.count(word)):
+				shrd.append(word)
+	
+	return 2.0 * len(shrd) / len_all_words
 
-def find_similiar(articles, sim=get_similarity):
+def find_similiar(articles):
 	interesting_articles = get_interesting_articles()
 	similiar_articles = []
 	
@@ -27,7 +33,7 @@ def find_similiar(articles, sim=get_similarity):
 		
 		scores = []
 		for interesting_article in interesting_articles:
-			score = sim(article, interesting_article)
+			score = get_similarity(article, interesting_article)
 			scores.append(score)
 		average = sum(scores) / len(scores) if len(scores) > 0 else 0.0
 		if [article, average] not in similiar_articles:
@@ -35,22 +41,24 @@ def find_similiar(articles, sim=get_similarity):
 	
 	return similiar_articles
 
-def get_words(s, exclude=["a", "an", "the"]):
+def get_words(s, exclude=["a", "an", "the", "is"]):
 	s = s.strip().lower()
-	r1 = re.compile(r"(?P<g1>[a-zA-Z]+)n['\u2019]t", re.UNICODE)
-	r2 = re.compile(r"(?P<g1>[a-zA-Z])['\u2019]s", re.UNICODE)
-	r3 = re.compile(r"(?P<g1>[a-zA-Z])['\u2019]m", re.UNICODE)
-	r4 = re.compile(r"(?P<g1>[a-zA-Z])['\u2019]re", re.UNICODE)
-	r5 = re.compile(r"(?P<g1>[a-zA-Z])['\u2019]ve", re.UNICODE)
-	r6 = re.compile(r"(?P<g1>[a-zA-Z])['\u2019]d", re.UNICODE)
-	r7 = re.compile(u"[^А-Я^а-я^A-Z^a-z^ ]", re.UNICODE)
+	r1 = re.compile(r"(?P<g1>\w+)n['\u2019]t", re.UNICODE)
+	r2 = re.compile(r"(?P<g1>\w+)['\u2019]s", re.UNICODE)
+	r3 = re.compile(r"(?P<g1>\w+)['\u2019]m", re.UNICODE)
+	r4 = re.compile(r"(?P<g1>\w+)['\u2019]re", re.UNICODE)
+	r5 = re.compile(r"(?P<g1>\w+)['\u2019]ve", re.UNICODE)
+	r6 = re.compile(r"(?P<g1>\w+)['\u2019]d", re.UNICODE)
+	r7 = re.compile(r"(?P<g1>\w+)['\u2019]ll", re.UNICODE)
+	r8 = re.compile(u"[^А-Я^а-я^A-Z^a-z^ ]", re.UNICODE)
 	s = r1.sub("\g<g1> not", s)
 	s = r2.sub("\g<g1>", s)
 	s = r3.sub("\g<g1> am", s)
 	s = r4.sub("\g<g1> are", s)
 	s = r5.sub("\g<g1> have", s)
 	s = r6.sub("\g<g1> would", s)
-	s = r7.sub("", s)
+	s = r7.sub("\g<g1> will", s)
+	s = r8.sub("", s)
 	
 	words = s.split(" ")
 	for word in exclude:
@@ -59,7 +67,7 @@ def get_words(s, exclude=["a", "an", "the"]):
 		except ValueError:
 			pass
 	
-	return words
+	return [word for word in words if word]
 
 def get_interesting_articles():
 	setup_db()
@@ -67,9 +75,9 @@ def get_interesting_articles():
 	cur = con.cursor()
 	cur.execute('SELECT * FROM interesting_articles;')
 	res = cur.fetchall()
-	return [{'title': article[1],
-			'link': article[2],
-			'source': article[3]} for article in res]
+	return [{'title': x[1],
+			'link': x[2],
+			'source': x[3]} for x in res]
 
 def add_article(addr):
 	f = open(os.path.join(logdir, "articles_dumped"), 'rb')
