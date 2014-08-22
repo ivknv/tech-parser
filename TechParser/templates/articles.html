@@ -5,7 +5,7 @@
 		<div class="article">
 			<h3>
 				<img src="/static/icons/${article[0]['source']}.ico" width="16" />
-				<a class="${article[0]['source']}" href="/go/${article[0]['link']}">
+				<a class="${article[0]['source']}" onclick="window.open('/go/${article[0]['link']}'); return false;" href="/go/${article[0]['link']}">
 					${article[0]['title']}
 				</a>
 			</h3>
