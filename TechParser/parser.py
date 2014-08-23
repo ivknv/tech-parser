@@ -32,9 +32,8 @@ def get_articles(grab_object, title_path, link_path, source, site_url=""):
 		link = absolutize_link(link.get("href"), site_url)
 		
 		posts.append(
-			{
-				"title": unicode_(title),
-				"link": link,
-				"source": source})
+			{"title": unicode_(title).strip(),
+			"link": link,
+			"source": source})
 	
 	return posts
