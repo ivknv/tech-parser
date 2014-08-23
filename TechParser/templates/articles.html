@@ -7,7 +7,7 @@
 			<button type="submit">Search</button>
 		</form>
 		<datalist id="articles">
-			% for article in articles:
+			% for article in all_articles:
 				<option value="${article[0]['title']}" />
 			% endfor
 		</datalist>

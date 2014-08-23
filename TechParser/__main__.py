@@ -300,16 +300,20 @@ def article_list(page_number=1):
 		qs = q.split()
 		articles = filter(lambda x: has_words(qs, x), articles)
 	
+	articles = prepare_articles(articles)
+	all_articles = articles
 	articles = split_into_pages(articles, 30)
 	try:
-		requested_page = prepare_articles(articles[page_number-1])
+		requested_page = articles[page_number-1]
 	except IndexError:
 		requested_page = []
+	
 	
 	return main_page.render(articles=requested_page,
 		num_pages=len(articles),
 		page_num=page_number,
-		q=q)
+		q=q,
+		all_articles=all_articles)
 
 class ParserDaemon(Daemon):
 	def __init__(self):
