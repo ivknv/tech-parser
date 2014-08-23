@@ -25,6 +25,11 @@ import sqlite3
 
 from TechParser import recommend
 
+try:
+	from urllib.parse import urlencode
+except ImportError:
+	from urllib import urlencode
+
 sys.path.append(os.path.expanduser("~/.tech-parser"))
 
 running_as_daemon = False
@@ -158,8 +163,9 @@ def dump_articles():
 		con.close()
 	
 	log("Shuffling articles...")
-	
 	shuffle(articles)
+	
+	log("Ranking articles...")
 	articles = recommend.find_similiar(articles)
 	articles.sort(key=lambda x: x[1], reverse=True)
 	
@@ -255,7 +261,7 @@ def has_words(qs, article):
 			return False
 	return True
 
-def escape_titles(articles):
+def prepare_articles(articles):
 	"""Escape HTML tags, etc."""
 	
 	new_articles = []
@@ -265,6 +271,7 @@ def escape_titles(articles):
 		article[0]['title'] = article[0]['title'].replace('<', '&lt;')
 		article[0]['title'] = article[0]['title'].replace('>', '&gt;')
 		article[0]['title'] = article[0]['title'].replace('"', '&quot;')
+		article[0]['link'] = urlencode({'': article[0]['link']})[1:]
 		new_articles.append(article)
 	
 	return new_articles
@@ -293,10 +300,9 @@ def article_list(page_number=1):
 		qs = q.split()
 		articles = filter(lambda x: has_words(qs, x), articles)
 	
-	articles = escape_titles(articles)
 	articles = split_into_pages(articles, 30)
 	try:
-		requested_page = articles[page_number-1]
+		requested_page = prepare_articles(articles[page_number-1])
 	except IndexError:
 		requested_page = []
 	
