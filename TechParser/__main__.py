@@ -13,7 +13,6 @@ from time import time, sleep
 
 from threading import Thread
 
-from mako.template import Template
 from mako.lookup import TemplateLookup
 
 from bottle import route, run, static_file, default_app, redirect, request
@@ -27,11 +26,6 @@ import sqlite3
 from TechParser import recommend
 
 sys.path.append(os.path.expanduser("~/.tech-parser"))
-
-try:
-	from user_parser_config import *
-except ImportError:
-	from parser_config import *
 
 running_as_daemon = False
 
@@ -59,6 +53,8 @@ mylookup = TemplateLookup(directories=template_dir_path,
 		input_encoding="utf-8", output_encoding="utf-8")
 
 def setup_db():
+	"""Setup archive database"""
+	
 	con = sqlite3.connect(os.path.join(logdir, "archive.db"))
 	cur = con.cursor()
 	cur.execute("""CREATE TABLE IF NOT EXISTS articles
@@ -80,6 +76,8 @@ def log(text, f=sys.stdout, add_newline=True, clear_str=False,
 	f.flush()
 
 def split_into_pages(articles, n=30):
+	"""Split list into pages"""
+	
 	pages = []
 	i = 0
 	
@@ -104,20 +102,21 @@ def simple_plural(n, s):
 		return s + "s"
 
 def dump_articles():
+	"""Dump articles to ~/.tech-parser/articles_dumped"""
 	
 	articles = []
 	
 	counter = 0
 	completed = 0
 	
-	for site in sites_to_parse:
+	for site in config.sites_to_parse:
 		
 		s = "\033[0;32m[{}%]\033[0m Parsing articles from {}... "
 		
 		log(s.format(completed, site), add_newline=False)
 		
-		module = sites_to_parse[site]["module"]
-		kwargs = sites_to_parse[site]["kwargs"]
+		module = config.sites_to_parse[site]["module"]
+		kwargs = config.sites_to_parse[site]["kwargs"]
 		
 		try:
 			before = len(articles)
@@ -131,13 +130,13 @@ def dump_articles():
 			log(str(error), f=sys.stderr)
 		
 		counter += 1
-		completed = round(100.0 / len(sites_to_parse) * counter, 1)
+		completed = round(100.0 / len(config.sites_to_parse) * counter, 1)
 	
 	log("\033[0;32m[{}%]\033[0m".format(completed))
 	
 	log("Total articles: %d" %(len(articles)))
 	
-	if save_articles:
+	if config.save_articles:
 		log("Saving articles to archive...")
 		
 		setup_db()
@@ -175,22 +174,27 @@ def dump_articles():
 	
 	log("Done!")
 
-def dump_articles_per_sec(s=update_interval):
+def dump_articles_per(s):
+	"""Dump articles per S seconds"""
+	
 	while True:
 		if int(time()) % s == 0:
 			dump_articles()
 		sleep(1)
 
 def filter_articles(articles):
+	"""Filter articles"""
+	
 	articles_filtered = []
 	
 	for article in articles:
 		passing = True
 		
-		words_len = len(filters["All"]["or"])
+		words_len = len(config.filters["All"]["or"])
+		title = article[0]["title"].lower()
 		
-		for word in filters["All"]["or"]:
-			if word.lower() in article["title"].lower():
+		for word in config.filters["All"]["or"]:
+			if word.lower() in title:
 				passing = True
 				break
 			else:
@@ -200,13 +204,13 @@ def filter_articles(articles):
 				passing = False
 				
 		if passing:
-			for word in filters["All"]["not"]:
-				if word.lower() in article["title"].lower():
+			for word in config.filters["All"]["not"]:
+				if word.lower() in title:
 					passing = False
 					break
 		if passing:	
-			for word in filters["All"]["has"]:
-				if word.lower() not in article["title"].lower():
+			for word in config.filters["All"]["has"]:
+				if word.lower() not in title:
 					passing = False
 					break	
 		if passing:
@@ -215,6 +219,8 @@ def filter_articles(articles):
 	return articles_filtered
 
 def load_articles():
+	"""Load articles from ~/.tech-parser/articles_dumped"""
+	
 	log("Reading articles from file: articles_dumped...")
 	f = open(os.path.join(logdir, "articles_dumped"), 'rb')
 	dumped = f.read()
@@ -230,6 +236,8 @@ def load_articles():
 
 @route('/static/<filename:path>')
 def serve_static(filename):
+	"""Serve static files"""
+	
 	return static_file(filename, root=static_dir_path)
 
 @route('/go/<addr:path>')
@@ -238,6 +246,8 @@ def go_to_url(addr):
 	redirect(addr)
 
 def has_words(qs, article):
+	"""Check if article title contains words:"""
+	
 	title = article[0]['title'].lower()
 	
 	for i in qs:
@@ -248,6 +258,8 @@ def has_words(qs, article):
 @route("/")
 @route("/<page_number>")
 def article_list(page_number=1):
+	"""Show list of articles | Search for articles"""
+	
 	main_page = mylookup.get_template("articles.html")
 	q = request.GET.get('q', '').lower()
 	
@@ -291,10 +303,10 @@ class ParserDaemon(Daemon):
 		super(ParserDaemon, self).__init__(pidfile, True, stdout=so, stderr=se)
 	
 	def onStart(self):
-		t1 = Thread(target=dump_articles_per_sec)
+		t1 = Thread(target=dump_articles_per, args=(config.update_interval,))
 		t1.daemon = True
 		t1.start()
-		run(host=host, port=port, server=server)
+		run(host=config.host, port=config.port, server=config.server)
 
 def is_hostname(hostname):
 	if len(hostname) > 255:
@@ -305,10 +317,10 @@ def is_hostname(hostname):
 	return all(allowed.match(x) for x in hostname.split("."))
 
 def run_server(host, port):
-	t1 = Thread(target=dump_articles_per_sec)
+	t1 = Thread(target=dump_articles_per, args=(config.update_interval,))
 	t1.daemon = True
 	t1.start()
-	run(host=host, port=port)
+	run(host=config.host, port=config.port)
 
 if __name__ == "__main__":
 	parser_daemon = ParserDaemon()
@@ -320,8 +332,18 @@ Available commands: start|stop|restart|update|run HOST:PORT""")
 	
 	arg_parser.add_argument("action", nargs="+",
 		action="store", default=[], help="Action to run")
+	arg_parser.add_argument("--config", help="Path to configuration")
 	
 	args = arg_parser.parse_args()
+	
+	if args.config:
+		import imp
+		config = imp.load_source('config', args.config)
+	else:
+		try:
+			import user_parser_config as config
+		except ImportError:
+			import TechParser.parser_config as config
 	
 	if args.action:
 		if args.action[0] == "run":
@@ -335,9 +357,9 @@ Available commands: start|stop|restart|update|run HOST:PORT""")
 			is_host_correct = is_hostname(host)
 			
 			try:
-				is_port_correct = int(port) <= 65535
+				is_port_correct = int(port) <= 65535 and int(port) > 0
 			except ValueError:
-				is_port_correct = True
+				is_port_correct = False
 				
 			if not is_host_correct:
 				log("Incorrect hostname", f=sys.stderr)
