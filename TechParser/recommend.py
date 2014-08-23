@@ -9,18 +9,23 @@ import pickle
 logdir = os.path.expanduser("~")
 logdir = os.path.join(logdir, ".tech-parser")
 
-def get_similarity(article1, article2):
-	words1 = get_words(article1['title'])
-	words2 = get_words(article2['title'])
+def get_words(s):
+	words = prepare_string(s)
 	
-	len_all_words = len(words1) + len(words2)
+	return [word for word in words if word]
+
+def get_similarity(article1, article2, split=get_words):
+	parts1 = split(article1['title'])
+	parts2 = split(article2['title'])
+	
+	len_all_parts = len(parts1) + len(parts2)
 	shrd = []
-	for word in words1:
-		if word in words2:
-			if shrd.count(word) < min(words1.count(word), words2.count(word)):
-				shrd.append(word)
+	for part in parts1:
+		if part in parts2:
+			if shrd.count(part) < min(parts1.count(part), parts2.count(part)):
+				shrd.append(part)
 	
-	return 2.0 * len(shrd) / len_all_words
+	return 2.0 * len(shrd) / len_all_parts
 
 def find_similiar(articles):
 	interesting_articles = get_interesting_articles()
@@ -33,7 +38,7 @@ def find_similiar(articles):
 		
 		scores = []
 		for interesting_article in interesting_articles:
-			score = get_similarity(article, interesting_article)
+			score = get_similarity(article, interesting_article, get_pairs)
 			scores.append(score)
 		average = sum(scores) / len(scores) if len(scores) > 0 else 0.0
 		if [article, average] not in similiar_articles:
@@ -41,7 +46,8 @@ def find_similiar(articles):
 	
 	return similiar_articles
 
-def get_words(s, exclude=["a", "an", "the", "is"]):
+def prepare_string(s, exclude=["a", "an", "the", "is", "am",
+		"are", "for", "that", "of", "to", "so", "in", "on"]):
 	s = s.strip().lower()
 	r1 = re.compile(r"(?P<g1>\w+)n['\u2019]t", re.UNICODE)
 	r2 = re.compile(r"(?P<g1>\w+)['\u2019]s", re.UNICODE)
@@ -50,7 +56,8 @@ def get_words(s, exclude=["a", "an", "the", "is"]):
 	r5 = re.compile(r"(?P<g1>\w+)['\u2019]ve", re.UNICODE)
 	r6 = re.compile(r"(?P<g1>\w+)['\u2019]d", re.UNICODE)
 	r7 = re.compile(r"(?P<g1>\w+)['\u2019]ll", re.UNICODE)
-	r8 = re.compile(u"[^А-Я^а-я^A-Z^a-z^ ]", re.UNICODE)
+	r8 = re.compile(r"gonna", re.UNICODE)
+	r9 = re.compile(u"[^А-Я^а-я^A-Z^a-z^ ]", re.UNICODE)
 	s = r1.sub("\g<g1> not", s)
 	s = r2.sub("\g<g1>", s)
 	s = r3.sub("\g<g1> am", s)
@@ -58,16 +65,18 @@ def get_words(s, exclude=["a", "an", "the", "is"]):
 	s = r5.sub("\g<g1> have", s)
 	s = r6.sub("\g<g1> would", s)
 	s = r7.sub("\g<g1> will", s)
-	s = r8.sub("", s)
-	
+	s = r8.sub("going to", s)
+	s = r9.sub("", s)
 	words = s.split(" ")
 	for word in exclude:
-		try:
+		while words.count(word) > 0:
 			words.remove(word)
-		except ValueError:
-			pass
 	
-	return [word for word in words if word]
+	return words
+
+def get_pairs(s):
+	s = " ".join(prepare_string(s))
+	return [p for p in [s[i:i+2] for i in range(len(s))] if p.count(" ") < 2]
 
 def get_interesting_articles():
 	setup_db()
