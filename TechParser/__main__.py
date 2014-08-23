@@ -255,6 +255,20 @@ def has_words(qs, article):
 			return False
 	return True
 
+def escape_titles(articles):
+	"""Escape HTML tags, etc."""
+	
+	new_articles = []
+	
+	for article in articles:
+		article[0]['title'] = article[0]['title'].replace('&', '&amp;')
+		article[0]['title'] = article[0]['title'].replace('<', '&lt;')
+		article[0]['title'] = article[0]['title'].replace('>', '&gt;')
+		article[0]['title'] = article[0]['title'].replace('"', '&quot;')
+		new_articles.append(article)
+	
+	return new_articles
+
 @route("/")
 @route("/<page_number>")
 def article_list(page_number=1):
@@ -279,6 +293,7 @@ def article_list(page_number=1):
 		qs = q.split()
 		articles = filter(lambda x: has_words(qs, x), articles)
 	
+	articles = escape_titles(articles)
 	articles = split_into_pages(articles, 30)
 	try:
 		requested_page = articles[page_number-1]
