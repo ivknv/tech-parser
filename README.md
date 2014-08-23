@@ -64,7 +64,8 @@ And then open [localhost:8080](http://localhost:8080) in your browser.<br/>
 ```python -m TechParser restart``` to restart server<br/>
 ```python -m TechParser update``` to manually update list of articles.<br/>
 ```python -m TechParser run HOST:PORT``` run server without starting daemon.<br/>
-```python -m TechParser -h``` show help.
+```python -m TechParser -h``` show help.<br/>
+```python -m TechParser <action> --config <path to configuration file>``` set path to configuration file.
 
 ## Configuring ##
 ### Enabling/disabling parsers ###
