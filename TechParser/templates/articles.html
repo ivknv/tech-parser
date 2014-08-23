@@ -3,9 +3,14 @@
 <%block name="content">
 	<div id="searchbox">
 		<form method="get">
-			<input name="q" type="search" placeholder="Search articles" value='${q}'>
+			<input list="articles" name="q" type="search" placeholder="Search articles" value='${q}'>
 			<button type="submit">Search</button>
 		</form>
+		<datalist id="articles">
+			% for article in articles:
+				<option value="${article[0]['title']}" />
+			% endfor
+		</datalist>
 		% if q:
 			<br/>
 			<a href="/">Go back</a>
