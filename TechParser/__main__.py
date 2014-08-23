@@ -335,7 +335,7 @@ def run_server(host, port):
 	t1 = Thread(target=dump_articles_per, args=(config.update_interval,))
 	t1.daemon = True
 	t1.start()
-	run(host=config.host, port=config.port)
+	run(host=host, port=port)
 
 if __name__ == "__main__":
 	parser_daemon = ParserDaemon()
