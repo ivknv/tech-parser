@@ -30,7 +30,7 @@ from TechParser import trashbox
 sites_to_parse = {
 		"Habrahabr": { # habrahabr.ru
 			"module": habrahabr,
-			"kwargs": {}
+			"kwargs": {"hubs": []}
 		},
 		
 		"VentureBeat": { # venturebeat.com
