@@ -26,6 +26,7 @@ from TechParser import medium
 from TechParser import planetclojure
 from TechParser import reddit
 from TechParser import trashbox
+from TechParser import droider
 
 sites_to_parse = {
 		"Habrahabr": { # habrahabr.ru
@@ -152,6 +153,11 @@ sites_to_parse = {
 		"Trashbox": { # trashbox.ru
 			"module": trashbox,
 			"kwargs": {"end_page": 3}
+		},
+		
+		"Droider": { # droider.ru
+			"module": droider,
+			"kwargs": {"start_page": 1, "end_page": 2}
 		}
 	}
 
