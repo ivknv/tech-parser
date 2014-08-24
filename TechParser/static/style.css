@@ -172,6 +172,10 @@ a:hover {
 	color: #313131;
 }
 
+.redroid {
+	color: #DFC100;
+}
+
 .article a:after {
 	content: "(" attr(class) ")";
 	color: #999;
