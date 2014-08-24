@@ -184,6 +184,10 @@ a:hover {
 	content: "(3dnews)" !important;
 }
 
+.ixbt {
+	color: #7971B5;
+}
+
 .article a:after {
 	content: "(" attr(class) ")";
 	color: #999;
