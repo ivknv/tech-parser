@@ -188,6 +188,10 @@ a:hover {
 	color: #7971B5;
 }
 
+.mobile-review {
+	color: #D83B46;
+}
+
 .article a:after {
 	content: "(" attr(class) ")";
 	color: #999;

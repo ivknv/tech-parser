@@ -30,6 +30,7 @@ from TechParser import droider
 from TechParser import redroid
 from TechParser import threednews
 from TechParser import ixbt
+from TechParser import mobilereview
 
 sites_to_parse = {
 		"Habrahabr": { # habrahabr.ru
@@ -175,6 +176,11 @@ sites_to_parse = {
 		
 		"IXBT": { # www.ixbt.ru
 			"module": ixbt,
+			"kwargs": {}
+		},
+		
+		"Mobile Review": { # mobile-review.com
+			"module": mobilereview,
 			"kwargs": {}
 		}
 	}
