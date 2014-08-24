@@ -29,6 +29,7 @@ from TechParser import trashbox
 from TechParser import droider
 from TechParser import redroid
 from TechParser import threednews
+from TechParser import ixbt
 
 sites_to_parse = {
 		"Habrahabr": { # habrahabr.ru
@@ -169,6 +170,11 @@ sites_to_parse = {
 		
 		"3DNews": { # www.3dnews.ru
 			"module": threednews,
+			"kwargs": {}
+		},
+		
+		"IXBT": { # www.ixbt.ru
+			"module": ixbt,
 			"kwargs": {}
 		}
 	}
