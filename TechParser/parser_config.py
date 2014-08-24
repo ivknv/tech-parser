@@ -31,6 +31,7 @@ from TechParser import redroid
 from TechParser import threednews
 from TechParser import ixbt
 from TechParser import mobilereview
+from TechParser import helpix
 
 sites_to_parse = {
 		"Habrahabr": { # habrahabr.ru
@@ -181,6 +182,11 @@ sites_to_parse = {
 		
 		"Mobile Review": { # mobile-review.com
 			"module": mobilereview,
+			"kwargs": {}
+		},
+		
+		"Helpix": { # helpix.ru
+			"module": helpix,
 			"kwargs": {}
 		}
 	}
