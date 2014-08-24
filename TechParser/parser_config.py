@@ -28,6 +28,7 @@ from TechParser import reddit
 from TechParser import trashbox
 from TechParser import droider
 from TechParser import redroid
+from TechParser import threednews
 
 sites_to_parse = {
 		"Habrahabr": { # habrahabr.ru
@@ -164,6 +165,11 @@ sites_to_parse = {
 		"Redroid": { # redroid.ru
 			"module": redroid,
 			"kwargs": {"start_page": 1, "end_page": 1}
+		},
+		
+		"3DNews": { # www.3dnews.ru
+			"module": threednews,
+			"kwargs": {}
 		}
 	}
 

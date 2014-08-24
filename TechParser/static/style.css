@@ -176,6 +176,14 @@ a:hover {
 	color: #DFC100;
 }
 
+.threednews {
+	color: #2376BC;
+}
+
+.threednews:after {
+	content: "(3dnews)" !important;
+}
+
 .article a:after {
 	content: "(" attr(class) ")";
 	color: #999;
