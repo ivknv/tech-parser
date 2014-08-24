@@ -9,6 +9,7 @@ def get_articles(collections=[]):
 	parser.setup_grab(g)
 	
 	articles = []
+	titles = []
 	
 	if collections:
 		css_path = 'li.bucket-item .postItem .postItem-title a'
@@ -18,7 +19,8 @@ def get_articles(collections=[]):
 			
 			for article in parser.get_articles(g, css_path, css_path,
 				'medium', 'medium.com'):
-				if article not in articles:
+				if article['title'] not in titles:
+					titles.append(article['title'])
 					articles.append(article)
 	else:
 		css_path = 'div.block-content .block-title a'
