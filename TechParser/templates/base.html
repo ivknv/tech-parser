@@ -3,10 +3,22 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<link rel="stylesheet" type="text/css" href="/static/style.css" />
 		<title>
 			<%block name="title" />
 		</title>
+		<script type="text/javascript" src="/static/jquery-2.1.1.min.js"></script>
+		<link rel="stylesheet" type="text/css" href="/static/style.css" />
+		<script type="text/javascript">
+			function toggleText(element) {
+				var $article = $(element).parent('h3').parent('.article');
+				var $summary = $article.find('.summary');
+				if ($summary.css('display') != 'block') {
+					$summary.fadeIn('fast');
+				} else {
+					$summary.fadeOut('fast');
+				}
+			}
+		</script>
 	</head>
 	<body>
 		<div id="main">

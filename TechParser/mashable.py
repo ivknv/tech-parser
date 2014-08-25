@@ -12,8 +12,9 @@ def get_articles():
 	g.go("http://mashable.com")
 	
 	css_path = "article header hgroup h1 a"
+	summary_path = "article .article-content p.article-excerpt"
 	
 	posts = parser.get_articles(g, css_path, css_path,
-		"mashable", "mashable.com")
+		"mashable", "mashable.com", summary_path)
 	
 	return posts

@@ -16,8 +16,10 @@ def get_articles():
 	posts = parser.get_articles(g, link_path, title_path, "flowa")
 	
 	link_path = ".main-article a:not(#blog-entries-top)"
-	title_path  = link_path + " div .article-par .article-par-container .heading-container h2"
+	title_path = link_path + " div .article-par .article-par-container .heading-container h2"
+	summary_path = link_path + " div .article-par .article-par-container .teaser"
 	
-	posts += parser.get_articles(g, link_path, title_path, "flowa")
+	posts += parser.get_articles(g, link_path, title_path,
+		"flowa", "flowa.fi", summary_path)
 	
 	return posts

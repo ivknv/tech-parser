@@ -24,9 +24,10 @@ def get_articles():
 	g.go("http://techcrunch.com/popular")
 	
 	css_path1 = ".river .river-block .block .block-content h2.post-title a"
+	summary_path = ".river .river-block .block .block-content p.excerpt"
 	
-	posts += parser.get_articles(
-		g, css_path1, css_path1, "techcrunch")
+	posts += parser.get_articles(g, css_path1, css_path1,
+		"techcrunch", "techcrunch.com", summary_path)
 	
 	for post in posts:
 		
