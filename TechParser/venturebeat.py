@@ -18,15 +18,17 @@ def get_articles(start_page=1, end_page=3):
 		("ul.most-popular li h2 a", ""),
 		("ul.editors-pick li h2 a", "")]
 	
+	summary_path = ".entry-summary p"
+	
 	if start_page == 1:
 		for (link_path, title_path) in css_paths:
-			posts += parser.get_articles(g,
-				link_path, link_path+title_path, "venturebeat")
+			posts += parser.get_articles(g,	link_path, link_path+title_path,
+				"venturebeat", "venturebeat.com", summary_path)
 	
 	for i in range(start_page+1, end_page+1):
 		g.go("http://venturebeat.com/page/%i" %i)
 		
-		posts += parser.get_articles(g,
-			css_paths[1][0], css_paths[1][0], "venturebeat")
+		posts += parser.get_articles(g, css_paths[1][0], css_paths[1][0],
+			"venturebeat", "venturebeat.com", summary_path)
 	
 	return posts

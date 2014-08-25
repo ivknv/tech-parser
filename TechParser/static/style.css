@@ -18,6 +18,10 @@
 	color: #476879 !important;
 }
 
+.open-tab {
+	text-decoration: none !important;
+}
+
 #searchbox input {
 	border: 1px solid #AAB2BD;
 	border-radius: 1px;
@@ -62,6 +66,16 @@ a {
 
 .article h3 {
 	margin: 20px;
+	max-width: 800px;
+}
+
+.summary {
+	display: none;
+	font-size: 16px;
+	line-height: 1.4;
+	margin: 20px;
+	margin-left: 36px;
+	max-width: 700px;
 }
 
 a:hover {
@@ -196,7 +210,7 @@ a:hover {
 	color: #FF0000;
 }
 
-.article a:after {
+.article h3 a[data-spoiler='true']:after {
 	content: "(" attr(class) ")";
 	color: #999;
 	font-size: 12px;

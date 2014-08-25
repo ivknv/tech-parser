@@ -261,17 +261,19 @@ def has_words(qs, article):
 			return False
 	return True
 
-def prepare_articles(articles):
+def prepare_articles(articles, escape=True):
 	"""Escape HTML tags, etc."""
 	
 	new_articles = []
 	
 	for article in articles:
-		article[0]['title'] = article[0]['title'].replace('&', '&amp;')
-		article[0]['title'] = article[0]['title'].replace('<', '&lt;')
-		article[0]['title'] = article[0]['title'].replace('>', '&gt;')
-		article[0]['title'] = article[0]['title'].replace('"', '&quot;')
+		if escape:
+			article[0]['title'] = article[0]['title'].replace('&', '&amp;')
+			article[0]['title'] = article[0]['title'].replace('<', '&lt;')
+			article[0]['title'] = article[0]['title'].replace('>', '&gt;')
+			article[0]['title'] = article[0]['title'].replace('"', '&quot;')
 		article[0]['link'] = urlencode({'': article[0]['link']})[1:]
+		article[0]['summary'] = article[0]['summary'].replace('\n', '<br/>')
 		new_articles.append(article)
 	
 	return new_articles
@@ -300,7 +302,7 @@ def article_list(page_number=1):
 		qs = q.split()
 		articles = filter(lambda x: has_words(qs, x), articles)
 	
-	articles = prepare_articles(articles)
+	articles = prepare_articles(articles, False)
 	all_articles = articles
 	articles = split_into_pages(articles, 30)
 	try:

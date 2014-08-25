@@ -16,11 +16,12 @@ def get_articles(end_page=3):
 	pages = range(current_page - end_page + 1, current_page + 1)
 	
 	css_path = '.td2 .h_topic_caption a'
+	summary_path = '.div_topic .div_text'
 	
 	for page in pages:
 		g.go('http://trashbox.ru/public/b_news/page_topics/%s' %page)
 		
 		articles += parser.get_articles(g, css_path, css_path,
-			'trashbox', 'trashbox.ru')
+			'trashbox', 'trashbox.ru', summary_path)
 	
 	return articles

@@ -11,8 +11,9 @@ def get_articles():
 	g.go("http://digg.com")
 	
 	css_path = ".story-container .story-content .story-header .story-title .story-title-link"
+	summary_path = ".story-container .story-content p.story-description"
 	
 	posts = parser.get_articles(g, css_path, css_path,
-		"digg")
+		"digg", summary_path=summary_path)
 	
 	return posts

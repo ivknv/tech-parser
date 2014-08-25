@@ -17,4 +17,4 @@ setup(name="TechParser",
 	classifiers=[],
 	packages=["TechParser"],
 	package_data={"TechParser": ["templates/*",
-		"static/style.css", "static/icons/*"]})
+		"static/style.css", "static/jquery-2.1.1-min.js", "static/icons/*"]})
