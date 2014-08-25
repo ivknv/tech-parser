@@ -327,7 +327,7 @@ class ParserDaemon(Daemon):
 		if os.stat(se.name).st_size > 102400:
 			se.truncate()
 		
-		super(ParserDaemon, self).__init__(pidfile, True, stdout=so, stderr=se)
+		super(ParserDaemon, self).__init__(pidfile, stdout=so, stderr=se)
 	
 	def onStart(self):
 		t1 = Thread(target=dump_articles_per, args=(config.update_interval,))
