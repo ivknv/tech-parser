@@ -406,7 +406,5 @@ Available commands: start|stop|restart|update|run HOST:PORT""")
 			parser_daemon.start()
 		elif args.action[0] == "stop":
 			parser_daemon.stop()
-		elif args.action[0] == "restart":
-			parser_daemon.restart()
 else:
 	app = default_app()
