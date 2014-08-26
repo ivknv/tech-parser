@@ -27,7 +27,8 @@ def get_articles():
 		text = ''
 		for children in elem.getchildren()[2:]:
 			text += unicode_(children.text_content()).strip()
-		summary_texts.append(parser.cut_text(text))
+		text = parser.cut_text(text)
+		summary_texts.append(text)
 			
 	posts = []
 	

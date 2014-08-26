@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import feedparser
-from TechParser.parser import remove_tags, cut_text
+from TechParser.parser import remove_tags, cut_text, parse_article_image
 
 def get_articles():
 	res = feedparser.parse("http://www.ixbt.com/export/utf8/articles.rss")
@@ -10,7 +10,8 @@ def get_articles():
 	articles = [{'title': i['title'],
 				'link': i['link'],
 				'source': 'ixbt',
-				'summary': cut_text(remove_tags(i['summary']))}
+				'summary': parse_article_image(i['summary']).decode() +
+					cut_text(remove_tags(i['summary']))}
 		for i in res]
 	
 	return articles

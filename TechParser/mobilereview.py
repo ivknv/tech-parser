@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import feedparser
-from TechParser.parser import cut_text, remove_tags
+from TechParser.parser import cut_text, remove_tags, parse_article_image
 
 def get_articles():
 	articles = []
@@ -15,7 +15,8 @@ def get_articles():
 		articles += [{'title': i['title'],
 					'link': i['link'],
 					'source': 'mobile-review',
-					'summary': cut_text(remove_tags(i['summary']))}
+					'summary': parse_article_image(i['summary']).decode() +
+						cut_text(remove_tags(i['summary']))}
 						for i in res['entries']]
 	
 	return articles
