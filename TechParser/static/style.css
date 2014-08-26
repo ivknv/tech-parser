@@ -210,6 +210,11 @@ a:hover {
 	color: #FF0000;
 }
 
+.article h3 a[data-spoiler='true'] {
+	outline: 0;
+	cursor: pointer;
+}
+
 .article h3 a[data-spoiler='true']:after {
 	content: "(" attr(class) ")";
 	color: #999;

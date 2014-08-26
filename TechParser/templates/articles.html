@@ -22,7 +22,7 @@
 				<a class="open-tab" onclick="window.open('/go/${article[0]['link']}'); return false;" href="/go/${article[0]['link']}">
 					<img src="/static/icons/${article[0]['source']}.ico" width="16" />
 				</a>
-				<a href='' data-spoiler='true' class="${article[0]['source']}" onclick="toggleText(this); return false;">
+				<a data-spoiler='true' class="${article[0]['source']}" onclick="toggleText(this)">
 					${article[0]['title']}
 				</a>
 			</h3>
