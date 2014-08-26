@@ -33,6 +33,12 @@
 				<a onclick="window.open('/go/${article[0]['link']}'); return false;" href="/go/${article[0]['link']}">
 					Open article in new tab
 				</a>
+				<p>
+					<a data-pocket-label="pocket" data-pocket-count="horizontal"
+						class="pocket-btn" data-lang="en"
+						data-save-url="${article[0]['link']}"></a>
+					<script type="text/javascript">!function(d,i){if(!d.getElementById(i)){var j=d.createElement("script");j.id=i;j.src="https://widgets.getpocket.com/v1/j/btn.js?v=1";var w=d.getElementById(i);d.body.appendChild(j);}}(document,"pocket-btn-js");</script>
+				</p>
 			</div>
 		</div>
 	% endfor
