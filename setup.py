@@ -3,7 +3,7 @@
 
 from distutils.core import setup
 
-v = "1.6.2"
+v = "1.6.3"
 
 setup(name="TechParser",
 	version=v,
@@ -17,4 +17,4 @@ setup(name="TechParser",
 	classifiers=[],
 	packages=["TechParser"],
 	package_data={"TechParser": ["templates/*",
-		"static/style.css", "static/jquery-2.1.1-min.js", "static/icons/*"]})
+		"static/style.css", "static/jquery-2.1.1.min.js", "static/icons/*"]})
