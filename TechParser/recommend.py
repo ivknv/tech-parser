@@ -25,6 +25,9 @@ def get_similarity(article1, article2, split=get_words):
 			if shrd.count(part) < min(parts1.count(part), parts2.count(part)):
 				shrd.append(part)
 	
+	if len_all_parts == 0:
+		return 0
+	
 	return 2.0 * len(shrd) / len_all_parts
 
 def find_similiar(articles):
