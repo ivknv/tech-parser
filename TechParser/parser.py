@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import grab
+from grab.error import GrabError
 import re
+from lxml.etree import tostring
 
 try:
 	unicode_ = unicode
@@ -35,6 +37,27 @@ def escape_title(s):
 	
 	return s
 
+def parse_article_image(article, site_url=''):
+	try:
+		img = article.cssselect('img:first-child')[0]
+		img.set('class', '')
+		img.set('id', '')
+		img.set('align', '')
+		img.set('src', absolutize_link(img.get('src'), site_url))
+		return tostring(img).strip()
+	except IndexError:
+		return b''
+	except AttributeError:
+		try:
+			img = grab.Grab(article).css_one('img:first-child')
+		except GrabError:
+			return b''
+		img.set('class', '')
+		img.set('id', '')
+		img.set('align', '')
+		img.set('src', absolutize_link(img.get('src'), site_url))
+		return tostring(img).strip()
+
 def cut_text(s):
 	if len(s) > 300:
 		return s[:300] + '...'
@@ -64,16 +87,26 @@ def get_articles(grab_object, title_path, link_path, source, site_url="",
 	
 	for (title, link, summary_text) in zip_object:
 		title = unicode_(title.text_content()).strip()
-		link = absolutize_link(link.get("href"), site_url)
+		link = grab_object.make_url_absolute(link.get("href"))
+		if len(summary_text):
+			try:
+				article_image = parse_article_image(summary_text,
+					site_url).decode()
+			except AttributeError:
+				article_image = parse_article_image(summary_text, site_url)
+		else:
+			article_image = ''
+		
 		try:
-			summary_text = unicode_(summary_text.text_content()).strip()
+			summary_text = summary_text.text_content().strip()
+			summary_text = article_image + cut_text(summary_text)
 		except AttributeError:
-			summary_text = remove_tags(summary_text).strip()
+			summary_text = cut_text(remove_tags(summary_text).strip())
 		
 		posts.append(
 			{"title": escape_title(title),
-			"link": link,
+			"link": unicode_(link),
 			"source": source,
-			"summary": cut_text(summary_text)})
+			"summary": summary_text})
 	
 	return posts
