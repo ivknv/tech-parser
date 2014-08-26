@@ -30,8 +30,8 @@ def escape_title(s):
 	s = s.replace('<', '&lt;')
 	s = s.replace('>', '&gt;')
 	s = s.replace('"', '&quot')
-	s = s.replace('»', '&raquo;')
-	s = s.replace('«', '&laquo;')
+	s = s.replace(u'»', '&raquo;')
+	s = s.replace(u'«', '&laquo;')
 	
 	return s
 
