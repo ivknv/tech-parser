@@ -36,13 +36,12 @@ def find_similiar(articles):
 			similiar_articles.append([article, 0.0])
 			continue
 		
-		scores = []
+		score = 0.0
 		for interesting_article in interesting_articles:
-			score = get_similarity(article, interesting_article, get_pairs)
-			scores.append(score)
-		average = sum(scores) / len(scores) if len(scores) > 0 else 0.0
-		if [article, average] not in similiar_articles:
-			similiar_articles.append([article, average])
+			score += get_similarity(article, interesting_article, get_pairs)
+		
+#		if [article, average] not in similiar_articles:
+		similiar_articles.append([article, score])
 	
 	return similiar_articles
 
@@ -57,7 +56,6 @@ def prepare_string(s, exclude=["a", "an", "the", "is", "am",
 	r6 = re.compile(r"(?P<g1>\w+)['\u2019]d", re.UNICODE)
 	r7 = re.compile(r"(?P<g1>\w+)['\u2019]ll", re.UNICODE)
 	r8 = re.compile(r"gonna", re.UNICODE)
-	r9 = re.compile(u"[^А-Я^а-я^A-Z^a-z^ ]", re.UNICODE)
 	s = r1.sub("\g<g1> not", s)
 	s = r2.sub("\g<g1>", s)
 	s = r3.sub("\g<g1> am", s)
@@ -66,13 +64,12 @@ def prepare_string(s, exclude=["a", "an", "the", "is", "am",
 	s = r6.sub("\g<g1> would", s)
 	s = r7.sub("\g<g1> will", s)
 	s = r8.sub("going to", s)
-	s = r9.sub("", s)
-	words = s.split(" ")
+	words = re.split(r"\W", s)
 	for word in exclude:
 		while words.count(word) > 0:
 			words.remove(word)
 	
-	return words
+	return [word for word in words if len(word)]
 
 def get_pairs(s):
 	s = " ".join(prepare_string(s))
