@@ -68,7 +68,6 @@ After that You will be able to run  ```tech-parser``` instead of ```python -m Te
 Run ```python -m TechParser start``` to start server<br/>
 And then open [localhost:8080](http://localhost:8080) in your browser.<br/>
 ```python -m TechParser stop``` to stop server<br/>
-```python -m TechParser restart``` to restart server<br/>
 ```python -m TechParser update``` to manually update list of articles.<br/>
 ```python -m TechParser run HOST:PORT``` run server without starting daemon.<br/>
 ```python -m TechParser -h``` show help.<br/>
