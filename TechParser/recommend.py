@@ -26,7 +26,7 @@ def get_similarity(article1, article2, split=get_words):
 				shrd.append(part)
 	
 	if len_all_parts == 0:
-		return 0
+		return 0.0
 	
 	return 2.0 * len(shrd) / len_all_parts
 
@@ -43,8 +43,8 @@ def find_similiar(articles):
 		for interesting_article in interesting_articles:
 			score += get_similarity(article, interesting_article, get_pairs)
 		
-#		if [article, average] not in similiar_articles:
-		similiar_articles.append([article, score])
+		if [article, score] not in similiar_articles:
+			similiar_articles.append([article, score])
 	
 	return similiar_articles
 
