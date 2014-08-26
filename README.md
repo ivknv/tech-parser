@@ -1,14 +1,14 @@
 tech-parser
 ===========
 
-Parses articles from 23 sites and outputs it into HTML.
+Parses articles from 30 sites and outputs it into HTML.
 
 You can see it in action [here](http://tech-parser.herokuapp.com).
 And [here's](https://github.com/SPython/web-tech-parser) repo for that Heroku app.
 
 Current list of sites:
 <ol>
-	<li>habrahabr.ru</li>
+	<li>habrahabr.ru (russian)</li>
 	<li>venturebeat.com</li>
 	<li>engadget.com</li>
 	<li>techrepublic.com</li>
@@ -31,6 +31,13 @@ Current list of sites:
 	<li>medium.com</li>
 	<li>planet.clojure.in</li>
 	<li>reddit.com</li>
+	<li>mobile-review.com (russian)</li>
+	<li>ixbt.ru (russian)</li>
+	<li>trashbox.ru (russian)</li>
+	<li>droider.ru (russian)</li>
+	<li>redroid.ru (russian)</li>
+	<li>3dnews.ru (russian)</li>
+	<li>helpix.ru (russian)</li>
 </ol>
 
 ## One awesome feature ##
