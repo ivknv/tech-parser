@@ -166,7 +166,7 @@ def dump_articles():
 	shuffle(articles)
 	
 	log("Ranking articles...")
-	articles = recommend.find_similiar(articles)
+	articles = recommend.find_similiar(articles, db=config.db)
 	articles.sort(key=lambda x: x[1], reverse=True)
 	
 	log("Dumping data to file: articles_dumped...")
@@ -248,7 +248,7 @@ def serve_static(filename):
 
 @route('/go/<addr:path>')
 def go_to_url(addr):
-	recommend.add_article(addr)
+	recommend.add_article(addr, db=config.db)
 	redirect(addr)
 
 def has_words(qs, article):
