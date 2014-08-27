@@ -43,9 +43,10 @@ def get_similarity(article1, article2, split=get_words):
 def find_similiar(articles, db='sqlite'):
 	interesting_articles = get_interesting_articles(db)
 	similiar_articles = []
+	interesting_titles = [i['title'].lower() for i in interesting_articles]
 	
 	for article in articles:
-		if article in interesting_articles:
+		if article['title'].lower() in interesting_titles:
 			similiar_articles.append([article, 0.0])
 			continue
 		
