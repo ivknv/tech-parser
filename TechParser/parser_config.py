@@ -201,6 +201,12 @@ filters = {
 
 update_interval = 1800 # Parse articles every 30 minutes
 
+# Database for keeping history
+# must be sqlite or postgresql.
+# If You're using postgresql make sure
+# to set environment variable DATABASE_URL
+# like this: postgres://user:password@host:port/dbname
+db = 'sqlite'
 host = "0.0.0.0" # Server host
 port = "8080" # Server port
 

@@ -6,6 +6,16 @@ import os
 import sqlite3
 import pickle
 
+try:
+	import psycopg2
+except ImportError:
+	pass
+
+try:
+	from urllib.parse import urlparse
+except ImportError:
+	from urlparse import urlparse
+
 logdir = os.path.expanduser("~")
 logdir = os.path.join(logdir, ".tech-parser")
 
@@ -30,8 +40,8 @@ def get_similarity(article1, article2, split=get_words):
 	
 	return 2.0 * len(shrd) / len_all_parts
 
-def find_similiar(articles):
-	interesting_articles = get_interesting_articles()
+def find_similiar(articles, db='sqlite'):
+	interesting_articles = get_interesting_articles(db)
 	similiar_articles = []
 	
 	for article in articles:
@@ -78,17 +88,19 @@ def get_pairs(s):
 	s = " ".join(prepare_string(s))
 	return [p for p in [s[i:i+2] for i in range(len(s))] if p.count(" ") < 2]
 
-def get_interesting_articles():
-	setup_db()
-	con = sqlite3.connect(os.path.join(logdir, 'interesting.db'))
+def get_interesting_articles(db='sqlite'):
+	setup_db(db)
+	connect, args, kwargs = which_db(db)
+	con = connect(*args, **kwargs)
 	cur = con.cursor()
 	cur.execute('SELECT * FROM interesting_articles;')
 	res = cur.fetchall()
+	con.close()
 	return [{'title': x[1],
 			'link': x[2],
 			'source': x[3]} for x in res]
 
-def add_article(addr):
+def add_article(addr, db='sqlite'):
 	f = open(os.path.join(logdir, "articles_dumped"), 'rb')
 	dumped = f.read()
 	f.close()
@@ -99,30 +111,88 @@ def add_article(addr):
 		if article[0]['link'] == addr:
 			break
 	
-	add_to_interesting(article)
+	add_to_interesting(article, db)
 
-def add_to_interesting(article):
-	setup_db()
-	con = sqlite3.connect(os.path.join(logdir, 'interesting.db'))
+def add_to_interesting(article, db='sqlite3'):
+	setup_db(db)
+	
+	connect, args, kwargs = which_db(db)
+	
+	if db == 'sqlite':
+		IntegrityError = sqlite3.IntegrityError
+	else:
+		try:
+			IntegrityError = psycopg2.IntegrityError
+		except NameError:
+			IntegrityError = sqlite3.IntegrityError
+	
+	con = connect(*args, **kwargs)
 	cur = con.cursor()
-	cur.execute('SELECT count(link) from interesting_articles;')
+	cur.execute('SELECT count(link) FROM interesting_articles;')
 	if cur.fetchone()[0] > 150:
 		cur.execute("""DELETE FROM interesting_articles
-			WHERE id = (SELECT MIN(id) FROM interesting_articles);""")
+			WHERE id == (SELECT MIN(id) FROM interesting_articles);""")
+	sqlite_code = """INSERT INTO
+			interesting_articles(title, link, source) VALUES(?, ?, ?);"""
+	postgres_code = """INSERT INTO
+			interesting_articles(title, link, source) VALUES(%s, %s, %s);"""
+	
+	if db == 'sqlite':
+		code = sqlite_code
+	else:
+		code = postgres_code
+	
 	try:
-		cur.execute("""INSERT INTO
-			interesting_articles(title, link, source) VALUES(?, ?, ?);""",
+		cur.execute(code,
 			(article[0]['title'], article[0]['link'], article[0]['source']))
 		con.commit()
-	except sqlite3.IntegrityError:
+	except IntegrityError:
 		pass
+	
 	con.close()
 
-def setup_db():
-	con = sqlite3.connect(os.path.join(logdir, 'interesting.db'))
+def setup_db(db='sqlite'):
+	connect, args, kwargs = which_db(db)
+	
+	con = connect(*args, **kwargs)
 	cur = con.cursor()
-	cur.execute("""CREATE TABLE IF NOT EXISTS interesting_articles
+	sqlite_code = """CREATE TABLE IF NOT EXISTS interesting_articles
 			(id INTEGER PRIMARY KEY AUTOINCREMENT,
-				title TEXT, link TEXT, source TEXT, UNIQUE(link));""")
+				title TEXT, link TEXT, source TEXT, UNIQUE(link));"""
+	postgres_code = """CREATE TABLE IF NOT EXISTS interesting_articles
+			(id SERIAL,
+				title TEXT, link TEXT, source TEXT, UNIQUE(link));"""
+	if db == 'sqlite':
+		cur.execute(sqlite_code)
+	elif db == 'postgresql':
+		cur.execute(postgres_code)
 	con.commit()
 	con.close()
+
+def which_db(db):
+	if db == 'postgresql':
+		try:
+			connect = psycopg2.connect
+			kwargs = parse_dburl()
+			args = tuple()
+		except NameError:
+			connect = sqlite3.connect
+			kwargs = {}
+			args = (os.path.join(logdir, 'interesting.db'),)
+	elif db == 'sqlite':
+		connect = sqlite3.connect
+		kwargs = {}
+		args = (os.path.join(logdir, 'interesting.db'),)
+	else:
+		raise Exception('db must be sqlite or postgresql')
+	
+	return (connect, args, kwargs)
+
+def parse_dburl(var='DATABASE_URL'):
+	parsed = urlparse(os.environ.get(var, ''))
+	
+	return {'user': parsed.username,
+			'password': parsed.password,
+			'host': parsed.hostname,
+			'port': parsed.port,
+			'dbname': parsed.path[1:]}
