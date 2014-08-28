@@ -30,6 +30,11 @@ try:
 except ImportError:
 	from urllib import urlencode
 
+try:
+	unicode_ = unicode
+except NameError:
+	unicode_ = str
+
 sys.path.append(os.path.expanduser("~/.tech-parser"))
 
 running_as_daemon = False
@@ -303,7 +308,8 @@ def prepare_articles(articles, escape=True):
 			article[0]['title'] = article[0]['title'].replace('<', '&lt;')
 			article[0]['title'] = article[0]['title'].replace('>', '&gt;')
 			article[0]['title'] = article[0]['title'].replace('"', '&quot;')
-		article[0]['link'] = urlencode({'': article[0]['link']})[1:]
+		link = unicode_(article[0]['link']).encode('utf-8')
+		article[0]['link'] = urlencode({'': link})[1:]
 		article[0]['summary'] = article[0]['summary'].replace('\n', '<br/>')
 		new_articles.append(article)
 	
