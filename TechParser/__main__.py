@@ -258,6 +258,7 @@ def show_history(page_number=1):
 	q = request.GET.get('q', '')
 	
 	articles = recommend.get_interesting_articles(db=config.db)
+	articles.reverse()
 	
 	try:
 		page_number = int(page_number)
