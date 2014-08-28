@@ -404,7 +404,10 @@ Available commands: start|stop|restart|update|run HOST:PORT""")
 	
 	if args.action:
 		if args.action[0] == "run":
-			addr = args.action[1]
+			if len(args.action) == 1:
+				addr = config.host + ":" + config.port
+			else:
+				addr = args.action[1]
 			if not ":" in addr:
 				addr += ":80"
 			elif addr.endswith(":"):
