@@ -251,6 +251,36 @@ def go_to_url(addr):
 	recommend.add_article(addr, db=config.db)
 	redirect(addr)
 
+@route('/history')
+@route('/history/<page_number>')
+def show_history(page_number=1):
+	history_page = mylookup.get_template('history.html')
+	q = request.GET.get('q', '')
+	
+	articles = recommend.get_interesting_articles(db=config.db)
+	
+	try:
+		page_number = int(page_number)
+	except ValueError:
+		page_number = 1
+	
+	if q:
+		qs = q.lower().split()
+		articles = filter(lambda x: has_words(qs, x), articles)
+	
+	all_articles = articles
+	articles = split_into_pages(articles, 30)
+	try:
+		requested_page = articles[page_number-1]
+	except IndexError:
+		requested_page = []
+	
+	return history_page.render(articles=requested_page,
+		num_pages=len(articles),
+		page_num=page_number,
+		q=q,
+		all_articles=all_articles,)
+
 def has_words(qs, article):
 	"""Check if article title contains words:"""
 	
@@ -284,11 +314,11 @@ def article_list(page_number=1):
 	"""Show list of articles | Search for articles"""
 	
 	main_page = mylookup.get_template("articles.html")
-	q = request.GET.get('q', '').lower()
+	q = request.GET.get('q', '')
 	
 	try:
 		page_number = int(page_number)
-	except TypeError:
+	except ValueError:
 		page_number = 1
 	
 	try:
@@ -299,7 +329,7 @@ def article_list(page_number=1):
 	
 	articles = filter_articles(articles)
 	if q:
-		qs = q.split()
+		qs = q.lower().split()
 		articles = filter(lambda x: has_words(qs, x), articles)
 	
 	articles = prepare_articles(articles, False)
@@ -310,12 +340,12 @@ def article_list(page_number=1):
 	except IndexError:
 		requested_page = []
 	
-	
 	return main_page.render(articles=requested_page,
 		num_pages=len(articles),
 		page_num=page_number,
 		q=q,
-		all_articles=all_articles)
+		all_articles=all_articles,
+		history=False)
 
 class ParserDaemon(Daemon):
 	def __init__(self):

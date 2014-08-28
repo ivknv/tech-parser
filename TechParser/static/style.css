@@ -27,11 +27,13 @@
 	border-radius: 1px;
 	font-size: 14px;
 	height: 23px;
+	max-width: 420px;
 	outline: 0;
 	padding-bottom: 1px;
 	padding-left: 8px;
 	padding-right: 4px;
 	padding-top: 1px;
+	width: 150px;
 }
 
 #searchbox input:focus {
@@ -62,6 +64,12 @@
 a {
 	color: #0044CC;
 	text-decoration: none;
+}
+
+@media screen and (max-width: 450px) {
+	#searchbox input {
+		max-width: 88%;
+	}
 }
 
 .article > h3 {
@@ -223,7 +231,7 @@ a:hover {
 }
 
 .summary img {
-	border-radius: 5px;
+	border-radius: 8px;
 	display: block;
 	margin-bottom: 15px;
 	margin-left: 1px;

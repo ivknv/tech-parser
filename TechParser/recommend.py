@@ -47,7 +47,6 @@ def find_similiar(articles, db='sqlite'):
 	
 	for article in articles:
 		if article['title'].lower() in interesting_titles:
-			similiar_articles.append([article, 0.0])
 			continue
 		
 		score = 0.0
@@ -99,7 +98,8 @@ def get_interesting_articles(db='sqlite'):
 	con.close()
 	return [{'title': x[1],
 			'link': x[2],
-			'source': x[3]} for x in res]
+			'summary': x[3],
+			'source': x[4]} for x in res]
 
 def add_article(addr, db='sqlite'):
 	f = open(os.path.join(logdir, "articles_dumped"), 'rb')
@@ -110,9 +110,8 @@ def add_article(addr, db='sqlite'):
 	
 	for article in articles:
 		if article[0]['link'] == addr:
+			add_to_interesting(article, db)
 			break
-	
-	add_to_interesting(article, db)
 
 def add_to_interesting(article, db='sqlite3'):
 	setup_db(db)
@@ -134,9 +133,9 @@ def add_to_interesting(article, db='sqlite3'):
 		cur.execute("""DELETE FROM interesting_articles
 			WHERE id == (SELECT MIN(id) FROM interesting_articles);""")
 	sqlite_code = """INSERT INTO
-			interesting_articles(title, link, source) VALUES(?, ?, ?);"""
+			interesting_articles(title, link, summary, source) VALUES(?, ?, ?, ?);"""
 	postgres_code = """INSERT INTO
-			interesting_articles(title, link, source) VALUES(%s, %s, %s);"""
+			interesting_articles(title, link, summary, source) VALUES(%s, %s, %s, %s);"""
 	
 	if db == 'sqlite':
 		code = sqlite_code
@@ -144,8 +143,8 @@ def add_to_interesting(article, db='sqlite3'):
 		code = postgres_code
 	
 	try:
-		cur.execute(code,
-			(article[0]['title'], article[0]['link'], article[0]['source']))
+		cur.execute(code, (article[0]['title'], article[0]['link'],
+			article[0]['summary'], article[0]['source']))
 		con.commit()
 	except IntegrityError:
 		pass
@@ -159,10 +158,11 @@ def setup_db(db='sqlite'):
 	cur = con.cursor()
 	sqlite_code = """CREATE TABLE IF NOT EXISTS interesting_articles
 			(id INTEGER PRIMARY KEY AUTOINCREMENT,
-				title TEXT, link TEXT, source TEXT, UNIQUE(link));"""
+				title TEXT, link TEXT, summary TEXT, source TEXT,
+				UNIQUE(link));"""
 	postgres_code = """CREATE TABLE IF NOT EXISTS interesting_articles
-			(id SERIAL,
-				title TEXT, link TEXT, source TEXT, UNIQUE(link));"""
+			(id SERIAL,	title TEXT, link TEXT, summary TEXT,
+				source TEXT, UNIQUE(link));"""
 	if db == 'sqlite':
 		cur.execute(sqlite_code)
 	elif db == 'postgresql':
