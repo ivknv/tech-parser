@@ -1,38 +1,38 @@
 <%inherit file="base.html"/>
-<%block name="title">Articles from some sites</%block>
+<%block name="title">History</%block>
 <%block name="content">
 	<div id="searchbox">
 		<form method="get">
-			<input name="q" type="search" placeholder="Search articles" value='${q}' autocomplete="off" />
+			<input name="q" type="search" placeholder="Search articles" value='${q}' autocomplete="off">
 			<button type="submit">Search</button>
 		</form>
 		% if q:
 			<br/>
-			<a href="/">Go back</a>
+			<a href="/history">Go back</a>
 		% endif
-		<a href="/history">History</a>
+		<a href="/">Main page</a>
 	</div>
 	% for article in articles:
 		<div class="article">
 			<h3>
-				<a class="open-tab" onclick="window.open('/go/${article[0]['link']}'); return false;" href="/go/${article[0]['link']}">
-					<img src="/static/icons/${article[0]['source']}.ico" width="16" />
+				<a class="open-tab" onclick="window.open('/go/${article['link']}'); return false;" href="/go/${article['link']}">
+					<img src="/static/icons/${article['source']}.ico" width="16" />
 				</a>
-				<a data-spoiler='true' class="${article[0]['source']}" onclick="toggleText(this)">
-					${article[0]['title']}
+				<a data-spoiler='true' class="${article['source']}" onclick="toggleText(this)">
+					${article['title']}
 				</a>
 			</h3>
 			<div class="summary">
 				<p>
-					${article[0]['summary']}
+					${article['summary']}
 				</p>
-				<a onclick="window.open('/go/${article[0]['link']}'); return false;" href="/go/${article[0]['link']}">
+				<a onclick="window.open('/go/${article['link']}'); return false;" href="/go/${article['link']}">
 					Open article in new tab
 				</a>
 				<p>
 					<a data-pocket-label="pocket" data-pocket-count="horizontal"
 						class="pocket-btn" data-lang="en"
-						data-save-url="${article[0]['link']}"
+						data-save-url="${article['link']}"
 						onclick="alert('Saved')"></a>
 					<script type="text/javascript">!function(d,i){if(!d.getElementById(i)){var j=d.createElement("script");j.id=i;j.src="https://widgets.getpocket.com/v1/j/btn.js?v=1";var w=d.getElementById(i);d.body.appendChild(j);}}(document,"pocket-btn-js");</script>
 				</p>

@@ -8,7 +8,41 @@
 		</title>
 		<script type="text/javascript" src="/static/jquery-2.1.1.min.js"></script>
 		<link rel="stylesheet" type="text/css" href="/static/style.css" />
-		<script type="text/javascript">function toggleText(element){var $article=$(element).parent('h3').parent('.article');var $summary=$article.find('.summary');if($summary.css('display')!='block'){$summary.fadeIn('fast');}else{$summary.fadeOut('fast');}}</script>
+		<script type="text/javascript">
+			function toggleText(element) {
+				var $article = $(element).parent('h3').parent('.article');
+				var $summary = $article.find('.summary');
+				if ($summary.css('display') != 'block') {
+					$summary.fadeIn('fast');
+				} else {
+					$summary.fadeOut('fast');
+				}
+			}
+			$(document).ready(function() {
+				var valueBefore = $('#searchbox input').css('width');
+				$('#searchbox input').focusin(function() {
+					var maxValue = parseInt($('#searchbox input').css('max-width'));
+					var searchBox = $('#searchbox');
+					var searchBoxWidth = parseInt(searchBox.css('width'))
+					searchBoxWidth += parseInt(searchBox.parent().css('margin-left'));
+					searchBoxWidth += parseInt(searchBox.parent().css('margin-right'));
+					var btn = $('#searchbox button');
+					var btnWidth = parseInt(btn.css('width'));
+					btnWidth += parseInt(btn.css('margin-left'));
+					btnWidth += parseInt(btn.css('margin-right'));
+					btnWidth += parseInt(btn.css('padding-left'));
+					btnWidth += parseInt(btn.css('padding-right'));
+					if (maxValue + btnWidth >= searchBoxWidth) {
+						$('#searchbox button').fadeOut('fast');
+					}
+					$(this).animate({width: maxValue + 'px'}, 400);
+				})
+				$('#searchbox input').focusout(function() {
+					$(this).animate({width: valueBefore}, 400);
+					setTimeout(function() {$('#searchbox button').fadeIn('fast')}, 200);
+				})
+			});
+		</script>
 	</head>
 	<body>
 		<div id="main">
