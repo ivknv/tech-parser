@@ -38,10 +38,11 @@ def get_similarity(article1, article2):
 def find_similiar(articles, db='sqlite'):
 	interesting_articles = get_interesting_articles(db)
 	similiar_articles = []
-	interesting_titles = [i['title'].lower() for i in interesting_articles]
+	interesting_links = [i['link']
+		for i in interesting_articles]
 	
 	for article in articles:
-		if article['title'].lower() in interesting_titles:
+		if article['link'] in interesting_links:
 			continue
 		
 		score = 0.0
