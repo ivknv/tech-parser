@@ -218,6 +218,10 @@ a:hover {
 	color: #FF0000;
 }
 
+.recode {
+	color: #CC0713;
+}
+
 .article h3 a[data-spoiler='true'] {
 	outline: 0;
 	cursor: pointer;
