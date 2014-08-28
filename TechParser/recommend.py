@@ -19,26 +19,21 @@ except ImportError:
 logdir = os.path.expanduser("~")
 logdir = os.path.join(logdir, ".tech-parser")
 
-def get_words(s):
-	words = prepare_string(s)
+def get_similarity(article1, article2):
+	pairs1 = get_pairs(prepare_string(article1['title']))
+	pairs2 = get_pairs(prepare_string(article2['title']))
 	
-	return [word for word in words if word]
-
-def get_similarity(article1, article2, split=get_words):
-	parts1 = split(article1['title'])
-	parts2 = split(article2['title'])
-	
-	len_all_parts = len(parts1) + len(parts2)
+	len_all_pairs = len(pairs1) + len(pairs2)
 	shrd = []
-	for part in parts1:
-		if part in parts2:
-			if shrd.count(part) < min(parts1.count(part), parts2.count(part)):
-				shrd.append(part)
+	for pair in pairs1:
+		if pair in pairs2:
+			if shrd.count(pair) < min(pairs1.count(pair), pairs2.count(pair)):
+				shrd.append(pair)
 	
-	if len_all_parts == 0:
+	if len_all_pairs == 0:
 		return 0.0
 	
-	return 2.0 * len(shrd) / len_all_parts
+	return 2.0 * len(shrd) / len_all_pairs
 
 def find_similiar(articles, db='sqlite'):
 	interesting_articles = get_interesting_articles(db)
@@ -51,7 +46,7 @@ def find_similiar(articles, db='sqlite'):
 		
 		score = 0.0
 		for interesting_article in interesting_articles:
-			score += get_similarity(article, interesting_article, get_pairs)
+			score += get_similarity(article, interesting_article)
 		
 		if [article, score] not in similiar_articles:
 			similiar_articles.append([article, score])
@@ -84,9 +79,14 @@ def prepare_string(s, exclude=["a", "an", "the", "is", "am",
 	
 	return [word for word in words if len(word)]
 
-def get_pairs(s):
-	s = " ".join(prepare_string(s))
-	return [p for p in [s[i:i+2] for i in range(len(s))] if p.count(" ") < 2]
+def get_pairs(words):
+	pairs = []
+	for word in words:
+		if len(word) == 1:
+			pairs.append(word)
+		else:
+			pairs += [word[i:i+2] for i in range(len(word))]
+	return pairs
 
 def get_interesting_articles(db='sqlite'):
 	setup_db(db)
@@ -113,7 +113,7 @@ def add_article(addr, db='sqlite'):
 			add_to_interesting(article, db)
 			break
 
-def add_to_interesting(article, db='sqlite3'):
+def add_to_interesting(article, db='sqlite'):
 	setup_db(db)
 	
 	connect, args, kwargs = which_db(db)
