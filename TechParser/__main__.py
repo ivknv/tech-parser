@@ -106,7 +106,7 @@ def split_into_pages(articles, n=30):
 
 def simple_plural(n, s):
 	n = str(n)
-	if n.endswith("1"):
+	if n.endswith("1") and not n.endswith("11"):
 		return s
 	else:
 		return s + "s"
