@@ -15,7 +15,7 @@
 	% for article in articles:
 		<div class="article">
 			<h3>
-				<a class="open-tab" onclick="window.open('/go/${article[0]['link']}'); return false;" href="/go/${article[0]['link']}">
+				<a class="open-tab" target="_blank" href="/go/${article[0]['link']}">
 					<img src="/static/icons/${article[0]['source']}.ico" width="16" />
 				</a>
 				<a data-spoiler='true' class="${article[0]['source']}" onclick="toggleText(this)">
@@ -26,7 +26,7 @@
 				<p>
 					${article[0]['summary']}
 				</p>
-				<a onclick="window.open('/go/${article[0]['link']}'); return false;" href="/go/${article[0]['link']}">
+				<a target="_blank" href="/go/${article[0]['link']}">
 					Open article in new tab
 				</a>
 				<p>
