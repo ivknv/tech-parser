@@ -2,7 +2,7 @@
 <%block name="title">History</%block>
 <%block name="content">
 	<div id="searchbox">
-		<form method="get" action="/">
+		<form method="get" action="/history">
 			<input name="q" type="search" placeholder="Search articles" value='${q}' autocomplete="off">
 			<button type="submit">Search</button>
 		</form>
@@ -39,15 +39,14 @@
 	% endfor
 	<div id="pagination">
 		% if page_num > 1:
-			<a href="/${page_num-1}?q=${q}">Previous</a>
+			<a href="/history/${page_num-1}?q=${q}">Previous</a>
 		% endif
 		
 		<a class="current">${ page_num }</a>
 		
 		% if page_num < num_pages:
-			<a href="/${page_num+1}?q=${q}">Next</a>
+			<a href="/history/${page_num+1}?q=${q}">Next</a>
 		% endif
 	</div>
 	<script type="text/javascript">!function(d,i){if(!d.getElementById(i)){var j=d.createElement("script");j.id=i;j.src="https://widgets.getpocket.com/v1/j/btn.js?v=1";var w=d.getElementById(i);d.body.appendChild(j);}}(document,"pocket-btn-js");</script>
-
 </%block>
