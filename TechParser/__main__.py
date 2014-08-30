@@ -290,7 +290,7 @@ def show_history(page_number=1):
 def has_words(qs, article):
 	"""Check if article title contains words:"""
 	
-	title = article[0]['title'].lower()
+	title = article['title'].lower()
 	
 	for i in qs:
 		if i not in title:
@@ -337,7 +337,7 @@ def article_list(page_number=1):
 	articles = filter_articles(articles)
 	if q:
 		qs = q.lower().split()
-		articles = filter(lambda x: has_words(qs, x), articles)
+		articles = filter(lambda x: has_words(qs, x[0]), articles)
 	
 	articles = prepare_articles(articles, False)
 	all_articles = articles
