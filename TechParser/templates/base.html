@@ -8,6 +8,7 @@
 		</title>
 		<script type="text/javascript" src="/static/jquery-2.1.1.min.js"></script>
 		<link rel="stylesheet" type="text/css" href="/static/style.css" />
+		<script type="text/javascript" src="/static/jquery.touchSwipe.min.js"></script>
 		<script type="text/javascript">
 			function toggleText(element) {
 				var $article = $(element).parent('h3').parent('.article');
@@ -44,7 +45,40 @@
 				$('#searchbox input').focusout(function() {
 					$(this).animate({width: valueBefore}, 400);
 					setTimeout(function() {$('#searchbox button').fadeIn('fast')}, 400);
-				})
+				});
+				
+				swipefunc = function(e, d, distance) {
+					if (distance < 150) {
+						return;
+					}
+					var curHref = window.location.href;
+					var vars = curHref.match(/\?.+/);
+					curHref = curHref.replace(/\?.*/g, '');
+					
+					var pgnum = curHref.match(/\d+$/);
+					if (pgnum === null) {
+						pgnum = "1";
+					} else {
+						curHref = curHref.slice(0, curHref.length-(pgnum.length+1));
+					}
+					if (d == 'left')
+						var newPgnum = parseInt(pgnum) + 1;
+					else
+						var newPgnum = parseInt(pgnum) - 1;
+					
+					var newUrl = curHref;
+					if (curHref[curHref.length-1] != '/') {
+						newUrl += '/';
+					}
+					newUrl += newPgnum;
+					if (vars !== null) {
+						newUrl += vars;
+					}
+					window.location.href = newUrl;
+				};
+				
+				$('#main').swipe({swipeLeft: swipefunc, swipeRight: swipefunc,
+					treshold: 0});
 			});
 		</script>
 	</head>
