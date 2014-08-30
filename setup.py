@@ -3,7 +3,7 @@
 
 from distutils.core import setup
 
-v = "1.6.7"
+v = "1.6.8"
 
 setup(name="TechParser",
 	version=v,
