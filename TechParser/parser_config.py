@@ -33,6 +33,7 @@ from TechParser import ixbt
 from TechParser import mobilereview
 from TechParser import helpix
 from TechParser import recode
+from TechParser import zdnet
 
 sites_to_parse = {
 		"Habrahabr": { # habrahabr.ru
@@ -193,6 +194,11 @@ sites_to_parse = {
 		
 		"Re/code": { # recode.net
 			"module": recode,
+			"kwargs": {}
+		},
+		
+		"ZDNet": { # www.zdnet.com
+			"module": zdnet,
 			"kwargs": {}
 		}
 	}

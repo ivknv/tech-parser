@@ -222,6 +222,10 @@ a:hover {
 	color: #CC0713;
 }
 
+.zdnet {
+	color: #BE0000;
+}
+
 .article h3 a[data-spoiler='true'] {
 	outline: 0;
 	cursor: pointer;
