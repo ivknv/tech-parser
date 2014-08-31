@@ -3,7 +3,7 @@
 
 from distutils.core import setup
 
-v = "1.6.8"
+v = "1.6.9"
 
 setup(name="TechParser",
 	version=v,
@@ -17,4 +17,5 @@ setup(name="TechParser",
 	classifiers=[],
 	packages=["TechParser"],
 	package_data={"TechParser": ["templates/*",
+		"static/jquery.touchSwipe.min.js",
 		"static/style.css", "static/jquery-2.1.1.min.js", "static/icons/*"]})
