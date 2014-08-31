@@ -37,17 +37,22 @@ def get_similarity(article1, article2):
 
 def find_similiar(articles, db='sqlite'):
 	interesting_articles = get_interesting_articles(db)
+	blacklist = get_blacklist(db)
+	ignored_links = [i['link'] for i in blacklist]
 	similiar_articles = []
 	interesting_links = [i['link']
 		for i in interesting_articles]
 	
 	for article in articles:
-		if article['link'] in interesting_links:
+		if article['link'] in interesting_links or \
+		article['link'] in ignored_links:
 			continue
 		
 		score = 0.0
 		for interesting_article in interesting_articles:
 			score += get_similarity(article, interesting_article)
+		for ignored_article in blacklist:
+			score -= get_similarity(article, ignored_article)
 		
 		if [article, score] not in similiar_articles:
 			similiar_articles.append([article, score])
@@ -102,6 +107,19 @@ def get_interesting_articles(db='sqlite'):
 			'summary': x[3],
 			'source': x[4]} for x in res]
 
+def get_blacklist(db='sqlite'):
+	setup_db(db)
+	connect, args, kwargs = which_db(db)
+	con = connect(*args, **kwargs)
+	cur = con.cursor()
+	cur.execute('SELECT * FROM blacklist;')
+	res = cur.fetchall()
+	con.close()
+	return [{'title': x[1],
+			'link': x[2],
+			'summary': x[3],
+			'source': x[4]} for x in res]
+
 def add_article(addr, db='sqlite'):
 	f = open(os.path.join(logdir, "articles_dumped"), 'rb')
 	dumped = f.read()
@@ -130,7 +148,7 @@ def add_to_interesting(article, db='sqlite'):
 	con = connect(*args, **kwargs)
 	cur = con.cursor()
 	cur.execute('SELECT count(link) FROM interesting_articles;')
-	if cur.fetchone()[0] > 150:
+	if cur.fetchone()[0] > 75:
 		cur.execute("""DELETE FROM interesting_articles
 			WHERE id == (SELECT MIN(id) FROM interesting_articles);""")
 	sqlite_code = """INSERT INTO
@@ -152,6 +170,95 @@ def add_to_interesting(article, db='sqlite'):
 	
 	con.close()
 
+def add_article_to_blacklist(addr, db='sqlite'):
+	f = open(os.path.join(logdir, "articles_dumped"), 'rb')
+	dumped = f.read()
+	f.close()
+	
+	articles = pickle.loads(dumped)
+	
+	for article in articles:
+		if article[0]['link'] == addr:
+			f = open(os.path.join(logdir, "articles_dumped"), 'wb')
+			add_to_blacklist(article, db)
+			articles.remove(article)
+			f.write(pickle.dumps(articles))
+			f.close()
+			break
+
+def add_to_blacklist(article, db='sqlite'):
+	setup_db(db)
+	
+	connect, args, kwargs = which_db(db)
+	
+	if db == 'sqlite':
+		IntegrityError = sqlite3.IntegrityError
+	else:
+		try:
+			IntegrityError = psycopg2.IntegrityError
+		except NameError:
+			IntegrityError = sqlite3.IntegrityError
+	
+	con = connect(*args, **kwargs)
+	cur = con.cursor()
+	cur.execute('SELECT count(link) FROM blacklist;')
+	if cur.fetchone()[0] > 75:
+		cur.execute("""DELETE FROM blacklist
+			WHERE id == (SELECT MIN(id) FROM blacklist);""")
+
+	sqlite_code = """INSERT INTO
+			blacklist(title, link, summary, source) VALUES(?, ?, ?, ?);"""
+	postgres_code = """INSERT INTO
+			blacklist(title, link, summary, source) VALUES(%s, %s, %s, %s);"""
+	
+	if db == 'sqlite':
+		code = sqlite_code
+	else:
+		code = postgres_code
+	
+	try:
+		cur.execute(code, (article[0]['title'], article[0]['link'],
+			article[0]['summary'], article[0]['source']))
+		con.commit()
+	except IntegrityError:
+		pass
+	
+	con.close()
+
+def remove_from_history(link, db='sqlite'):
+	setup_db(db)
+	
+	connect, args, kwargs = which_db(db)
+	
+	con = connect(*args, **kwargs)
+	cur = con.cursor()
+	
+	sqlite_code = 'DELETE FROM interesting_articles WHERE link=?;'
+	postgres_code = 'DELETE FROM interesting_articles WHERE link=%s;'
+	
+	code = postgres_code if db == 'postgresql' else sqlite_code
+	
+	cur.execute(code, (link,))
+	con.commit()
+	con.close()
+
+def remove_from_blacklist(link, db='sqlite'):
+	setup_db(db)
+	
+	connect, args, kwargs = which_db(db)
+	
+	con = connect(*args, **kwargs)
+	cur = con.cursor()
+	
+	sqlite_code = 'DELETE FROM blacklist WHERE link=?;'
+	postgres_code = 'DELETE FROM blacklist WHERE link=%s;'
+	
+	code = postgres_code if db == 'postgresql' else sqlite_code
+	
+	cur.execute(code, (link,))
+	con.commit()
+	con.close()
+
 def setup_db(db='sqlite'):
 	connect, args, kwargs = which_db(db)
 	
@@ -160,14 +267,23 @@ def setup_db(db='sqlite'):
 	sqlite_code = """CREATE TABLE IF NOT EXISTS interesting_articles
 			(id INTEGER PRIMARY KEY AUTOINCREMENT,
 				title TEXT, link TEXT, summary TEXT, source TEXT,
-				UNIQUE(link));"""
+				UNIQUE(link));
+		CREATE TABLE IF NOT EXISTS blacklist
+			(id INTEGER PRIMARY KEY AUTOINCREMENT,
+				title TEXT, link TEXT, summary TEXT, source TEXT,
+				UNIQUE(link))"""
 	postgres_code = """CREATE TABLE IF NOT EXISTS interesting_articles
 			(id SERIAL,	title TEXT, link TEXT, summary TEXT,
-				source TEXT, UNIQUE(link));"""
+				source TEXT, UNIQUE(link));
+		CREATE TABLE IF NOT EXISTS blacklist
+			(id SERIAL, title TEXT, link TEXT, summary TEXT,
+				source TEXT, UNIQUE(link))"""
 	if db == 'sqlite':
-		cur.execute(sqlite_code)
+		code = sqlite_code
 	elif db == 'postgresql':
-		cur.execute(postgres_code)
+		code = postgres_code
+	for statement in code.split(';'):
+		cur.execute(statement)
 	con.commit()
 	con.close()
 

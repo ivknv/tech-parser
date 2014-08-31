@@ -256,6 +256,22 @@ def go_to_url(addr):
 	recommend.add_article(addr, db=config.db)
 	redirect(addr)
 
+@route('/histadd/<addr:path>')
+def add_to_history(addr):
+	recommend.add_article(addr, db=config.db)
+
+@route('/blacklistadd/<addr:path>')
+def add_to_blacklist(addr):
+	recommend.add_article_to_blacklist(addr, db=config.db)
+
+@route('/blacklistrm/<addr:path>')
+def rm_from_blacklist(addr):
+	recommend.remove_from_blacklist(addr, db=config.db)
+
+@route('/histrm/<addr:path>')
+def rm_from_history(addr):
+	recommend.remove_from_history(addr, db=config.db)
+
 @route('/history')
 @route('/history/<page_number>')
 def show_history(page_number=1):
@@ -274,6 +290,8 @@ def show_history(page_number=1):
 		qs = q.lower().split()
 		articles = filter(lambda x: has_words(qs, x), articles)
 	
+	articles = map(lambda x: replace_newlines(escape_link(x)), articles)
+	
 	all_articles = articles
 	articles = split_into_pages(articles, 30)
 	try:
@@ -287,6 +305,40 @@ def show_history(page_number=1):
 		q=q,
 		all_articles=all_articles,)
 
+@route('/blacklist')
+@route('/blacklist/<page_number>')
+def show_blacklist(page_number=1):
+	history_page = mylookup.get_template('blacklist.html')
+	q = request.GET.get('q', '')
+	
+	articles = recommend.get_blacklist(db=config.db)
+	articles.reverse()
+	
+	try:
+		page_number = int(page_number)
+	except ValueError:
+		page_number = 1
+	
+	if q:
+		qs = q.lower().split()
+		articles = filter(lambda x: has_words(qs, x), articles)
+	
+	articles = map(lambda x: replace_newlines(escape_link(x)), articles)
+	
+	all_articles = articles
+	articles = split_into_pages(articles, 30)
+	try:
+		requested_page = articles[page_number-1]
+	except IndexError:
+		requested_page = []
+	
+	return history_page.render(articles=requested_page,
+		num_pages=len(articles),
+		page_num=page_number,
+		q=q,
+		all_articles=all_articles)
+
+
 def has_words(qs, article):
 	"""Check if article title contains words:"""
 	
@@ -297,23 +349,21 @@ def has_words(qs, article):
 			return False
 	return True
 
-def prepare_articles(articles, escape=True):
+def escape_link(article):
 	"""Escape HTML tags, etc."""
 	
-	new_articles = []
+	new_article = {}
+	new_article.update(article)
 	
-	for article in articles:
-		if escape:
-			article[0]['title'] = article[0]['title'].replace('&', '&amp;')
-			article[0]['title'] = article[0]['title'].replace('<', '&lt;')
-			article[0]['title'] = article[0]['title'].replace('>', '&gt;')
-			article[0]['title'] = article[0]['title'].replace('"', '&quot;')
-		link = unicode_(article[0]['link']).encode('utf-8')
-		article[0]['link'] = urlencode({'': link})[1:]
-		article[0]['summary'] = article[0]['summary'].replace('\n', '<br/>')
-		new_articles.append(article)
+	new_article['link'] = urlencode({'': new_article['link']})[1:]
+	return new_article
+
+def replace_newlines(article):
+	new_article = {}
+	new_article.update(article)
+	new_article['summary'] = new_article['summary'].replace('\n', '<br/>')
 	
-	return new_articles
+	return new_article
 
 @route("/")
 @route("/<page_number>")
@@ -339,7 +389,7 @@ def article_list(page_number=1):
 		qs = q.lower().split()
 		articles = filter(lambda x: has_words(qs, x[0]), articles)
 	
-	articles = prepare_articles(articles, False)
+	articles = map(lambda x: replace_newlines(escape_link(x[0])), articles)
 	all_articles = articles
 	articles = split_into_pages(articles, 30)
 	try:
@@ -351,8 +401,7 @@ def article_list(page_number=1):
 		num_pages=len(articles),
 		page_num=page_number,
 		q=q,
-		all_articles=all_articles,
-		history=False)
+		all_articles=all_articles,)
 
 class ParserDaemon(Daemon):
 	def __init__(self):
