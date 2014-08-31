@@ -19,6 +19,42 @@
 					$summary.fadeOut('fast');
 				}
 			}
+			
+			function ignore_article(element) {
+				var $summary = $(element).parent('.summary');
+				var $article = $summary.parent('.article');
+				var link = $article.attr('data-escaped-link');
+				$.get('/blacklistadd/' + link, function(data) {
+					$article.fadeOut();
+				});
+			}
+			
+			function add_to_history(element) {
+				var $summary = $(element).parent('.summary');
+				var $article = $summary.parent('.article');
+				var link = $article.attr('data-escaped-link');
+				$.get('/histadd/' + link, function(data) {
+					toggleText($article.find('h3 a'));
+				});
+			}
+			
+			function remove_from(where, element) {
+				var $summary = $(element).parent('.summary');
+				var $article = $summary.parent('.article');
+				var link = $article.attr('data-escaped-link');
+				
+				if (where == 'history' || where == 'blacklist') {
+					if (where == 'history') {
+						var url = '/histrm/' + link;
+					} else if (where == 'blacklist') {
+						var url = '/blacklistrm/' + link;
+					}
+					$.get(url, function(data) {
+						$article.fadeOut();
+					});
+				}
+			}
+			
 			$(document).ready(function() {
 				var valueBefore = $('#searchbox input').css('width');
 				$('#searchbox input').focusin(function() {

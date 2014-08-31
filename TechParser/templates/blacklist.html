@@ -1,17 +1,17 @@
 <%inherit file="base.html"/>
-<%block name="title">History</%block>
+<%block name="title">Blacklist</%block>
 <%block name="content">
 	<div id="searchbox">
-		<form method="get" action="/history">
+		<form method="get" action="/blacklist">
 			<input name="q" type="search" placeholder="Search articles" value='${q}' autocomplete="off">
 			<button type="submit">Search</button>
 		</form>
 		% if q:
 			<br/>
-			<a href="/history">Go back</a>
+			<a href="/blacklist">Go back</a>
 		% endif
 		<a href="/">Main page</a>
-		<a href="/blacklist">Blacklist</a>
+		<a href="/history">History</a>
 	</div>
 	% for article in articles:
 		<div class="article" data-escaped-link="${article['link']}">
@@ -30,11 +30,8 @@
 				<a href="/go/${article['link']}" target="_blank">
 					Open article in new tab
 				</a><br/>
-				<a style="cursor: pointer" onclick="remove_from('history', this)">
-					Remove from history
-				</a><br/>
-				<a onclick="ignore_article(this);" style="cursor: pointer;">
-					Don't want to see articles like this?
+				<a style="cursor: pointer" onclick="remove_from('blacklist', this)">
+					Remove from blacklist
 				</a>
 				<p>
 					<a data-pocket-label="pocket" data-pocket-count="horizontal"
@@ -46,13 +43,13 @@
 	% endfor
 	<div id="pagination">
 		% if page_num > 1:
-			<a href="/history/${page_num-1}?q=${q}">Previous</a>
+			<a href="/blacklist/${page_num-1}?q=${q}">Previous</a>
 		% endif
 		
 		<a class="current">${ page_num }</a>
 		
 		% if page_num < num_pages:
-			<a href="/history/${page_num+1}?q=${q}">Next</a>
+			<a href="/blacklist/${page_num+1}?q=${q}">Next</a>
 		% endif
 	</div>
 	<script type="text/javascript">!function(d,i){if(!d.getElementById(i)){var j=d.createElement("script");j.id=i;j.src="https://widgets.getpocket.com/v1/j/btn.js?v=1";var w=d.getElementById(i);d.body.appendChild(j);}}(document,"pocket-btn-js");</script>

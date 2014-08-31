@@ -11,28 +11,35 @@
 			<a href="/">Go back</a>
 		% endif
 		<a href="/history">History</a>
+		<a href="/blacklist">Blacklist</a>
 	</div>
 	% for article in articles:
-		<div class="article">
+		<div class="article" data-escaped-link="${article['link']}">
 			<h3>
-				<a class="open-tab" target="_blank" href="/go/${article[0]['link']}">
-					<img src="/static/icons/${article[0]['source']}.ico" width="16" />
+				<a class="open-tab" target="_blank" href="/go/${article['link']}">
+					<img src="/static/icons/${article['source']}.ico" width="16" />
 				</a>
-				<a data-spoiler='true' class="${article[0]['source']}" onclick="toggleText(this)">
-					${article[0]['title']}
+				<a data-spoiler='true' class="${article['source']}" onclick="toggleText(this)">
+					${article['title']}
 				</a>
 			</h3>
 			<div class="summary">
 				<p>
-					${article[0]['summary']}
+					${article['summary']}
 				</p>
-				<a target="_blank" href="/go/${article[0]['link']}">
+				<a target="_blank" href="/go/${article['link']}">
 					Open article in new tab
+				</a><br/>
+				<a onclick="add_to_history(this);" style="cursor: pointer">
+					Already read this?
+				</a><br/>
+				<a onclick="ignore_article(this);" style="cursor: pointer;">
+					Don't want to see articles like this?
 				</a>
 				<p>
 					<a data-pocket-label="pocket" data-pocket-count="horizontal"
 						class="pocket-btn" data-lang="en"
-						data-save-url="${article[0]['link']}"></a>
+						data-save-url="${article['link']}"></a>
 				</p>
 			</div>
 		</div>
