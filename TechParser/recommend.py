@@ -150,7 +150,7 @@ def add_to_interesting(article, db='sqlite'):
 	cur.execute('SELECT count(link) FROM interesting_articles;')
 	if cur.fetchone()[0] > 75:
 		cur.execute("""DELETE FROM interesting_articles
-			WHERE id == (SELECT MIN(id) FROM interesting_articles);""")
+			WHERE id = (SELECT MIN(id) FROM interesting_articles);""")
 	sqlite_code = """INSERT INTO
 			interesting_articles(title, link, summary, source) VALUES(?, ?, ?, ?);"""
 	postgres_code = """INSERT INTO
