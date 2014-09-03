@@ -49,9 +49,9 @@ def find_similiar(articles, db='sqlite'):
 			continue
 		
 		score = 0.0
-		for interesting_article in interesting_articles:
+		for interesting_article in interesting_articles[:75]:
 			score += get_similarity(article, interesting_article)
-		for ignored_article in blacklist:
+		for ignored_article in blacklist[:75]:
 			score -= get_similarity(article, ignored_article)
 		
 		if [article, score] not in similiar_articles:
@@ -99,26 +99,34 @@ def get_interesting_articles(db='sqlite'):
 	connect, args, kwargs = which_db(db)
 	con = connect(*args, **kwargs)
 	cur = con.cursor()
-	cur.execute('SELECT * FROM interesting_articles;')
+	cur.execute('''SELECT title, link, summary, fromrss, icon, color, source
+		FROM interesting_articles;''')
 	res = cur.fetchall()
 	con.close()
-	return [{'title': x[1],
-			'link': x[2],
-			'summary': x[3],
-			'source': x[4]} for x in res]
+	return [{'title': x[0],
+			'link': x[1],
+			'summary': x[2],
+			'fromrss': x[3],
+			'icon': x[4],
+			'color': x[5],
+			'source': x[6]} for x in res]
 
 def get_blacklist(db='sqlite'):
 	setup_db(db)
 	connect, args, kwargs = which_db(db)
 	con = connect(*args, **kwargs)
 	cur = con.cursor()
-	cur.execute('SELECT * FROM blacklist;')
+	cur.execute('''SELECT title, link, summary, fromrss, icon, color, source
+		FROM blacklist;''')
 	res = cur.fetchall()
 	con.close()
-	return [{'title': x[1],
-			'link': x[2],
-			'summary': x[3],
-			'source': x[4]} for x in res]
+	return [{'title': x[0],
+			'link': x[1],
+			'summary': x[2],
+			'fromrss': x[3],
+			'icon': x[4],
+			'color': x[5],
+			'source': x[6]} for x in res]
 
 def add_article(addr, db='sqlite'):
 	f = open(os.path.join(logdir, "articles_dumped"), 'rb')
@@ -148,13 +156,15 @@ def add_to_interesting(article, db='sqlite'):
 	con = connect(*args, **kwargs)
 	cur = con.cursor()
 	cur.execute('SELECT count(link) FROM interesting_articles;')
-	if cur.fetchone()[0] > 75:
+	if cur.fetchone()[0] > 1000:
 		cur.execute("""DELETE FROM interesting_articles
 			WHERE id = (SELECT MIN(id) FROM interesting_articles);""")
 	sqlite_code = """INSERT INTO
-			interesting_articles(title, link, summary, source) VALUES(?, ?, ?, ?);"""
+			interesting_articles(title, link, summary, fromrss, icon, color, source)
+				VALUES(?, ?, ?, ?, ?, ?, ?);"""
 	postgres_code = """INSERT INTO
-			interesting_articles(title, link, summary, source) VALUES(%s, %s, %s, %s);"""
+			interesting_articles(title, link, summary, fromrss, icon, color, source)
+				VALUES(%s, %s, %s, %s, %s, %s, %s);"""
 	
 	if db == 'sqlite':
 		code = sqlite_code
@@ -162,8 +172,15 @@ def add_to_interesting(article, db='sqlite'):
 		code = postgres_code
 	
 	try:
-		cur.execute(code, (article[0]['title'], article[0]['link'],
-			article[0]['summary'], article[0]['source']))
+		title = article[0]['title']
+		link = article[0]['link']
+		summary = article[0]['summary']
+		source = article[0]['source']
+		fromrss = article[0].get('fromrss', 0)
+		icon = article[0].get('icon', '')
+		color = article[0].get('color', '#000')
+		
+		cur.execute(code, (title, link, summary, fromrss, icon, color, source))
 		con.commit()
 	except IntegrityError:
 		pass
@@ -201,15 +218,13 @@ def add_to_blacklist(article, db='sqlite'):
 	
 	con = connect(*args, **kwargs)
 	cur = con.cursor()
-	cur.execute('SELECT count(link) FROM blacklist;')
-	if cur.fetchone()[0] > 75:
-		cur.execute("""DELETE FROM blacklist
-			WHERE id == (SELECT MIN(id) FROM blacklist);""")
 
 	sqlite_code = """INSERT INTO
-			blacklist(title, link, summary, source) VALUES(?, ?, ?, ?);"""
+			blacklist(title, link, summary, fromrss, icon, color, source)
+				VALUES(?, ?, ?, ?, ?, ?, ?);"""
 	postgres_code = """INSERT INTO
-			blacklist(title, link, summary, source) VALUES(%s, %s, %s, %s);"""
+			blacklist(title, link, summary, fromrss, icon, color, source)
+				VALUES(%s, %s, %s, %s, %s, %s, %s);"""
 	
 	if db == 'sqlite':
 		code = sqlite_code
@@ -217,8 +232,14 @@ def add_to_blacklist(article, db='sqlite'):
 		code = postgres_code
 	
 	try:
-		cur.execute(code, (article[0]['title'], article[0]['link'],
-			article[0]['summary'], article[0]['source']))
+		title = article[0]['title']
+		link = article[0]['link']
+		summary = article[0]['summary']
+		source = article[0]['source']
+		fromrss = article[0].get('fromrss', 0)
+		icon = article[0].get('icon', '')
+		color = article[0].get('color', '#000')
+		cur.execute(code, (title, link, summary, fromrss, icon, color, source))
 		con.commit()
 	except IntegrityError:
 		pass
@@ -267,16 +288,20 @@ def setup_db(db='sqlite'):
 	sqlite_code = """CREATE TABLE IF NOT EXISTS interesting_articles
 			(id INTEGER PRIMARY KEY AUTOINCREMENT,
 				title TEXT, link TEXT, summary TEXT, source TEXT,
+				fromrss INTEGER, icon TEXT, color TEXT,
 				UNIQUE(link));
 		CREATE TABLE IF NOT EXISTS blacklist
 			(id INTEGER PRIMARY KEY AUTOINCREMENT,
+				fromrss INTEGER, icon TEXT, color TEXT,
 				title TEXT, link TEXT, summary TEXT, source TEXT,
 				UNIQUE(link))"""
 	postgres_code = """CREATE TABLE IF NOT EXISTS interesting_articles
 			(id SERIAL,	title TEXT, link TEXT, summary TEXT,
+				fromrss INTEGER, icon TEXT, color TEXT,
 				source TEXT, UNIQUE(link));
 		CREATE TABLE IF NOT EXISTS blacklist
 			(id SERIAL, title TEXT, link TEXT, summary TEXT,
+				fromrss INTEGER, icon TEXT, color TEXT,
 				source TEXT, UNIQUE(link))"""
 	if db == 'sqlite':
 		code = sqlite_code
