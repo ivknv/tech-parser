@@ -5,6 +5,7 @@ import grab
 from grab.error import GrabError
 import re
 from lxml.etree import tostring
+import feedparser
 
 try:
 	unicode_ = unicode
@@ -31,7 +32,7 @@ def escape_title(s):
 	s = s.replace('&', '&amp;')
 	s = s.replace('<', '&lt;')
 	s = s.replace('>', '&gt;')
-	s = s.replace('"', '&quot')
+	s = s.replace('"', '&quot;')
 	s = s.replace(u'»', '&raquo;')
 	s = s.replace(u'«', '&laquo;')
 	
@@ -110,3 +111,15 @@ def get_articles(grab_object, title_path, link_path, source, site_url="",
 			"summary": summary_text})
 	
 	return posts
+
+def parse_rss(url, source, icon='', color='#000'):
+	entries = feedparser.parse(url).entries
+	return [{'fromrss': 1,
+			'icon': icon,
+			'color': color,
+			'title': escape_title(i['title']),
+			'link': i['link'],
+			'source': source,
+			'summary': parse_article_image(i['summary']).decode() +
+					cut_text(remove_tags(i['summary']))}
+				for i in entries]

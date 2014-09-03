@@ -23,7 +23,7 @@ import argparse
 
 import sqlite3
 
-from TechParser import recommend
+from TechParser import recommend, parser
 
 try:
 	from urllib.parse import urlencode
@@ -119,10 +119,9 @@ def dump_articles():
 	counter = 0
 	completed = 0
 	
+	s = "\033[0;32m[{}%]\033[0m Parsing articles from {}... "
+	
 	for site in config.sites_to_parse:
-		
-		s = "\033[0;32m[{}%]\033[0m Parsing articles from {}... "
-		
 		log(s.format(completed, site), add_newline=False)
 		
 		module = config.sites_to_parse[site]["module"]
@@ -140,7 +139,31 @@ def dump_articles():
 			log(str(error), f=sys.stderr)
 		
 		counter += 1
-		completed = round(100.0 / len(config.sites_to_parse) * counter, 1)
+		completed = round(100.0 / (len(config.sites_to_parse) + len(config.rss_feeds)) * counter, 1)
+	
+	for feed in config.rss_feeds:
+		log(s.format(completed, feed), add_newline=False)
+		
+		url = config.rss_feeds[feed]["url"]
+		short_name = config.rss_feeds[feed]["short-name"]
+		icon = config.rss_feeds[feed]["icon"]
+		color = config.rss_feeds[feed]["color"]
+		if not len(icon):
+			icon = "#FFF"
+		
+		try:
+			before = len(articles)
+			articles += parser.parse_rss(url, short_name, icon, color)
+			after = len(articles)
+			difference = after - before
+			log("Found %d %s" %(difference,
+				simple_plural(difference, "article")))
+		except GrabError as error:
+			log("Fail")
+			log(str(error), f=sys.stderr)
+		
+		counter += 1
+		completed = round(100.0 / (len(config.sites_to_parse) + len(config.rss_feeds)) * counter, 1)
 	
 	log("\033[0;32m[{}%]\033[0m".format(completed))
 	

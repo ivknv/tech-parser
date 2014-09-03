@@ -17,11 +17,23 @@
 		<div class="article" data-escaped-link="${article['link']}">
 			<h3>
 				<a class="open-tab" target="_blank" href="/go/${article['link']}">
-					<img src="/static/icons/${article['source']}.ico" width="16" />
+					% if article.get('fromrss', 0):
+						% if len(article['icon']):
+							<img src="${article['icon']}" width="16" />
+						% endif
+					% else:
+						<img src="/static/icons/${article['source']}.ico" width="16" />
+					% endif
 				</a>
-				<a data-spoiler='true' class="${article['source']}" onclick="toggleText(this)">
-					${article['title']}
-				</a>
+				% if article.get('fromrss', 0):
+					<a data-spoiler="true" class="${article['source']}" style="color: ${article['color']}" onclick="toggleText(this)">
+						${article['title']}
+					</a>
+				% else:
+					<a data-spoiler="true" class="${article['source']}" onclick="toggleText(this)">
+						${article['title']}
+					</a>
+				% endif
 			</h3>
 			<div class="summary">
 				<p>
