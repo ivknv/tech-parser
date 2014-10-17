@@ -62,6 +62,17 @@ mylookup = TemplateLookup(directories=template_dir_path,
 		default_filters=["decode.utf8"],
 		input_encoding="utf-8", output_encoding="utf-8")
 
+def encoded_dict(in_dict):
+	out_dict = {}
+	for k, v in in_dict.iteritems():
+		if isinstance(v, unicode):
+			v = v.encode('utf8')
+		elif isinstance(v, str):
+			# Must be encoded in UTF-8
+			v.decode('utf8')
+		out_dict[k] = v
+	return out_dict
+
 def setup_db():
 	"""Setup archive database"""
 	
@@ -378,7 +389,7 @@ def escape_link(article):
 	new_article = {}
 	new_article.update(article)
 	
-	new_article['link'] = urlencode({'': new_article['link']})[1:]
+	new_article['link'] = urlencode(encoded_dict({'': new_article['link']}))[1:]
 	return new_article
 
 def replace_newlines(article):
