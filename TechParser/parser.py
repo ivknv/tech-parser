@@ -44,11 +44,11 @@ def parse_article_image(article, site_url=''):
 		img.set('class', '')
 		img.set('id', '')
 		img.set('align', '')
-		img.set('src', absolutize_link(img.get('src'), site_url))
+		img.set('src', absolutize_link(img.get('src', ''), site_url))
 		return tostring(img).strip()
 	except IndexError:
 		return b''
-	except AttributeError:
+	except AttributeError as e:
 		try:
 			img = grab.Grab(article).css_one('img:first-child')
 		except GrabError:
