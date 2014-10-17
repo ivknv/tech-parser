@@ -75,9 +75,8 @@ def get_articles(grab_object, title_path, link_path, source, site_url="",
 	if summary_path:
 		summary = grab_object.css_list(summary_path)
 		for i in summary:
-			for j in i.getchildren():
-				if j.tag in ['script', 'style']:
-					i.remove(j)
+			for j in i.cssselect('script') + i.cssselect('style'):
+				j.drop_tree()
 	else:
 		summary = []
 	
