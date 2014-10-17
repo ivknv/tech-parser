@@ -37,6 +37,11 @@ except NameError:
 
 sys.path.append(os.path.expanduser("~/.tech-parser"))
 
+try:
+	import user_parser_config as config
+except ImportError:
+	import TechParser.parser_config as config
+
 running_as_daemon = False
 
 module_path = os.path.dirname(os.path.realpath(__file__))
@@ -59,8 +64,8 @@ if not os.path.exists(os.path.join(logdir, "user_parser_config.py")):
 	f.close()
 
 mylookup = TemplateLookup(directories=template_dir_path,
-		default_filters=["decode.utf8"],
-		input_encoding="utf-8", output_encoding="utf-8")
+	default_filters=["decode.utf8"],
+	input_encoding="utf-8", output_encoding="utf-8")
 
 def encoded_dict(in_dict):
 	out_dict = {}
@@ -467,7 +472,7 @@ def run_server(host, port):
 	t1 = Thread(target=dump_articles_per, args=(config.update_interval,))
 	t1.daemon = True
 	t1.start()
-	run(host=host, port=port)
+	run(host=host, port=port, server=config.server)
 
 if __name__ == "__main__":
 	parser_daemon = ParserDaemon()
@@ -486,11 +491,6 @@ Available commands: start|stop|restart|update|run HOST:PORT""")
 	if args.config:
 		import imp
 		config = imp.load_source('config', args.config)
-	else:
-		try:
-			import user_parser_config as config
-		except ImportError:
-			import TechParser.parser_config as config
 	
 	if args.action:
 		if args.action[0] == "run":
