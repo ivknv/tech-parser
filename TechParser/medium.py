@@ -1,33 +1,33 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import grab
+import feedparser
 from TechParser import parser
 
 def get_articles(collections=[]):
-	g = grab.Grab()
-	parser.setup_grab(g)
-	
 	articles = []
 	titles = []
 	
 	if collections:
-		css_path = 'li.bucket-item .postItem .postItem-title a'
-		summary_path = 'li.bucket-item .postItem .postItem-snippet p'
-		
 		for collection in collections:
-			g.go('https://medium.com/%s' %collection)
+			parsed = feedparser.parse('https://medium.com/feed/{}'.format(collection))
 			
-			for article in parser.get_articles(g, css_path, css_path,
-				'medium', 'medium.com', summary_path):
+			for article in parsed['entries']:
 				if article['title'] not in titles:
+					summary = article['summary']
 					titles.append(article['title'])
-					articles.append(article)
+					articles.append({'title': article['title'],
+						'link': article['link'],
+						'source': 'medium',
+						'summary': summary})
 	else:
-		css_path = 'div.block-content .block-title a'
-		summary_path = 'div.block-content a.block-snippet'
-		g.go('https://medium.com')
-		articles += parser.get_articles(g, css_path, css_path,
-			'medium', 'medium.com', summary_path)
+		parsed = feedparser.parse('https://medium.com/feed/frontpage-picks')
+		for article in parsed['entries']:
+			summary = article['summary']
+			titles.append(article['title'])
+			articles.append({'title': article['title'],
+				'link': article['link'],
+				'source': 'medium',
+				'summary': summary})
 	
 	return articles

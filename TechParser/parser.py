@@ -98,10 +98,10 @@ def get_articles(grab_object, title_path, link_path, source, site_url="",
 			article_image = ''
 		
 		try:
-			summary_text = summary_text.text_content().strip()
+			summary_text = summary_text.text_content()
 			summary_text = article_image + cut_text(summary_text)
 		except AttributeError:
-			summary_text = cut_text(remove_tags(summary_text).strip())
+			summary_text = cut_text(remove_tags(summary_text))
 		
 		posts.append(
 			{"title": escape_title(title),
@@ -120,5 +120,5 @@ def parse_rss(url, source, icon='', color='#000'):
 			'link': i['link'],
 			'source': source,
 			'summary': parse_article_image(i['summary']).decode() +
-					cut_text(remove_tags(i['summary']))}
+					cut_text(i['summary'])}
 				for i in entries]
