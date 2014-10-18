@@ -14,7 +14,7 @@ def get_articles(collections=[]):
 			
 			for article in parsed['entries']:
 				if article['title'] not in titles:
-					summary = article['summary']
+					summary = parser.clear_attrs(article['summary'])
 					titles.append(article['title'])
 					articles.append({'title': article['title'],
 						'link': article['link'],
@@ -23,7 +23,7 @@ def get_articles(collections=[]):
 	else:
 		parsed = feedparser.parse('https://medium.com/feed/frontpage-picks')
 		for article in parsed['entries']:
-			summary = article['summary']
+			summary = parser.parser.clear_attrs(article['summary'])
 			titles.append(article['title'])
 			articles.append({'title': article['title'],
 				'link': article['link'],

@@ -5,6 +5,7 @@ import grab
 from grab.error import GrabError
 import re
 from lxml.etree import tostring
+from lxml.html import fromstring
 import feedparser
 
 try:
@@ -119,6 +120,19 @@ def parse_rss(url, source, icon='', color='#000'):
 			'title': escape_title(i['title']),
 			'link': i['link'],
 			'source': source,
-			'summary': parse_article_image(i['summary']).decode() +
-					cut_text(i['summary'])}
+			'summary': clear_attrs(i['summary'])}
 				for i in entries]
+
+def clear_attrs(s):
+	elmt = fromstring(s)
+	
+	elmt.attrib['class'] = ''
+	elmt.attrib['id'] = ''
+	elmt.attrib['style'] = ''
+	
+	for child in elmt.cssselect('*'):
+		child.attrib['class'] = ''
+		child.attrib['id'] = ''
+		child.attrib['style'] = ''
+	
+	return tostring(elmt).decode()
