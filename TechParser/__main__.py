@@ -210,8 +210,13 @@ def dump_articles():
 	shuffle(articles)
 	
 	log("Ranking articles...")
-	articles = recommend.find_similiar(articles, db=config.db)
-	articles.sort(key=lambda x: x[1], reverse=True)
+	num = len(recommend.get_interesting_articles(db=config.db))
+	num += len(recommend.get_blacklist(db=config.db))
+	if num >= 20:
+		articles = recommend.find_similiar(articles, db=config.db)
+		articles.sort(key=lambda x: x[1], reverse=True)
+	else:
+		articles = [[a, -1] for a in articles]
 	
 	log("Dumping data to file: articles_dumped...")
 	
