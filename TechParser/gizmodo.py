@@ -1,32 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import grab
+import feedparser
 from TechParser import parser
 
 def get_articles():
-	g = grab.Grab()
-	
-	parser.setup_grab(g)
-	
-	g.go("http://gizmodo.com")
-	
-	posts = []
-	
-	css_path1 = ".row.sidebar-item.js_sidebar-element .column .headline a"
-	css_path2 = "article.post.hentry.js_post-item header .headline a"
-	
-	posts += parser.get_articles(g, css_path1, css_path1,
-		"gizmodo", "gizmodo.com")
-	posts += parser.get_articles(g, css_path2, css_path2,
-		"gizmodo", "gizmodo.com")
-	
-	links = []
-	
-	for post in posts:
-		if post["link"] not in links:
-			links.append(post["link"])
-		else:
-			posts.remove(post)
-	
-	return posts
+	parsed = feedparser.parse('http://gizmodo.com/rss')
+	return [{'title': article['title'],
+		'link': article['link'],
+		'summary': parser.clear_attrs(article['summary']),
+		'source': 'gizmodo'} for article in parsed['entries']]
