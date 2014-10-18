@@ -69,8 +69,8 @@ mylookup = TemplateLookup(directories=template_dir_path,
 
 def encoded_dict(in_dict):
 	out_dict = {}
-	for k, v in in_dict.iteritems():
-		if isinstance(v, unicode):
+	for k, v in in_dict.items():
+		if isinstance(v, unicode_):
 			v = v.encode('utf8')
 		elif isinstance(v, str):
 			# Must be encoded in UTF-8
