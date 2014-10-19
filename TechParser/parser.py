@@ -113,11 +113,19 @@ def get_articles(grab_object, title_path, link_path, source, site_url="",
 	return posts
 
 def parse_rss(url, source, icon='', color='#000'):
-	entries = feedparser.parse(url).entries
+	entries = get_articles_from_rss(url, source)
 	return [{'fromrss': 1,
 			'icon': icon,
 			'color': color,
 			'title': escape_title(i['title']),
+			'link': i['link'],
+			'source': source,
+			'summary': clean_text(i['summary'])}
+				for i in entries]
+
+def get_articles_from_rss(url, source):
+	entries = feedparser.parse(url).entries
+	return [{'title': escape_title(i['title']),
 			'link': i['link'],
 			'source': source,
 			'summary': clean_text(i['summary'])}
