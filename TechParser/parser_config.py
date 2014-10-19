@@ -48,7 +48,7 @@ sites_to_parse = {
 	
 	"Engadget": { # engadget.com
 		"module": engadget,
-		"kwargs": {"start_page": 1, "end_page": 5}
+		"kwargs": {}
 	},
 	
 	"Slashdot": { # slashdot.org
@@ -225,6 +225,8 @@ host = "0.0.0.0" # Server host
 port = "8080" # Server port
 
 # Server to use
+# It's recommended to use tornado.
+# You can install it by running pip install tornado
 server = "auto" # See http://bottlepy.org/docs/dev/deployment.html#switching-the-server-backend
 
 save_articles = False # Save articles into db.
