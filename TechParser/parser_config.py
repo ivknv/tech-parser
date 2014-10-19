@@ -84,7 +84,7 @@ sites_to_parse = {
 	
 	"Android Central": { # www.androidcentral.com
 		"module": androidcentral,
-		"kwargs": {"start_page": 1, "end_page": 5}
+		"kwargs": {}
 	},
 	
 	"The Verge": { # www.theverge.com
