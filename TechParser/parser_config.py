@@ -43,7 +43,7 @@ sites_to_parse = {
 	
 	"VentureBeat": { # venturebeat.com
 		"module": venturebeat,
-		"kwargs": {"start_page": 1, "end_page": 3}
+		"kwargs": {}
 	},
 	
 	"Engadget": { # engadget.com
