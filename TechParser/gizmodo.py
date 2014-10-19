@@ -8,5 +8,5 @@ def get_articles():
 	parsed = feedparser.parse('http://gizmodo.com/rss')
 	return [{'title': article['title'],
 		'link': article['link'],
-		'summary': parser.clear_attrs(article['summary']),
+		'summary': parser.clean_text(article['summary']),
 		'source': 'gizmodo'} for article in parsed['entries']]

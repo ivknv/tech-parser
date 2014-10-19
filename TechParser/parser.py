@@ -120,7 +120,7 @@ def parse_rss(url, source, icon='', color='#000'):
 			'title': escape_title(i['title']),
 			'link': i['link'],
 			'source': source,
-			'summary': clear_attrs(i['summary'])}
+			'summary': clean_text(i['summary'])}
 				for i in entries]
 
 def clear_attrs(s):
@@ -136,3 +136,13 @@ def clear_attrs(s):
 		child.attrib['style'] = ''
 	
 	return tostring(elmt).decode()
+
+def remove_bad_tags(s):
+	elmt = fromstring(s)
+	for bad in elmt.cssselect('script, style, iframe'):
+		bad.drop_tree()
+	
+	return tostring(elmt).decode()
+
+def clean_text(s):
+	return clear_attrs(remove_bad_tags(s))
