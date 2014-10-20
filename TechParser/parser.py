@@ -117,19 +117,32 @@ def parse_rss(url, source, icon='', color='#000'):
 	return [{'fromrss': 1,
 			'icon': icon,
 			'color': color,
-			'title': escape_title(i['title']),
+			'title': i['title'],
 			'link': i['link'],
 			'source': source,
-			'summary': clean_text(i['summary'])}
+			'summary': i['summary']}
 				for i in entries]
 
 def get_articles_from_rss(url, source, parse_image=True):
-	entries = feedparser.parse(url).entries
-	return [{'title': escape_title(i['title']),
-			'link': i['link'],
+	parsed_entries = feedparser.parse(url).entries
+	entries = []
+	for entry in parsed_entries:
+		cleaned = clean_text(entry['summary'], parse_image)
+		text = cleaned[0]
+		image = cleaned[1]
+		if parse_image and not len(image):
+			for link in entry['links']:
+				if link.get('type', '').startswith('image/'):
+					image = '<img src="{}" />'.format(link['href'])
+					text = image + text
+					break
+		
+		entries.append({'title': escape_title(entry['title']),
+			'link': entry['link'],
 			'source': source,
-			'summary': clean_text(i['summary'], parse_image)}
-				for i in entries]
+			'summary': text})
+	
+	return entries
 
 def remove_bad_tags(s):
 	elmt = fromstring(s)
@@ -140,4 +153,4 @@ def remove_bad_tags(s):
 
 def clean_text(s, parse_image=True):
 	image = parse_article_image(s).decode() if parse_image else ''
-	return image + remove_tags((remove_bad_tags(s)))
+	return (image + remove_tags((remove_bad_tags(s))), image)

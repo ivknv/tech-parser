@@ -10,24 +10,18 @@ def get_articles(collections=[]):
 	
 	if collections:
 		for collection in collections:
-			parsed = feedparser.parse('https://medium.com/feed/{}'.format(collection))
+			parsed = parser.get_articles_from_rss(
+				'https://medium.com/feed/{}'.format(collection), 'medium')
 			
-			for article in parsed['entries']:
+			for article in parsed:
 				if article['title'] not in titles:
-					summary = parser.clean_text(article['summary'])
 					titles.append(article['title'])
-					articles.append({'title': article['title'],
-						'link': article['link'],
-						'source': 'medium',
-						'summary': summary})
+					articles.append(article)
 	else:
-		parsed = feedparser.parse('https://medium.com/feed/frontpage-picks')
-		for article in parsed['entries']:
-			summary = parser.parser.clean_text(article['summary'])
+		parsed = parser.get_articles_from_rss(
+			'https://medium.com/feed/frontpage-picks', 'medium')
+		for article in parsed:
 			titles.append(article['title'])
-			articles.append({'title': article['title'],
-				'link': article['link'],
-				'source': 'medium',
-				'summary': summary})
+			articles.append(article)
 	
 	return articles
