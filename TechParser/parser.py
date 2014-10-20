@@ -153,4 +153,4 @@ def remove_bad_tags(s):
 
 def clean_text(s, parse_image=True):
 	image = parse_article_image(s).decode() if parse_image else ''
-	return (image + remove_tags((remove_bad_tags(s))), image)
+	return (image + cut_text(remove_tags((remove_bad_tags(s)))), image)
