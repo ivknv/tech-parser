@@ -5,7 +5,7 @@ import grab
 from grab.error import GrabError
 import re
 from lxml.etree import tostring
-from lxml.html import fromstring
+from lxml.html import fromstring, Element
 import feedparser
 
 try:
@@ -123,27 +123,13 @@ def parse_rss(url, source, icon='', color='#000'):
 			'summary': clean_text(i['summary'])}
 				for i in entries]
 
-def get_articles_from_rss(url, source):
+def get_articles_from_rss(url, source, parse_image=True):
 	entries = feedparser.parse(url).entries
 	return [{'title': escape_title(i['title']),
 			'link': i['link'],
 			'source': source,
-			'summary': clean_text(i['summary'])}
+			'summary': clean_text(i['summary'], parse_image)}
 				for i in entries]
-
-def clear_attrs(s):
-	elmt = fromstring(s)
-	
-	elmt.attrib['class'] = ''
-	elmt.attrib['id'] = ''
-	elmt.attrib['style'] = ''
-	
-	for child in elmt.cssselect('*'):
-		child.attrib['class'] = ''
-		child.attrib['id'] = ''
-		child.attrib['style'] = ''
-	
-	return tostring(elmt).decode()
 
 def remove_bad_tags(s):
 	elmt = fromstring(s)
@@ -152,5 +138,6 @@ def remove_bad_tags(s):
 	
 	return tostring(elmt).decode()
 
-def clean_text(s):
-	return clear_attrs(remove_bad_tags(s))
+def clean_text(s, parse_image=True):
+	image = parse_article_image(s).decode() if parse_image else ''
+	return image + remove_tags((remove_bad_tags(s)))
