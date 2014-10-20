@@ -159,7 +159,7 @@ sites_to_parse = {
 	
 	"Trashbox": { # trashbox.ru
 		"module": trashbox,
-		"kwargs": {"end_page": 3}
+		"kwargs": {}
 	},
 	
 	"Droider": { # droider.ru
