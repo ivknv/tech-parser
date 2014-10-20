@@ -53,7 +53,7 @@ sites_to_parse = {
 	
 	"Slashdot": { # slashdot.org
 		"module": slashdot,
-		"kwargs": {"start_page": 1, "end_page": 3}
+		"kwargs": {}
 	},
 	
 	"Gizmodo": { # gizmodo.com
