@@ -164,7 +164,7 @@ sites_to_parse = {
 	
 	"Droider": { # droider.ru
 		"module": droider,
-		"kwargs": {"start_page": 1, "end_page": 2}
+		"kwargs": {}
 	},
 	
 	"Redroid": { # redroid.ru
