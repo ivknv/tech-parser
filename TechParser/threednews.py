@@ -1,21 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import grab
 from TechParser import parser
 
 def get_articles():
-	g = grab.Grab()
-	parser.setup_grab(g)
-	
 	articles = []
-	css_path = '''#news .content-block-data .header td a,
-	              #dontmiss .content-block-data .header td a,
-	              #reviews .content-block-data .header td a'''
-	summary_path = '.content-block-data .teaser'
 	
-	g.go('http://www.3dnews.ru')
-	articles += parser.get_articles(g, css_path, css_path,
-		'threednews', 'www.3dnews.ru', summary_path)
+	urls = ['http://www.3dnews.ru/news/rss',
+		'http://www.3dnews.ru/software-news/rss']
+	
+	for url in urls:
+		for article in parser.get_articles_from_rss(url, 'threednews'):
+			if not article in articles:
+				articles.append(article)
 	
 	return articles
