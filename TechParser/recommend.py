@@ -19,16 +19,19 @@ except ImportError:
 logdir = os.path.expanduser("~")
 logdir = os.path.join(logdir, ".tech-parser")
 
-def get_similarity(article1, article2):
-	pairs1 = get_pairs(prepare_string(article1['title']))
-	pairs2 = get_pairs(prepare_string(article2['title']))
-	
+r1 = re.compile(r"(?P<g1>\w+)n['\u2019]t", re.UNICODE)
+r2 = re.compile(r"(?P<g1>\w+)['\u2019]s", re.UNICODE)
+r3 = re.compile(r"(?P<g1>\w+)['\u2019]m", re.UNICODE)
+r4 = re.compile(r"(?P<g1>\w+)['\u2019]re", re.UNICODE)
+r5 = re.compile(r"(?P<g1>\w+)['\u2019]ve", re.UNICODE)
+r6 = re.compile(r"(?P<g1>\w+)['\u2019]d", re.UNICODE)
+r7 = re.compile(r"(?P<g1>\w+)['\u2019]ll", re.UNICODE)
+r8 = re.compile(r"gonna", re.UNICODE)
+r9 = re.compile(r"\W", re.UNICODE)
+
+def get_similarity(pairs1, pairs2):
 	len_all_pairs = len(pairs1) + len(pairs2)
-	shrd = []
-	for pair in pairs1:
-		if pair in pairs2:
-			if shrd.count(pair) < min(pairs1.count(pair), pairs2.count(pair)):
-				shrd.append(pair)
+	shrd = pairs1 & pairs2
 	
 	if len_all_pairs == 0:
 		return 0.0
@@ -39,9 +42,16 @@ def find_similiar(articles, db='sqlite'):
 	interesting_articles = get_interesting_articles(db)
 	blacklist = get_blacklist(db)
 	ignored_links = [i['link'] for i in blacklist]
-	similiar_articles = []
+	processed, scores = [], []
 	interesting_links = [i['link']
 		for i in interesting_articles]
+	
+	interesting_pairs = [get_pairs(prepare_string(i['title']))
+		for i in interesting_articles[:75]]
+	ignored_pairs = [get_pairs(prepare_string(i['title']))
+		for i in blacklist[:75]]
+	
+	zipped = zip(interesting_pairs, ignored_pairs)
 	
 	for article in articles:
 		if article['link'] in interesting_links or \
@@ -49,27 +59,21 @@ def find_similiar(articles, db='sqlite'):
 			continue
 		
 		score = 0.0
-		for interesting_article in interesting_articles[:75]:
-			score += get_similarity(article, interesting_article)
-		for ignored_article in blacklist[:75]:
-			score -= get_similarity(article, ignored_article)
 		
-		if [article, score] not in similiar_articles:
-			similiar_articles.append([article, score])
+		pairs1 = get_pairs(prepare_string(article['title']))
+		
+		for pairs2, pairs3 in zipped:
+			score += get_similarity(pairs1, pairs2)
+			score -= get_similarity(pairs1, pairs3)
+		
+		processed.append(article)
+		scores.append(score)
 	
-	return similiar_articles
+	return [[a, s] for a, s in zip(processed, scores)]
 
 def prepare_string(s, exclude=["a", "an", "the", "is", "am",
 		"are", "for", "that", "of", "to", "so", "in", "on"]):
 	s = s.strip().lower()
-	r1 = re.compile(r"(?P<g1>\w+)n['\u2019]t", re.UNICODE)
-	r2 = re.compile(r"(?P<g1>\w+)['\u2019]s", re.UNICODE)
-	r3 = re.compile(r"(?P<g1>\w+)['\u2019]m", re.UNICODE)
-	r4 = re.compile(r"(?P<g1>\w+)['\u2019]re", re.UNICODE)
-	r5 = re.compile(r"(?P<g1>\w+)['\u2019]ve", re.UNICODE)
-	r6 = re.compile(r"(?P<g1>\w+)['\u2019]d", re.UNICODE)
-	r7 = re.compile(r"(?P<g1>\w+)['\u2019]ll", re.UNICODE)
-	r8 = re.compile(r"gonna", re.UNICODE)
 	s = r1.sub("\g<g1> not", s)
 	s = r2.sub("\g<g1>", s)
 	s = r3.sub("\g<g1> am", s)
@@ -78,20 +82,14 @@ def prepare_string(s, exclude=["a", "an", "the", "is", "am",
 	s = r6.sub("\g<g1> would", s)
 	s = r7.sub("\g<g1> will", s)
 	s = r8.sub("going to", s)
-	words = re.split(r"\W", s)
-	for word in exclude:
-		while words.count(word) > 0:
-			words.remove(word)
+	words = r9.split(s)
 	
-	return [word for word in words if len(word)]
+	return [word for word in words if len(word) and word not in exclude]
 
 def get_pairs(words):
-	pairs = []
+	pairs = set()
 	for word in words:
-		if len(word) == 1:
-			pairs.append(word)
-		else:
-			pairs += [word[i:i+2] for i in range(len(word))]
+		pairs.update({word[i:i+2] for i in range(len(word))})
 	return pairs
 
 def get_interesting_articles(db='sqlite'):
