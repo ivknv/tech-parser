@@ -168,7 +168,7 @@ sites_to_parse = {
 	
 	"Redroid": { # redroid.ru
 		"module": redroid,
-		"kwargs": {"start_page": 1, "end_page": 1}
+		"kwargs": {}
 	},
 	
 	"3DNews": { # www.3dnews.ru
