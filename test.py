@@ -5,13 +5,13 @@ from TechParser import (smashingmagazine, digg, habrahabr, gizmodo, techcrunch, 
 venturebeat, zdnet, helpix, mobilereview, trashbox, readwrite, droider,
 redroid, hackernews, dzone, topdesignmag, reddit, medium, androidcentral,
 codeproject, engadget, flowa, ittoolbox, ixbt, maketecheasier, mashable,
-techrepublic, planetclojure, recode, slashdot, threednews, wired)
+techrepublic, planetclojure, recode, slashdot, threednews, wired, geektimes)
 
 parsers = [smashingmagazine, digg, habrahabr, gizmodo, techcrunch, verge,
 	venturebeat, zdnet, helpix, mobilereview, trashbox, readwrite, droider,
 	redroid, hackernews, dzone, topdesignmag, reddit, medium, androidcentral,
 	codeproject, engadget, flowa, ittoolbox, ixbt, maketecheasier, mashable,
-	techrepublic, planetclojure, recode, slashdot, threednews, wired]
+	techrepublic, planetclojure, recode, slashdot, threednews, wired, geektimes]
 
 def test(parsers=[[p, [], dict()] for p in parsers]):
 	total_correct, total_incorrect = 0.0, 0.0

@@ -226,6 +226,10 @@ a:hover {
 	color: #BE0000;
 }
 
+.geektimes {
+	color: #626D8D;
+}
+
 .article h3 a[data-spoiler='true'] {
 	outline: 0;
 	cursor: pointer;

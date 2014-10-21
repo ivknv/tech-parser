@@ -34,6 +34,7 @@ from TechParser import mobilereview
 from TechParser import helpix
 from TechParser import recode
 from TechParser import zdnet
+from TechParser import geektimes
 
 sites_to_parse = {
 	"Habrahabr": { # habrahabr.ru
@@ -199,6 +200,11 @@ sites_to_parse = {
 	"ZDNet": { # www.zdnet.com
 		"module": zdnet,
 		"kwargs": {}
+	},
+		
+	"Geektimes": { # geektimes.ru
+		"module": geektimes,
+		"kwargs": {'hubs': []}
 	}
 }
 
