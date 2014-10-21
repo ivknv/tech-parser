@@ -284,8 +284,6 @@ def load_articles():
 	articles = pickle.loads(dumped)
 	
 	log("Done!")
-	sys.stdout.write("Done!\n")
-	sys.stdout.flush()
 	
 	return articles
 
