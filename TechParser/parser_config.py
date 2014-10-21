@@ -116,9 +116,9 @@ sites_to_parse = {
 		"kwargs": {'categories': ['all']}
 	},
 	
-	"Hacker News": { # news.ycombinator.com/newest
+	"Hacker News": { # news.ycombinator.com
 		"module": hackernews,
-		"kwargs": {"start_page": 1, "end_page": 5}
+		"kwargs": {}
 	},
 	
 	"Mashable": { # mashable.com
