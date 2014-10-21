@@ -6,7 +6,7 @@ from TechParser import venturebeat
 from TechParser import engadget
 from TechParser import techcrunch
 from TechParser import techrepublic
-#from TechParser import readwrite
+from TechParser import readwrite
 from TechParser import smashingmagazine
 from TechParser import gizmodo
 from TechParser import slashdot
@@ -66,11 +66,10 @@ sites_to_parse = {
 		"kwargs": {}
 	},
 	
-	# Works only with Selenium (opens REAL browser)
-	#"Read/Write Web": { # readwrite.com
-	#	"module": readwrite,
-	#	"kwargs": {"browser": "firefox"}
-	#},
+	"Read/Write Web": { # readwrite.com
+		"module": readwrite,
+		"kwargs": {"browser": "firefox"}
+	},
 	
 	"Tech Republic": { # techrepublic.com
 		"module": techrepublic,
