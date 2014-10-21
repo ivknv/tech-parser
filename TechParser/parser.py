@@ -4,8 +4,8 @@
 import grab
 from grab.error import GrabError
 import re
-from lxml.etree import tostring
-from lxml.html import fromstring, Element
+from lxml.html import fromstring, tostring
+from lxml.etree import Error as LXMLError
 import feedparser
 
 try:
@@ -153,5 +153,8 @@ def remove_bad_tags(s):
 	return tostring(elmt).decode()
 
 def clean_text(s, parse_image=True):
-	image = parse_article_image(s).decode() if parse_image else ''
-	return (image + cut_text(remove_tags((remove_bad_tags(s)))), image)
+	try:
+		image = parse_article_image(s).decode() if parse_image else ''
+		return (image + cut_text(remove_tags((remove_bad_tags(s)))), image)
+	except LXMLError:
+		return ('', '')

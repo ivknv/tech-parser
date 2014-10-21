@@ -1,22 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import grab
 from TechParser import parser
 
-def get_articles(start_page=1, end_page=1):
-	g = grab.Grab()
-	parser.setup_grab(g)
+def get_articles(categories=['all']):
+	articles = []
+	cids = {'all': '1', 'android': '22', 'ios': '25', 'c++': '2',
+		'c#': '3', 'web': '23'}
+	if 'all' in categories:
+		ids = [cids['all']]
+	else:
+		ids = [cids[cat] for cat in categories]
 	
-	posts = []
-	css_path = "tr td .content-list-item .title a"
-	summary_path = ".content-list-item .description"
+	urls = ['http://www.codeproject.com/WebServices/ArticleRSS.aspx?cat='+i
+		for i in ids]
 	
-	for i in range(start_page, end_page+1):
-		g.go("http://www.codeproject.com/script/Articles/Latest.aspx?pgnum=%d"
-			%i)
-		
-		posts += parser.get_articles(g, css_path, css_path,
-			"codeproject", "www.codeproject.com", summary_path)
+	for url in urls:
+		parsed = parser.get_articles_from_rss(url, 'codeproject')
+		for article in parsed:
+			if not article in articles:
+				articles.append(article)
 	
-	return posts
+	return articles

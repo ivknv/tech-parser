@@ -114,7 +114,7 @@ sites_to_parse = {
 	
 	"Code Project": { # www.codeproject.com
 		"module": codeproject,
-		"kwargs": {"start_page": 1, "end_page": 1}
+		"kwargs": {'categories': ['all']}
 	},
 	
 	"Hacker News": { # news.ycombinator.com/newest
