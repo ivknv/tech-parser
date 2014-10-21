@@ -61,8 +61,9 @@ def parse_article_image(article, site_url=''):
 		return tostring(img).strip()
 
 def cut_text(s):
-	if len(s) > 300:
-		return s[:300] + '...'
+	splitted = s.split(' ')
+	if len(splitted) > 150:
+		return ' '.join(splitted[:150]) + '...'
 	elif not len(s):
 		return 'No summary text available.'
 	return s
