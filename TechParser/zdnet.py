@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import feedparser
-from TechParser.parser import cut_text, remove_tags
+from TechParser import parser
 
 def get_articles():
 	urls = ['http://www.zdnet.com/news/rss.xml',
@@ -10,17 +9,10 @@ def get_articles():
 		'http://www.zdnet.com/reviews/rss.xml']
 	
 	articles = []
-	titles = []
 	
 	for url in urls:
-		res = feedparser.parse(url).entries
-		entries = [{'title': i['title'],
-					'link': i['link'],
-					'summary': cut_text(remove_tags(i['summary'])),
-					'source': 'zdnet'} for i in res]
-		for entry in entries:
-			if entry['title'].lower() not in titles:
-				titles.append(entry['title'].lower())
-				articles.append(entry)
+		for article in parser.get_articles_from_rss(url, 'zdnet'):
+			if not article in articles:
+				articles.append(article)
 	
 	return articles
