@@ -93,7 +93,7 @@ sites_to_parse = {
 	
 	"Top Design Magazine": { # www.topdesignmag.com
 		"module": topdesignmag,
-		"kwargs": {"start_page": 1, "end_page": 1}
+		"kwargs": {}
 	},
 	
 	"Flowa": { # flowa.fi
