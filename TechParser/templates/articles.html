@@ -16,7 +16,7 @@
 	% for article in articles:
 		<div class="article" data-escaped-link="${article['link']}">
 			<h3>
-				<a class="open-tab" target="_blank" href="/go/${article['link']}">
+				<a class="open-tab" target="_blank" href="${article['original_link']}">
 					% if article.get('fromrss', 0):
 						% if len(article['icon']):
 							<img src="${article['icon']}" width="16" />
@@ -39,15 +39,29 @@
 				<div>
 					${article['summary']}
 				</div>
-				<a target="_blank" href="/go/${article['link']}">
+				<a target="_blank" href="${article['original_link']}">
 					Open article in new tab
 				</a><br/>
-				<a onclick="add_to_history(this);" style="cursor: pointer">
-					Already read this?
-				</a><br/>
-				<a onclick="ignore_article(this);" style="cursor: pointer;">
-					Don't want to see articles like this?
-				</a>
+				% if article['liked']:
+					<a class="like liked">
+						<img src="/static/icons/like-32.ico" />
+					</a>
+				% else:
+					<a onclick="add_to_history(this);$(this).attr('class', 'like liked')"
+						class="like">
+						<img src="/static/icons/like-32.ico" />
+					</a>
+				% endif
+				% if article['disliked']:
+					<a class="dislike disliked">
+						<img src="/static/icons/like-32.ico" />
+					</a>
+				% else:
+					<a onclick="ignore_article(this);$(this).attr('class', 'dislike disliked')"
+						class="dislike">
+						<img src="/static/icons/dislike-32.ico" />
+					</a>
+				% endif
 				<p>
 					<a data-pocket-label="pocket" data-pocket-count="horizontal"
 						class="pocket-btn" data-lang="en"

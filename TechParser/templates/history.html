@@ -16,7 +16,7 @@
 	% for article in articles:
 		<div class="article" data-escaped-link="${article['link']}">
 			<h3>
-				<a class="open-tab" target="_blank" href="/go/${article['link']}">
+				<a class="open-tab" target="_blank" href="${article['original_link']}">
 					% if article.get('fromrss', 0):
 						% if len(article['icon']):
 							<img src="${article['icon']}" width="16" />
@@ -39,7 +39,7 @@
 				<div>
 					${article['summary']}
 				</div>
-				<a href="/go/${article['link']}" target="_blank">
+				<a href="${article['original_link']}" target="_blank">
 					Open article in new tab
 				</a><br/>
 				<a style="cursor: pointer" onclick="remove_from('history', this)">

@@ -67,6 +67,11 @@ mylookup = TemplateLookup(directories=template_dir_path,
 	default_filters=["decode.utf8"],
 	input_encoding="utf-8", output_encoding="utf-8")
 
+liked = recommend.get_interesting_articles(db=config.db)
+disliked = recommend.get_blacklist(db=config.db)
+liked_links = [i['link'] for i in liked]
+disliked_links = [i['link'] for i in disliked]
+
 def encoded_dict(in_dict):
 	out_dict = {}
 	for k, v in in_dict.items():
@@ -300,11 +305,23 @@ def go_to_url(addr):
 
 @route('/histadd/<addr:path>')
 def add_to_history(addr):
+	global liked, disliked, liked_links, disliked_links
+	
 	recommend.add_article(addr, db=config.db)
+	liked = recommend.get_interesting_articles(db=config.db)
+	disliked = recommend.get_blacklist(db=config.db)
+	liked_links = [i['link'] for i in liked]
+	disliked_links = [i['link'] for i in disliked]
 
 @route('/blacklistadd/<addr:path>')
 def add_to_blacklist(addr):
+	global liked, disliked, liked_links, disliked_links
+	
 	recommend.add_article_to_blacklist(addr, db=config.db)
+	liked = recommend.get_interesting_articles(db=config.db)
+	disliked = recommend.get_blacklist(db=config.db)
+	liked_links = [i['link'] for i in liked]
+	disliked_links = [i['link'] for i in disliked]
 
 @route('/blacklistrm/<addr:path>')
 def rm_from_blacklist(addr):
@@ -321,7 +338,6 @@ def show_history(page_number=1):
 	q = request.GET.get('q', '')
 	
 	articles = recommend.get_interesting_articles(db=config.db)
-	articles.reverse()
 	
 	try:
 		page_number = int(page_number)
@@ -354,7 +370,6 @@ def show_blacklist(page_number=1):
 	q = request.GET.get('q', '')
 	
 	articles = recommend.get_blacklist(db=config.db)
-	articles.reverse()
 	
 	try:
 		page_number = int(page_number)
@@ -396,9 +411,15 @@ def escape_link(article):
 	
 	new_article = {}
 	new_article.update(article)
+	new_article['original_link'] = new_article['link']
 	
 	new_article['link'] = urlencode(encoded_dict({'': new_article['link']}))[1:]
 	return new_article
+
+def set_liked(articles):
+	for article in articles:
+		article['liked'] = article['original_link'] in liked_links
+		article['disliked'] = article['original_link'] in disliked_links
 
 def replace_newlines(article):
 	new_article = {}
@@ -436,6 +457,7 @@ def article_list(page_number=1):
 	articles = split_into_pages(articles, 30)
 	try:
 		requested_page = articles[page_number-1]
+		set_liked(requested_page)
 	except IndexError:
 		requested_page = []
 	
