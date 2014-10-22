@@ -51,7 +51,12 @@ def find_similiar(articles, db='sqlite'):
 	ignored_pairs = [get_pairs(prepare_string(i['title']))
 		for i in blacklist[:75]]
 	
-	zipped = zip(interesting_pairs, ignored_pairs)
+	while len(interesting_pairs) > len(ignored_pairs):
+		ignored_pairs.append(set())
+	while len(ignored_pairs) > len(interesting_pairs):
+		interesting_pairs.append(set())
+	
+	zipped = list(zip(interesting_pairs, ignored_pairs))
 	
 	for article in articles:
 		if article['link'] in interesting_links or \
@@ -62,14 +67,16 @@ def find_similiar(articles, db='sqlite'):
 		
 		pairs1 = get_pairs(prepare_string(article['title']))
 		
-		for pairs2, pairs3 in zipped:
-			score += get_similarity(pairs1, pairs2)
-			score -= get_similarity(pairs1, pairs3)
+		for (pairs2, pairs3) in zipped:
+			if pairs2:
+				score += get_similarity(pairs1, pairs2)
+			if pairs3:
+				score -= get_similarity(pairs1, pairs3)
 		
 		processed.append(article)
 		scores.append(score)
 	
-	return [[a, s] for a, s in zip(processed, scores)]
+	return [[a, s] for (a, s) in zip(processed, scores)]
 
 def prepare_string(s, exclude=["a", "an", "the", "is", "am",
 		"are", "for", "that", "of", "to", "so", "in", "on"]):
