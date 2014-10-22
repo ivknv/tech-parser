@@ -1,7 +1,8 @@
 tech-parser
 ===========
 
-Parses articles from 32 sites and outputs it into HTML.
+Parses articles from 34 sites and outputs it into HTML.
+Also, it's some sort of RSS reader.
 
 You can see it in action [here](http://tech-parser.herokuapp.com).
 And [here's](https://github.com/SPython/web-tech-parser) repo for that Heroku app.
@@ -33,6 +34,7 @@ Current list of sites:
 	<li>reddit.com</li>
 	<li>mobile-review.com (russian)</li>
 	<li>ixbt.ru (russian)</li>
+	<li>readwrite.com</li>
 	<li>trashbox.ru (russian)</li>
 	<li>droider.ru (russian)</li>
 	<li>redroid.ru (russian)</li>
@@ -40,6 +42,7 @@ Current list of sites:
 	<li>helpix.ru (russian)</li>
 	<li>recode.net</li>
 	<li>zdnet.com</li>
+	<li>geektimes.ru (russian)</li>
 </ol>
 
 ## One awesome feature ##
@@ -99,6 +102,39 @@ and make it look like this:
 		#	"module": habrahabr,
 		#	"kwargs": {}
 		#},
+```
+
+### Adding RSS feeds ###
+Find the following line in your configuration:
+```python
+rss_feeds = {}
+```
+
+RSS feed should contain it's name, url, short name (without spaces and stuff like that), url to icon and title color.
+Example feeds:
+```python
+rss_feeds = {'CSS-tricks': {
+		'short-name': 'css-tricks',
+		'url': 'http://feeds.feedburner.com/CssTricks?format=xml',
+		'icon': 'http://css-tricks.com/favicon.ico',
+		'color': '#DA8817'
+	},
+	
+	'The Next Web':	{
+		'url': 'http://feeds2.feedburner.com/thenextweb',
+		'short-name': 'nextweb',
+		'icon': 'http://thenextweb.com/favicon.ico',
+		'color': '#F15A2F'
+	}
+}
+```
+
+### Asynchronous parsing ###
+You can set number of threads available for parsing.<br/>
+To do that you need to set ```num_threads``` in your configuration.<br/>
+Example:
+```python
+num_threads = 4
 ```
 
 ### Filters ###
