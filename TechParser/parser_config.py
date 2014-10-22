@@ -6,7 +6,7 @@ from TechParser import venturebeat
 from TechParser import engadget
 from TechParser import techcrunch
 from TechParser import techrepublic
-#from TechParser import readwrite
+from TechParser import readwrite
 from TechParser import smashingmagazine
 from TechParser import gizmodo
 from TechParser import slashdot
@@ -34,6 +34,7 @@ from TechParser import mobilereview
 from TechParser import helpix
 from TechParser import recode
 from TechParser import zdnet
+from TechParser import geektimes
 
 sites_to_parse = {
 	"Habrahabr": { # habrahabr.ru
@@ -43,17 +44,17 @@ sites_to_parse = {
 	
 	"VentureBeat": { # venturebeat.com
 		"module": venturebeat,
-		"kwargs": {"start_page": 1, "end_page": 3}
+		"kwargs": {}
 	},
 	
 	"Engadget": { # engadget.com
 		"module": engadget,
-		"kwargs": {"start_page": 1, "end_page": 5}
+		"kwargs": {}
 	},
 	
 	"Slashdot": { # slashdot.org
 		"module": slashdot,
-		"kwargs": {"start_page": 1, "end_page": 3}
+		"kwargs": {}
 	},
 	
 	"Gizmodo": { # gizmodo.com
@@ -66,11 +67,10 @@ sites_to_parse = {
 		"kwargs": {}
 	},
 	
-	# Works only with Selenium (opens REAL browser)
-	#"Read/Write Web": { # readwrite.com
-	#	"module": readwrite,
-	#	"kwargs": {"browser": "firefox"}
-	#},
+	"Read/Write Web": { # readwrite.com
+		"module": readwrite,
+		"kwargs": {"browser": "firefox"}
+	},
 	
 	"Tech Republic": { # techrepublic.com
 		"module": techrepublic,
@@ -84,7 +84,7 @@ sites_to_parse = {
 	
 	"Android Central": { # www.androidcentral.com
 		"module": androidcentral,
-		"kwargs": {"start_page": 1, "end_page": 5}
+		"kwargs": {}
 	},
 	
 	"The Verge": { # www.theverge.com
@@ -94,7 +94,7 @@ sites_to_parse = {
 	
 	"Top Design Magazine": { # www.topdesignmag.com
 		"module": topdesignmag,
-		"kwargs": {"start_page": 1, "end_page": 1}
+		"kwargs": {}
 	},
 	
 	"Flowa": { # flowa.fi
@@ -114,12 +114,12 @@ sites_to_parse = {
 	
 	"Code Project": { # www.codeproject.com
 		"module": codeproject,
-		"kwargs": {"start_page": 1, "end_page": 1}
+		"kwargs": {'categories': ['all']}
 	},
 	
-	"Hacker News": { # news.ycombinator.com/newest
+	"Hacker News": { # news.ycombinator.com
 		"module": hackernews,
-		"kwargs": {"start_page": 1, "end_page": 5}
+		"kwargs": {}
 	},
 	
 	"Mashable": { # mashable.com
@@ -159,17 +159,17 @@ sites_to_parse = {
 	
 	"Trashbox": { # trashbox.ru
 		"module": trashbox,
-		"kwargs": {"end_page": 3}
+		"kwargs": {}
 	},
 	
 	"Droider": { # droider.ru
 		"module": droider,
-		"kwargs": {"start_page": 1, "end_page": 2}
+		"kwargs": {}
 	},
 	
 	"Redroid": { # redroid.ru
 		"module": redroid,
-		"kwargs": {"start_page": 1, "end_page": 1}
+		"kwargs": {}
 	},
 	
 	"3DNews": { # www.3dnews.ru
@@ -200,6 +200,11 @@ sites_to_parse = {
 	"ZDNet": { # www.zdnet.com
 		"module": zdnet,
 		"kwargs": {}
+	},
+		
+	"Geektimes": { # geektimes.ru
+		"module": geektimes,
+		"kwargs": {'hubs': []}
 	}
 }
 
@@ -224,7 +229,11 @@ db = 'sqlite'
 host = "0.0.0.0" # Server host
 port = "8080" # Server port
 
+num_threads = 2 # Number of threads for parsing articles
+
 # Server to use
+# It's recommended to use tornado.
+# You can install it by running pip install tornado
 server = "auto" # See http://bottlepy.org/docs/dev/deployment.html#switching-the-server-backend
 
 save_articles = False # Save articles into db.
