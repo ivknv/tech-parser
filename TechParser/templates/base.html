@@ -36,9 +36,7 @@
 				var $summary = $(element).parent('.summary');
 				var $article = $summary.parent('.article');
 				var link = $article.attr('data-escaped-link');
-				$.get('/histadd/' + link, function(data) {
-					toggleText($article.find('h3 a'));
-				});
+				$.get('/histadd/' + link, function(data){});
 			}
 			
 			function remove_from(where, element) {

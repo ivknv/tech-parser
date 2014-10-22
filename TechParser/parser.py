@@ -4,8 +4,8 @@
 import grab
 from grab.error import GrabError
 import re
-from lxml.etree import tostring
-from lxml.html import fromstring
+from lxml.html import fromstring, tostring
+from lxml.etree import Error as LXMLError
 import feedparser
 
 try:
@@ -61,8 +61,9 @@ def parse_article_image(article, site_url=''):
 		return tostring(img).strip()
 
 def cut_text(s):
-	if len(s) > 300:
-		return s[:300] + '...'
+	splitted = s.split(' ')
+	if len(splitted) > 150:
+		return ' '.join(splitted[:150]) + '...'
 	elif not len(s):
 		return 'No summary text available.'
 	return s
@@ -113,26 +114,47 @@ def get_articles(grab_object, title_path, link_path, source, site_url="",
 	return posts
 
 def parse_rss(url, source, icon='', color='#000'):
-	entries = feedparser.parse(url).entries
+	entries = get_articles_from_rss(url, source)
 	return [{'fromrss': 1,
 			'icon': icon,
 			'color': color,
-			'title': escape_title(i['title']),
+			'title': i['title'],
 			'link': i['link'],
 			'source': source,
-			'summary': clear_attrs(i['summary'])}
+			'summary': i['summary']}
 				for i in entries]
 
-def clear_attrs(s):
+def get_articles_from_rss(url, source, parse_image=True):
+	parsed_entries = feedparser.parse(url).entries
+	entries = []
+	for entry in parsed_entries:
+		cleaned = clean_text(entry['summary'], parse_image)
+		text = cleaned[0]
+		image = cleaned[1]
+		if parse_image and not len(image):
+			for link in entry['links']:
+				if link.get('type', '').startswith('image/'):
+					image = '<img src="{}" />'.format(link['href'])
+					text = image + text
+					break
+		
+		entries.append({'title': escape_title(entry['title']),
+			'link': entry['link'],
+			'source': source,
+			'summary': text})
+	
+	return entries
+
+def remove_bad_tags(s):
 	elmt = fromstring(s)
-	
-	elmt.attrib['class'] = ''
-	elmt.attrib['id'] = ''
-	elmt.attrib['style'] = ''
-	
-	for child in elmt.cssselect('*'):
-		child.attrib['class'] = ''
-		child.attrib['id'] = ''
-		child.attrib['style'] = ''
+	for bad in elmt.cssselect('script, style, iframe'):
+		bad.drop_tree()
 	
 	return tostring(elmt).decode()
+
+def clean_text(s, parse_image=True):
+	try:
+		image = parse_article_image(s).decode() if parse_image else ''
+		return (image + cut_text(remove_tags((remove_bad_tags(s)))), image)
+	except LXMLError:
+		return ('', '')

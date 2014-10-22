@@ -226,6 +226,10 @@ a:hover {
 	color: #BE0000;
 }
 
+.geektimes {
+	color: #626D8D;
+}
+
 .article h3 a[data-spoiler='true'] {
 	outline: 0;
 	cursor: pointer;
@@ -246,4 +250,25 @@ a:hover {
 	margin-left: 1px;
 	margin-right: 15px;
 	max-width: 100%;
+}
+
+.like, .dislike {
+	cursor: pointer;
+	display: inline-block;
+	height: 32px;
+	opacity: 0.4;
+	padding: 0px;
+	width: 32px;
+}
+
+.like:hover {
+	opacity: 0.7;
+}
+
+.dislike:hover {
+	opacity: 0.7;
+}
+
+.liked, .disliked, .liked:hover, .disliked:hover {
+	opacity: 1;
 }

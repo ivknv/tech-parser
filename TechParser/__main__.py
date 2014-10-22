@@ -67,6 +67,11 @@ mylookup = TemplateLookup(directories=template_dir_path,
 	default_filters=["decode.utf8"],
 	input_encoding="utf-8", output_encoding="utf-8")
 
+liked = recommend.get_interesting_articles(db=config.db)
+disliked = recommend.get_blacklist(db=config.db)
+liked_links = [i['link'] for i in liked]
+disliked_links = [i['link'] for i in disliked]
+
 def encoded_dict(in_dict):
 	out_dict = {}
 	for k, v in in_dict.items():
@@ -127,61 +132,82 @@ def simple_plural(n, s):
 	else:
 		return s + "s"
 
+class State(object):
+	def __init__(self):
+		self.progress = 0.0
+
+def show_progress(s, state):
+	progress = round(state.progress, 2)
+	return "\033[0;32m[{}%]\033[0m ".format(progress)+s
+
+def parse_site(queue, articles, state):
+	while queue:
+		site = queue.pop()
+		s = "Got {} {} from {}"
+		
+		if site not in config.sites_to_parse:
+			d = config.rss_feeds[site]
+		else:
+			d = config.sites_to_parse[site]
+		
+		log(show_progress("Parsing articles from {}".format(site), state))
+		
+		if 'module' not in d:
+			url = d['url']
+			short_name = d['short-name']
+			icon = d['icon']
+			color = d['color']
+			if not len(color):
+				color = '#FFF'
+			if not len(icon):
+				icon = 'about:blank'
+			
+			try:
+				new_articles = parser.parse_rss(url, short_name, icon, color)
+				articles += new_articles
+				state.progress += 100.0 / (len(config.sites_to_parse) + len(config.rss_feeds))
+				log(show_progress(s.format(len(new_articles),
+					simple_plural(len(new_articles), 'article'), site), state))
+			except Exception as error:
+				log('Fail')
+				log(str(error), f=sys.stderr)
+		else:
+			module = d["module"]
+			kwargs = d["kwargs"]
+			
+			try:
+				found = module.get_articles(**kwargs)
+				articles += found
+				state.progress += 100.0 / (len(config.sites_to_parse) + len(config.rss_feeds))
+				log(show_progress(s.format(len(found),
+					simple_plural(len(new_articles), 'article'), site), state))
+			except Exception as error:
+				log("Failed to parse articles from {}".format(site))
+				log(str(error), f=sys.stderr)
+
 def dump_articles():
 	"""Dump articles to ~/.tech-parser/articles_dumped"""
 	
 	articles = []
 	
-	counter = 0
-	completed = 0
+	state = State()
+	
+	main_queue = [i for i in config.sites_to_parse]
+	main_queue += [i for i in config.rss_feeds]
 	
 	s = "\033[0;32m[{}%]\033[0m Parsing articles from {}... "
 	
-	for site in config.sites_to_parse:
-		log(s.format(completed, site), add_newline=False)
-		
-		module = config.sites_to_parse[site]["module"]
-		kwargs = config.sites_to_parse[site]["kwargs"]
-		
-		try:
-			before = len(articles)
-			articles += module.get_articles(**kwargs)
-			after = len(articles)
-			difference = after - before
-			log("Found %d %s" %(difference,
-				simple_plural(difference, "article")))
-		except GrabError as error:
-			log("Fail")
-			log(str(error), f=sys.stderr)
-		
-		counter += 1
-		completed = round(100.0 / (len(config.sites_to_parse) + len(config.rss_feeds)) * counter, 1)
+	threads = []
 	
-	for feed in config.rss_feeds:
-		log(s.format(completed, feed), add_newline=False)
-		
-		url = config.rss_feeds[feed]["url"]
-		short_name = config.rss_feeds[feed]["short-name"]
-		icon = config.rss_feeds[feed]["icon"]
-		color = config.rss_feeds[feed]["color"]
-		if not len(icon):
-			icon = "#FFF"
-		
-		try:
-			before = len(articles)
-			articles += parser.parse_rss(url, short_name, icon, color)
-			after = len(articles)
-			difference = after - before
-			log("Found %d %s" %(difference,
-				simple_plural(difference, "article")))
-		except GrabError as error:
-			log("Fail")
-			log(str(error), f=sys.stderr)
-		
-		counter += 1
-		completed = round(100.0 / (len(config.sites_to_parse) + len(config.rss_feeds)) * counter, 1)
+	for i in range(config.num_threads):
+		threads.append(Thread(target=parse_site, args=(main_queue,articles,state)))
 	
-	log("\033[0;32m[{}%]\033[0m".format(completed))
+	for thread in threads:
+		thread.daemon = True
+		thread.start()
+	
+	for thread in threads:
+		thread.join()
 	
 	log("Total articles: %d" %(len(articles)))
 	
@@ -284,8 +310,6 @@ def load_articles():
 	articles = pickle.loads(dumped)
 	
 	log("Done!")
-	sys.stdout.write("Done!\n")
-	sys.stdout.flush()
 	
 	return articles
 
@@ -302,11 +326,23 @@ def go_to_url(addr):
 
 @route('/histadd/<addr:path>')
 def add_to_history(addr):
+	global liked, disliked, liked_links, disliked_links
+	
 	recommend.add_article(addr, db=config.db)
+	liked = recommend.get_interesting_articles(db=config.db)
+	disliked = recommend.get_blacklist(db=config.db)
+	liked_links = [i['link'] for i in liked]
+	disliked_links = [i['link'] for i in disliked]
 
 @route('/blacklistadd/<addr:path>')
 def add_to_blacklist(addr):
+	global liked, disliked, liked_links, disliked_links
+	
 	recommend.add_article_to_blacklist(addr, db=config.db)
+	liked = recommend.get_interesting_articles(db=config.db)
+	disliked = recommend.get_blacklist(db=config.db)
+	liked_links = [i['link'] for i in liked]
+	disliked_links = [i['link'] for i in disliked]
 
 @route('/blacklistrm/<addr:path>')
 def rm_from_blacklist(addr):
@@ -323,7 +359,6 @@ def show_history(page_number=1):
 	q = request.GET.get('q', '')
 	
 	articles = recommend.get_interesting_articles(db=config.db)
-	articles.reverse()
 	
 	try:
 		page_number = int(page_number)
@@ -356,7 +391,6 @@ def show_blacklist(page_number=1):
 	q = request.GET.get('q', '')
 	
 	articles = recommend.get_blacklist(db=config.db)
-	articles.reverse()
 	
 	try:
 		page_number = int(page_number)
@@ -398,9 +432,15 @@ def escape_link(article):
 	
 	new_article = {}
 	new_article.update(article)
+	new_article['original_link'] = new_article['link']
 	
 	new_article['link'] = urlencode(encoded_dict({'': new_article['link']}))[1:]
 	return new_article
+
+def set_liked(articles):
+	for article in articles:
+		article['liked'] = article['original_link'] in liked_links
+		article['disliked'] = article['original_link'] in disliked_links
 
 def replace_newlines(article):
 	new_article = {}
@@ -438,6 +478,7 @@ def article_list(page_number=1):
 	articles = split_into_pages(articles, 30)
 	try:
 		requested_page = articles[page_number-1]
+		set_liked(requested_page)
 	except IndexError:
 		requested_page = []
 	
