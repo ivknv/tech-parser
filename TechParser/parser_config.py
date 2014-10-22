@@ -229,6 +229,8 @@ db = 'sqlite'
 host = "0.0.0.0" # Server host
 port = "8080" # Server port
 
+num_threads = 2 # Number of threads for parsing articles
+
 # Server to use
 # It's recommended to use tornado.
 # You can install it by running pip install tornado
