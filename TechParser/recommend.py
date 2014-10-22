@@ -105,7 +105,7 @@ def get_interesting_articles(db='sqlite'):
 	con = connect(*args, **kwargs)
 	cur = con.cursor()
 	cur.execute('''SELECT title, link, summary, fromrss, icon, color, source
-		FROM interesting_articles;''')
+		FROM interesting_articles ORDER BY id DESC;''')
 	res = cur.fetchall()
 	con.close()
 	return [{'title': x[0],
@@ -122,7 +122,7 @@ def get_blacklist(db='sqlite'):
 	con = connect(*args, **kwargs)
 	cur = con.cursor()
 	cur.execute('''SELECT title, link, summary, fromrss, icon, color, source
-		FROM blacklist;''')
+		FROM blacklist ORDER BY id DESC;''')
 	res = cur.fetchall()
 	con.close()
 	return [{'title': x[0],
