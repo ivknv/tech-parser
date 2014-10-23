@@ -47,9 +47,9 @@ def find_similiar(articles, db='sqlite'):
 		for i in interesting_articles]
 	
 	interesting_pairs = [get_pairs(prepare_string(i['title']))
-		for i in interesting_articles[:75]]
+		for i in interesting_articles[:150]]
 	ignored_pairs = [get_pairs(prepare_string(i['title']))
-		for i in blacklist[:75]]
+		for i in blacklist[:150]]
 	
 	while len(interesting_pairs) > len(ignored_pairs):
 		ignored_pairs.append(set())
