@@ -38,6 +38,17 @@ def get_similarity(pairs1, pairs2):
 	
 	return 2.0 * len(shrd) / len_all_pairs
 
+def pairs_fromstring(s):
+	return get_pairs(prepare_string(s))
+
+def article_pairs(article):
+	title_pairs = pairs_fromstring(article['title'])
+	summary_prepared = prepare_string(article['summary'])
+	if len(summary_prepared) > 30:
+		return title_pairs and get_pairs(summary_prepared)
+	
+	return title_pairs
+
 def find_similiar(articles, db='sqlite'):
 	interesting_articles = get_interesting_articles(db)
 	blacklist = get_blacklist(db)
@@ -46,9 +57,9 @@ def find_similiar(articles, db='sqlite'):
 	interesting_links = [i['link']
 		for i in interesting_articles]
 	
-	interesting_pairs = [get_pairs(prepare_string(i['title']))
+	interesting_pairs = [article_pairs(i)
 		for i in interesting_articles[:150]]
-	ignored_pairs = [get_pairs(prepare_string(i['title']))
+	ignored_pairs = [article_pairs(i)
 		for i in blacklist[:150]]
 	
 	while len(interesting_pairs) > len(ignored_pairs):
@@ -65,7 +76,7 @@ def find_similiar(articles, db='sqlite'):
 		
 		score = 0.0
 		
-		pairs1 = get_pairs(prepare_string(article['title']))
+		pairs1 = article_pairs(article)
 		
 		for (pairs2, pairs3) in zipped:
 			if pairs2:
@@ -78,8 +89,9 @@ def find_similiar(articles, db='sqlite'):
 	
 	return [[a, s] for (a, s) in zip(processed, scores)]
 
-def prepare_string(s, exclude=["a", "an", "the", "is", "am",
-		"are", "for", "that", "of", "to", "so", "in", "on"]):
+def prepare_string(s, exclude=["a", "an", "the", "is", "am", "there", "this",
+		"are", "for", "that", "of", "to", "so", "in", "on", "off", "those",
+		"these", "you", "he", "she", "they", "we", "out"]):
 	s = s.strip().lower()
 	s = r1.sub("\g<g1> not", s)
 	s = r2.sub("\g<g1>", s)
