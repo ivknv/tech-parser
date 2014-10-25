@@ -1,5 +1,33 @@
+@font-face {
+	font-family: "OpenSans Light";
+	font-style: normal;
+	font-weight: normal;
+	src: url('/static/fonts/OpenSans-Light.woff') format('woff');
+}
+
+@font-face {
+	font-family: "OpenSans Light";
+	font-style: italic;
+	font-weight: normal;
+	src: url('/static/fonts/OpenSans-LightItalic.woff') format('woff');
+}
+
+@font-face {
+	font-family: "OpenSans Light";
+	font-style: normal;
+	font-weight: bold;
+	src: url('/static/fonts/OpenSans-Regular.woff') format('woff');
+}
+
+@font-face {
+	font-family: "OpenSans Light";
+	font-style: italic;
+	font-weight: bold;
+	src: url('/static/fonts/OpenSans-Italic.woff') format('woff');
+}
+
 #main {
-	font-family: Arial, Verdana;
+	font-family: "OpenSans Light", Arial, Verdana;
 	margin: 0 auto;
 	max-width: 1200px;
 }
@@ -73,6 +101,8 @@ a {
 }
 
 .article > h3 {
+	font-size: 19px;
+	font-weight: bold;
 	margin: 20px;
 	max-width: 800px;
 }
