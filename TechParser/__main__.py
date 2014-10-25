@@ -203,7 +203,6 @@ def dump_articles():
 		threads.append(Thread(target=parse_site, args=(main_queue,articles,state)))
 	
 	for thread in threads:
-		thread.daemon = True
 		thread.start()
 	
 	for thread in threads:
