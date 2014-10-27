@@ -62,10 +62,8 @@ def parse_article_image(article, site_url=''):
 
 def cut_text(s):
 	splitted = s.split(' ')
-	if len(splitted) > 150:
-		return ' '.join(splitted[:150]) + '...'
-	elif not len(s):
-		return 'No summary text available.'
+	if len(splitted) > 50:
+		return ' '.join(splitted[:50]) + '...'
 	return s
 
 def get_articles(grab_object, title_path, link_path, source, site_url="",

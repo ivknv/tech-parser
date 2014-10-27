@@ -38,16 +38,22 @@ def get_similarity(pairs1, pairs2):
 	
 	return 2.0 * len(shrd) / len_all_pairs
 
+def get_similarity2(pairs1, pairs2):
+	if len(pairs1[1]) < 80 or len(pairs2[1]) < 80:
+		return get_similarity(pairs1[0], pairs2[0])
+	
+	new_pairs1 = pairs1[0]
+	new_pairs2 = pairs2[0]
+	new_pairs1.update(pairs1[1])
+	new_pairs2.update(pairs2[1])
+	
+	return get_similarity(new_pairs1, new_pairs2)
+
 def pairs_fromstring(s):
 	return get_pairs(prepare_string(s))
 
-def article_pairs(article):
-	title_pairs = pairs_fromstring(article['title'])
-	summary_prepared = prepare_string(article['summary'])
-	if len(summary_prepared) > 30:
-		return title_pairs and get_pairs(summary_prepared)
-	
-	return title_pairs
+def article_pairs(a):
+	return pairs_fromstring(a['title']), pairs_fromstring(a['summary'])
 
 def find_similiar(articles, db='sqlite'):
 	interesting_articles = get_interesting_articles(db)
@@ -71,7 +77,7 @@ def find_similiar(articles, db='sqlite'):
 	
 	for article in articles:
 		if article['link'] in interesting_links or \
-		article['link'] in ignored_links:
+		article['link'] in ignored_links or article in processed:
 			continue
 		
 		score = 0.0
@@ -80,9 +86,9 @@ def find_similiar(articles, db='sqlite'):
 		
 		for (pairs2, pairs3) in zipped:
 			if pairs2:
-				score += get_similarity(pairs1, pairs2)
+				score += get_similarity2(pairs1, pairs2)
 			if pairs3:
-				score -= get_similarity(pairs1, pairs3)
+				score -= get_similarity2(pairs1, pairs3)
 		
 		processed.append(article)
 		scores.append(score)
