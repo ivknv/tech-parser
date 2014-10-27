@@ -37,7 +37,11 @@
 			</h3>
 			<div class="summary">
 				<div>
-					${article['summary']}
+					% if len(article['summary']):
+						${article['summary']}
+					% else:
+						No summary text available.
+					% endif
 				</div>
 				<a href="${article['original_link']}" target="_blank">
 					Open article in new tab

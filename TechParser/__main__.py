@@ -180,7 +180,7 @@ def parse_site(queue, articles, state):
 				articles += found
 				state.progress += 100.0 / (len(config.sites_to_parse) + len(config.rss_feeds))
 				log(show_progress(s.format(len(found),
-					simple_plural(len(new_articles), 'article'), site), state))
+					simple_plural(len(found), 'article'), site), state))
 			except Exception as error:
 				log("Failed to parse articles from {}".format(site))
 				log(str(error), f=sys.stderr)
