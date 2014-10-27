@@ -150,6 +150,7 @@ def parse_site(queue, articles, state):
 		else:
 			d = config.sites_to_parse[site]
 		
+		state.progress += 100.0 / (len(config.sites_to_parse) + len(config.rss_feeds)) / 2.0
 		log(show_progress("Parsing articles from {}".format(site), state))
 		
 		if 'module' not in d:
@@ -165,7 +166,7 @@ def parse_site(queue, articles, state):
 			try:
 				new_articles = parser.parse_rss(url, short_name, icon, color)
 				articles += new_articles
-				state.progress += 100.0 / (len(config.sites_to_parse) + len(config.rss_feeds))
+				state.progress += 100.0 / (len(config.sites_to_parse) + len(config.rss_feeds)) / 2
 				log(show_progress(s.format(len(new_articles),
 					simple_plural(len(new_articles), 'article'), site), state))
 			except Exception as error:
@@ -178,7 +179,7 @@ def parse_site(queue, articles, state):
 			try:
 				found = module.get_articles(**kwargs)
 				articles += found
-				state.progress += 100.0 / (len(config.sites_to_parse) + len(config.rss_feeds))
+				state.progress += 100.0 / (len(config.sites_to_parse) + len(config.rss_feeds)) / 2.0
 				log(show_progress(s.format(len(found),
 					simple_plural(len(found), 'article'), site), state))
 			except Exception as error:
