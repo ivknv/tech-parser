@@ -154,12 +154,12 @@ def parse_site(queue, articles, state):
 		log(show_progress("Parsing articles from {}".format(site), state))
 		
 		if 'module' not in d:
-			url = d['url']
-			short_name = d['short-name']
-			icon = d['icon']
-			color = d['color']
+			url = d.get('url', 'about:blank')
+			short_name = d.get('short-name', 'unknown')
+			icon = d.get('icon', 'about:blank')
+			color = d.get('color', '#000')
 			if not len(color):
-				color = '#FFF'
+				color = '#000'
 			if not len(icon):
 				icon = 'about:blank'
 			
