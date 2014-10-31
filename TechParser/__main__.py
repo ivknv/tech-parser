@@ -186,8 +186,8 @@ def parse_site(queue, articles, state):
 				log("Failed to parse articles from {}".format(site))
 				log(str(error), f=sys.stderr)
 
-def dump_articles():
-	"""Dump articles to ~/.tech-parser/articles_dumped"""
+def dump_articles(filename="articles_dumped"):
+	"""Dump articles to ~/.tech-parser/<filename>"""
 	
 	articles = []
 	
@@ -209,7 +209,11 @@ def dump_articles():
 	for thread in threads:
 		thread.join()
 	
+	articles_before = [i[0] for i in load_articles()]
+	
 	log("Total articles: %d" %(len(articles)))
+	log("New articles: %d"
+		%(len([i for i in articles if i not in articles_before])))
 	
 	if config.save_articles:
 		log("Saving articles to archive...")
@@ -232,23 +236,23 @@ def dump_articles():
 		con.commit()
 		con.close()
 	
-	log("Shuffling articles...")
-	shuffle(articles)
-	
-	log("Ranking articles...")
 	num = len(recommend.get_interesting_articles(db=config.db))
 	num += len(recommend.get_blacklist(db=config.db))
+	
 	if num >= 20:
+		log("Ranking articles...")
 		articles = recommend.find_similiar(articles, db=config.db)
 		articles.sort(key=lambda x: x[1], reverse=True)
 	else:
+		log("Shuffling articles...")
+		shuffle(articles)
 		articles = [[a, -1] for a in articles]
 	
-	log("Dumping data to file: articles_dumped...")
+	log("Dumping data to file: {}...".format(filename))
 	
 	dumped = pickle.dumps(articles)
 	path = os.path.join(os.path.expanduser("~"), ".tech-parser")
-	path = os.path.join(path, "articles_dumped")
+	path = os.path.join(path, filename)
 	f = open(path, "wb")
 	f.write(dumped)
 	f.close()
@@ -256,7 +260,7 @@ def dump_articles():
 	log("Done!")
 
 def dump_articles_per(s):
-	"""Dump articles per S seconds"""
+	"""Dump articles per <s> seconds"""
 	
 	while True:
 		if int(time()) % s == 0:
@@ -299,11 +303,16 @@ def filter_articles(articles):
 	
 	return articles_filtered
 
-def load_articles():
-	"""Load articles from ~/.tech-parser/articles_dumped"""
+def load_articles(filename="articles_dumped"):
+	"""Load articles from ~/.tech-parser/<filename>"""
 	
-	log("Reading articles from file: articles_dumped...")
-	f = open(os.path.join(logdir, "articles_dumped"), 'rb')
+	log("Reading articles from file: {}...".format(filename))
+	try:
+		f = open(os.path.join(logdir, filename), 'rb')
+	except IOError:
+		log("File '{}' doesn't exist: returning empty list".format(filename))
+		return []
+	
 	dumped = f.read()
 	f.close()
 	
