@@ -48,7 +48,7 @@ Current list of sites:
 ## One awesome feature ##
 Before You scroll away, I want You to know about one awesome feature that TechParser has.<br/>
 I'm talking about ranking.<br/><br/>
-Every time when You click on article TechParser adds it to the database.<br/>
+Every time when You click on like button below article TechParser adds it to the database.<br/>
 And next time when it will parse articles it will sort them according to those articles in that database.
 
 ## Installation ##
