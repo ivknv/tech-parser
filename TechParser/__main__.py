@@ -3,7 +3,10 @@
 
 from random import shuffle
 
-import pickle
+try:
+	import cPickle as pickle
+except ImportError:
+	import pickle
 
 import os, sys, re
 
