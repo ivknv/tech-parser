@@ -14,8 +14,6 @@ from grab.error import GrabError
 
 from time import time, sleep
 
-from threading import Thread
-
 import multiprocessing
 
 from mako.lookup import TemplateLookup
@@ -526,10 +524,13 @@ class ParserDaemon(Daemon):
 		super(ParserDaemon, self).__init__(pidfile, stdout=so, stderr=se)
 	
 	def onStart(self):
-		t1 = Thread(target=dump_articles_per, args=(config.update_interval,))
-		t1.daemon = True
-		t1.start()
-		run(host=config.host, port=config.port, server=config.server)
+		p1 = multiprocessing.Process(target=dump_articles_per, args=(config.update_interval,))
+		p2 = multiprocessing.Process(target=run,
+			kwargs={'host': config.host, 'port': config.port, 'server': config.server})
+		p1.start()
+		p2.start()
+		p1.join()
+		p2.join()
 
 def is_hostname(hostname):
 	if len(hostname) > 255:
@@ -540,10 +541,13 @@ def is_hostname(hostname):
 	return all(allowed.match(x) for x in hostname.split("."))
 
 def run_server(host, port):
-	t1 = Thread(target=dump_articles_per, args=(config.update_interval,))
-	t1.daemon = True
-	t1.start()
-	run(host=host, port=port, server=config.server)
+	p1 = multiprocessing.Process(target=dump_articles_per, args=(config.update_interval,))
+	p2 = multiprocessing.Process(target=run,
+		kwargs={'host': config.host, 'port': config.port, 'server': config.server})
+	p1.start()
+	p2.start()
+	p1.join()
+	p2.join()
 
 if __name__ == "__main__":
 	parser_daemon = ParserDaemon()
