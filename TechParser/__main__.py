@@ -16,6 +16,8 @@ from time import time, sleep
 
 from threading import Thread
 
+import multiprocessing
+
 from mako.lookup import TemplateLookup
 
 from bottle import route, run, static_file, default_app, redirect, request
@@ -135,17 +137,13 @@ def simple_plural(n, s):
 	else:
 		return s + "s"
 
-class State(object):
-	def __init__(self):
-		self.progress = 0.0
-
-def show_progress(s, state):
-	progress = round(state.progress, 2)
+def show_progress(s, shared_object):
+	progress = round(shared_object.value, 2)
 	return "\033[0;32m[{}%]\033[0m ".format(progress)+s
 
-def parse_site(queue, articles, state):
-	while queue:
-		site = queue.pop()
+def parse_site(queue, articles, progress):
+	while not queue.empty():
+		site = queue.get()
 		s = "Got {} {} from {}"
 		
 		if site not in config.sites_to_parse:
@@ -153,8 +151,9 @@ def parse_site(queue, articles, state):
 		else:
 			d = config.sites_to_parse[site]
 		
-		state.progress += 100.0 / (len(config.sites_to_parse) + len(config.rss_feeds)) / 2.0
-		log(show_progress("Parsing articles from {}".format(site), state))
+		update_progress(progress,
+			100.0 / (len(config.sites_to_parse) + len(config.rss_feeds)) / 2.0)
+		log(show_progress("Parsing articles from {}".format(site), progress))
 		
 		if 'module' not in d:
 			url = d.get('url', 'about:blank')
@@ -168,10 +167,12 @@ def parse_site(queue, articles, state):
 			
 			try:
 				new_articles = parser.parse_rss(url, short_name, icon, color)
-				articles += new_articles
-				state.progress += 100.0 / (len(config.sites_to_parse) + len(config.rss_feeds)) / 2
+				for i in new_articles:
+					articles.put(i)
+				update_progress(progress,
+					100.0 / (len(config.sites_to_parse) + len(config.rss_feeds)) / 2.0)
 				log(show_progress(s.format(len(new_articles),
-					simple_plural(len(new_articles), 'article'), site), state))
+					simple_plural(len(new_articles), 'article'), site), progress))
 			except Exception as error:
 				log('Fail')
 				log(str(error), f=sys.stderr)
@@ -181,42 +182,54 @@ def parse_site(queue, articles, state):
 			
 			try:
 				found = module.get_articles(**kwargs)
-				articles += found
-				state.progress += 100.0 / (len(config.sites_to_parse) + len(config.rss_feeds)) / 2.0
+				for i in found:
+					articles.put(i)
+				update_progress(progress,
+					100.0 / (len(config.sites_to_parse) + len(config.rss_feeds)) / 2.0)
 				log(show_progress(s.format(len(found),
-					simple_plural(len(found), 'article'), site), state))
+					simple_plural(len(found), 'article'), site), progress))
 			except Exception as error:
 				log("Failed to parse articles from {}".format(site))
 				log(str(error), f=sys.stderr)
 
+def update_progress(shared_object, num):
+	shared_object.value += num
+
 def dump_articles(filename="articles_dumped"):
 	"""Dump articles to ~/.tech-parser/<filename>"""
 	
-	articles = []
+	m = multiprocessing.Manager()
 	
-	state = State()
+	articles = m.Queue()
 	
-	main_queue = [i for i in config.sites_to_parse]
-	main_queue += [i for i in config.rss_feeds]
+	progress = m.Value('d', 0.0, lock=False)
+	
+	main_queue = m.Queue()
+	
+	for i in config.sites_to_parse:
+		main_queue.put(i)
+
+	for i in config.rss_feeds:
+		main_queue.put(i)
 	
 	s = "\033[0;32m[{}%]\033[0m Parsing articles from {}... "
 	
-	threads = []
+	pool = multiprocessing.Pool(processes=config.num_threads)
 	
 	for i in range(config.num_threads):
-		threads.append(Thread(target=parse_site, args=(main_queue,articles,state)))
+		pool.apply_async(parse_site, (main_queue, articles, progress))
 	
-	for thread in threads:
-		thread.start()
-	
-	for thread in threads:
-		thread.join()
+	pool.close()
+	pool.join()
 	
 	articles_before = [i[0] for i in load_articles()]
+	list_articles = []
+	while not articles.empty():
+		list_articles.append(articles.get())
 	
-	log("Total articles: %d" %(len(articles)))
+	log("Total articles: %d" %(len(list_articles)))
 	log("New articles: %d"
-		%(len([i for i in articles if i not in articles_before])))
+		%(len([i for i in list_articles if i not in articles_before])))
 	
 	if config.save_articles:
 		log("Saving articles to archive...")
@@ -225,7 +238,7 @@ def dump_articles(filename="articles_dumped"):
 		con = sqlite3.connect(os.path.join(logdir, "archive.db"))
 		cur = con.cursor()
 		
-		for article in articles:
+		for article in list_articles:
 			title = article["title"]
 			link = article["link"]
 			source = article["source"]
@@ -244,16 +257,16 @@ def dump_articles(filename="articles_dumped"):
 	
 	if num >= 20:
 		log("Ranking articles...")
-		articles = recommend.find_similiar(articles, db=config.db)
-		articles.sort(key=lambda x: x[1], reverse=True)
+		list_articles = recommend.find_similiar(list_articles, db=config.db)
+		list_articles.sort(key=lambda x: x[1], reverse=True)
 	else:
 		log("Shuffling articles...")
-		shuffle(articles)
-		articles = [[a, -1] for a in articles]
+		shuffle(list_articles)
+		list_articles = [[a, -1] for a in list_articles]
 	
 	log("Dumping data to file: {}...".format(filename))
 	
-	dumped = pickle.dumps(articles)
+	dumped = pickle.dumps(list_articles)
 	path = os.path.join(os.path.expanduser("~"), ".tech-parser")
 	path = os.path.join(path, filename)
 	f = open(path, "wb")
