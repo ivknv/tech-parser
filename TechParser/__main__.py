@@ -543,7 +543,7 @@ def is_hostname(hostname):
 def run_server(host, port):
 	p1 = multiprocessing.Process(target=dump_articles_per, args=(config.update_interval,))
 	p2 = multiprocessing.Process(target=run,
-		kwargs={'host': config.host, 'port': config.port, 'server': config.server})
+		kwargs={'host': host, 'port': port, 'server': config.server})
 	p1.start()
 	p2.start()
 	p1.join()
