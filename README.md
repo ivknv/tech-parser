@@ -74,6 +74,7 @@ And [here's](https://github.com/SPython/web-tech-parser) repo for that Heroku ap
 </ol>
 
 ## One awesome feature ##
+New in 1.4.0<br/>
 Before You scroll away, I want You to know about one awesome feature that TechParser has.<br/>
 I'm talking about ranking.<br/><br/>
 Every time when You click on like button below article TechParser adds it to the database.<br/>
@@ -133,6 +134,7 @@ and make it look like this:
 ```
 
 ### Adding RSS feeds ###
+New in 1.7.0<br/>
 Find the following line in your configuration:
 ```python
 rss_feeds = {}
@@ -158,6 +160,7 @@ rss_feeds = {'CSS-tricks': {
 ```
 
 ### Asynchronous parsing ###
+New in 1.7.0<br/>
 You can set number of threads available for parsing.<br/>
 To do that you need to set ```num_threads``` in your configuration.<br/>
 Example:
@@ -166,6 +169,7 @@ num_threads = 4
 ```
 
 ### Word lists ###
+New in 1.7.5<br/>
 Articles can also be sorted by words you find interesting and boring.
 To do that you can set variables ```interesting_words``` and ```boring_words```.
 Example:
