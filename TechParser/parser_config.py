@@ -218,6 +218,12 @@ filters = {
 	}
 }
 
+# Words that you're interested in
+interesting_words = {}
+
+# Words that you find boring
+boring_words = {}
+
 update_interval = 1800 # Parse articles every 30 minutes
 
 # Database for keeping history

@@ -6,6 +6,8 @@ import os
 import sqlite3
 import pickle
 
+import imp
+
 try:
 	import psycopg2
 except ImportError:
@@ -18,6 +20,11 @@ except ImportError:
 
 logdir = os.path.expanduser("~")
 logdir = os.path.join(logdir, ".tech-parser")
+try:
+	config = imp.load_source('config',
+		os.path.join(logdir, 'user_parser_config.py'))
+except ImportError:
+	from TechParser import parser_config as config
 
 r1 = re.compile(r"(?P<g1>\w+)n['\u2019]t", re.UNICODE)
 r2 = re.compile(r"(?P<g1>\w+)['\u2019]s", re.UNICODE)
@@ -55,6 +62,21 @@ def pairs_fromstring(s):
 def article_pairs(a):
 	return pairs_fromstring(a['title']), pairs_fromstring(a['summary'])
 
+def get_word_pairs(words):
+	pairs = []
+	
+	for i in words:
+		if isinstance(i, tuple):
+			word = i[0]
+			priority = i[1]
+		else:
+			word = i
+			priority = 1.0
+		
+		pairs.append((pairs_fromstring(word), priority))
+	
+	return pairs
+
 def find_similiar(articles, db='sqlite'):
 	con = connect_db(db)
 	cur = con.cursor()
@@ -63,6 +85,16 @@ def find_similiar(articles, db='sqlite'):
 	blacklist = get_blacklist(db, cur)
 	
 	con.close()
+	
+	interesting_word_pairs = get_word_pairs(config.interesting_words)
+	boring_word_pairs = get_word_pairs(config.boring_words)
+
+	while len(interesting_word_pairs) > len(boring_word_pairs):
+		boring_word_pairs.append(tuple())
+	while len(boring_word_pairs) > len(interesting_word_pairs):
+		interesting_word_pairs.append(tuple())
+	
+	word_pairs_zipped = list(zip(interesting_word_pairs, boring_word_pairs))
 	
 	ignored_links = [i['link'] for i in blacklist]
 	processed, scores = [], []
@@ -95,6 +127,12 @@ def find_similiar(articles, db='sqlite'):
 				score += get_similarity2(pairs1, pairs2)
 			if pairs3:
 				score -= get_similarity2(pairs1, pairs3)
+		
+		for (pairs4, pairs5) in word_pairs_zipped:
+			if pairs4:
+				score += get_similarity2(pairs1, [pairs4[0], set()])*pairs4[1]
+			if pairs5:
+				score -= get_similarity2(pairs1, [pairs5[0], set()])*pairs5[1]
 		
 		processed.append(article)
 		scores.append(score)
