@@ -6,6 +6,8 @@ import os
 import sqlite3
 import pickle
 
+from itertools import chain, repeat
+
 import imp
 
 try:
@@ -35,6 +37,27 @@ r6 = re.compile(r"(?P<g1>\w+)['\u2019]d", re.UNICODE)
 r7 = re.compile(r"(?P<g1>\w+)['\u2019]ll", re.UNICODE)
 r8 = re.compile(r"gonna", re.UNICODE)
 r9 = re.compile(r"\W", re.UNICODE)
+
+class OuterZipStopIteration(Exception):
+	pass
+
+def outer_zip(*args):
+	count = [len(args) - 1]
+
+	def sentinel(default):
+		if not count[0]:
+			raise OuterZipStopIteration
+		count[0] -= 1
+		yield default
+
+	iters = [chain(p, sentinel(default), repeat(default)) for p, default in args]
+	result = []
+	
+	try:
+		while iters:
+			result.append(tuple(map(next, iters)))
+	except OuterZipStopIteration:
+		return result
 
 def get_similarity(pairs1, pairs2):
 	len_all_pairs = len(pairs1) + len(pairs2)
@@ -88,13 +111,6 @@ def find_similiar(articles, db='sqlite'):
 	
 	interesting_word_pairs = get_word_pairs(config.interesting_words)
 	boring_word_pairs = get_word_pairs(config.boring_words)
-
-	while len(interesting_word_pairs) > len(boring_word_pairs):
-		boring_word_pairs.append(tuple())
-	while len(boring_word_pairs) > len(interesting_word_pairs):
-		interesting_word_pairs.append(tuple())
-	
-	word_pairs_zipped = list(zip(interesting_word_pairs, boring_word_pairs))
 	
 	ignored_links = [i['link'] for i in blacklist]
 	processed, scores = [], []
@@ -106,12 +122,8 @@ def find_similiar(articles, db='sqlite'):
 	ignored_pairs = [article_pairs(i)
 		for i in blacklist[:150]]
 	
-	while len(interesting_pairs) > len(ignored_pairs):
-		ignored_pairs.append(set())
-	while len(ignored_pairs) > len(interesting_pairs):
-		interesting_pairs.append(set())
-	
-	zipped = list(zip(interesting_pairs, ignored_pairs))
+	zipped = outer_zip((interesting_pairs, set()), (ignored_pairs, set()),
+		(interesting_word_pairs, tuple()), (boring_word_pairs, tuple()))
 	
 	for article in articles:
 		if article['link'] in interesting_links or \
@@ -122,13 +134,11 @@ def find_similiar(articles, db='sqlite'):
 		
 		pairs1 = article_pairs(article)
 		
-		for (pairs2, pairs3) in zipped:
+		for (pairs2, pairs3, pairs4, pairs5) in zipped:
 			if pairs2:
 				score += get_similarity2(pairs1, pairs2)
 			if pairs3:
 				score -= get_similarity2(pairs1, pairs3)
-		
-		for (pairs4, pairs5) in word_pairs_zipped:
 			if pairs4:
 				score += get_similarity2(pairs1, [pairs4[0], set()])*pairs4[1]
 			if pairs5:
