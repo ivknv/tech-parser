@@ -137,6 +137,23 @@ Example:
 num_threads = 4
 ```
 
+### Word lists ###
+Articles can also be sorted by words you find interesting and boring.
+To do that you can set variables ```interesting_words``` and ```boring_words```.
+Example:
+```python
+interestring_words = {'word1', 'word2', 'word3'}
+boring_words = {'word4', 'word5', 'word6'}
+```
+
+You can also set priority for each word:
+```python
+interesting_words = {('python', 5.0), ('fortran', 3.0), 'css', 'html', ('google', 1.5)}
+boring_words = {('pascal', 10.0), 'delphi'}
+```
+
+Default priority for each word is ```1```
+
 ### Filters ###
 Find fragment of code like this:
 ```python
