@@ -3,7 +3,7 @@
 
 from distutils.core import setup
 
-v = "1.7.5"
+v = "1.7.6"
 
 setup(name="TechParser",
 	version=v,
@@ -12,7 +12,7 @@ setup(name="TechParser",
 	description="Lets You parse articles from various related to IT sites.",
 	url="https://github.com/SPython/tech-parser",
 	download_url="https://github.com/SPython/tech-parser/tarball/"+v,
-	keywords=["parser", "article", "web"],
+	keywords=["parser", "article", "web", "ranking", "rss"],
 	requires=["grab", "mako", "bottle", "Daemo"],
 	classifiers=[],
 	packages=["TechParser"],
