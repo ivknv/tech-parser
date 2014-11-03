@@ -114,7 +114,7 @@ sites_to_parse = {
 	
 	"Code Project": { # www.codeproject.com
 		"module": codeproject,
-		"kwargs": {'categories': ['all']}
+		"kwargs": {'categories': ['all']} # 'web', 'android', 'c#', 'c++' and 'ios'
 	},
 	
 	"Hacker News": { # news.ycombinator.com
@@ -199,7 +199,7 @@ sites_to_parse = {
 	
 	"ZDNet": { # www.zdnet.com
 		"module": zdnet,
-		"kwargs": {}
+		"kwargs": {'categories': ['all']} # 'news', 'reviews' and 'downloads'
 	},
 		
 	"Geektimes": { # geektimes.ru
