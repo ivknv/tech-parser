@@ -25,7 +25,7 @@ logdir = os.path.join(logdir, ".tech-parser")
 try:
 	config = imp.load_source('config',
 		os.path.join(logdir, 'user_parser_config.py'))
-except ImportError:
+except IOError:
 	from TechParser import parser_config as config
 
 r1 = re.compile(r"(?P<g1>\w+)n['\u2019]t", re.UNICODE)
