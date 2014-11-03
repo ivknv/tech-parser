@@ -7,7 +7,35 @@ Also, it's some sort of RSS reader.
 You can see it in action [here](http://tech-parser.herokuapp.com).
 And [here's](https://github.com/SPython/web-tech-parser) repo for that Heroku app.
 
-Current list of sites:
+## Table of contents ##
+<ol>
+	<li><a href="#current-list-of-sites">Current list of sites</a></li>
+	<li><a href="#one-awesome-feature">One awesome feature</a></li>
+	<li><a href="#installation">Installation</a>
+		<ul>
+			<li><a href="#requirements">Requirements</a></li>
+			<li><a href="#how-to-install">How to install</a></li>
+		</ul>
+	</li>
+	<li><a href="#how-to-use">How to use</a></li>
+	<li><a href="#configuring">Configuring</a>
+		<ul>
+			<li><a href="#enablingdisabling-parsers">Enabling/disabling parsers</a></li>
+			<li><a href="#adding-rss-feeds">Adding RSS feeds</a></li>
+			<li><a href="#asynchronous-parsing">Asynchronous parsing</a></li>
+			<li><a href="#word-lists">Word lists</a></li>
+			<li><a href="#filters">Filters</a>
+				<ul>
+					<li><a href="#examples">Examples</a></li>
+				</ul>
+			</li>
+			<li><a href="#update-interval">Update interval</a></li>
+			<li><a href="#custom-host-and-port">Custom host and port</a></li>
+		</ul>
+	</li>
+</ol>
+
+## Current list of sites ##
 <ol>
 	<li>habrahabr.ru (russian)</li>
 	<li>venturebeat.com</li>
@@ -46,6 +74,7 @@ Current list of sites:
 </ol>
 
 ## One awesome feature ##
+New in 1.4.0<br/>
 Before You scroll away, I want You to know about one awesome feature that TechParser has.<br/>
 I'm talking about ranking.<br/><br/>
 Every time when You click on like button below article TechParser adds it to the database.<br/>
@@ -105,6 +134,7 @@ and make it look like this:
 ```
 
 ### Adding RSS feeds ###
+New in 1.7.0<br/>
 Find the following line in your configuration:
 ```python
 rss_feeds = {}
@@ -130,12 +160,31 @@ rss_feeds = {'CSS-tricks': {
 ```
 
 ### Asynchronous parsing ###
+New in 1.7.0<br/>
 You can set number of threads available for parsing.<br/>
 To do that you need to set ```num_threads``` in your configuration.<br/>
 Example:
 ```python
 num_threads = 4
 ```
+
+### Word lists ###
+New in 1.7.5<br/>
+Articles can also be sorted by words you find interesting and boring.
+To do that you can set variables ```interesting_words``` and ```boring_words```.
+Example:
+```python
+interestring_words = {'word1', 'word2', 'word3'}
+boring_words = {'word4', 'word5', 'word6'}
+```
+
+You can also set priority for each word:
+```python
+interesting_words = {('python', 5.0), ('fortran', 3.0), 'css', 'html', ('google', 1.5)}
+boring_words = {('pascal', 10.0), 'delphi'}
+```
+
+Default priority for each word is ```1```
 
 ### Filters ###
 Find fragment of code like this:
