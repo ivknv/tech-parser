@@ -26,6 +26,8 @@ import argparse
 
 import sqlite3
 
+import atexit
+
 from TechParser import recommend, parser
 
 try:
@@ -525,12 +527,9 @@ class ParserDaemon(Daemon):
 	
 	def onStart(self):
 		p1 = multiprocessing.Process(target=dump_articles_per, args=(config.update_interval,))
-		p2 = multiprocessing.Process(target=run,
-			kwargs={'host': config.host, 'port': config.port, 'server': config.server})
+		atexit.register(p1.terminate)
 		p1.start()
-		p2.start()
-		p1.join()
-		p2.join()
+		run(host=config.host, port=config.port, server=config.server)
 
 def is_hostname(hostname):
 	if len(hostname) > 255:
@@ -542,12 +541,9 @@ def is_hostname(hostname):
 
 def run_server(host, port):
 	p1 = multiprocessing.Process(target=dump_articles_per, args=(config.update_interval,))
-	p2 = multiprocessing.Process(target=run,
-		kwargs={'host': host, 'port': port, 'server': config.server})
+	atexit.register(p1.terminate)
 	p1.start()
-	p2.start()
-	p1.join()
-	p2.join()
+	run(host=host, port=port, server=config.server)
 
 if __name__ == "__main__":
 	parser_daemon = ParserDaemon()
