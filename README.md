@@ -7,7 +7,35 @@ Also, it's some sort of RSS reader.
 You can see it in action [here](http://tech-parser.herokuapp.com).
 And [here's](https://github.com/SPython/web-tech-parser) repo for that Heroku app.
 
-Current list of sites:
+## Table of contents ##
+<ol>
+	<li><a href="#current-list-of-sites">Current list of sites</a></li>
+	<li><a href="#one-awesome-feature">One awesome feature</a></li>
+	<li><a href="#installation">Installation</a>
+		<ul>
+			<li><a href="#requirements">Requirements</a></li>
+			<li><a href="#how-to-install">How to install</a></li>
+		</ul>
+	</li>
+	<li><a href="#how-to-use">How to use</a></li>
+	<li><a href="#configuring">Configuring</a>
+		<ul>
+			<li><a href="#enablingdisabling-parsers">Enabling/disabling parsers</a></li>
+			<li><a href="#adding-rss-feeds">Adding RSS feeds</a></li>
+			<li><a href="#asynchronous-parsing">Asynchronous parsing</a></li>
+			<li><a href="#word-lists">Word lists</a></li>
+			<li><a href="#filters">Filters</a>
+				<ul>
+					<li><a href="#examples">Examples</a></li>
+				</ul>
+			</li>
+			<li><a href="#update-interval">Update interval</a></li>
+			<li><a href="#custom-host-and-port">Custom host and port</a></li>
+		</ul>
+	</li>
+</ol>
+
+## Current list of sites ##
 <ol>
 	<li>habrahabr.ru (russian)</li>
 	<li>venturebeat.com</li>
