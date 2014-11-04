@@ -8,7 +8,7 @@ import pickle
 
 from itertools import chain, repeat
 
-import imp
+from TechParser import get_conf
 
 try:
 	import psycopg2
@@ -20,13 +20,8 @@ try:
 except ImportError:
 	from urlparse import urlparse
 
-logdir = os.path.expanduser("~")
-logdir = os.path.join(logdir, ".tech-parser")
-try:
-	config = imp.load_source('config',
-		os.path.join(logdir, 'user_parser_config.py'))
-except IOError:
-	from TechParser import parser_config as config
+if get_conf.config is None:
+	get_conf.set_config_auto()
 
 r1 = re.compile(r"(?P<g1>\w+)n['\u2019]t", re.UNICODE)
 r2 = re.compile(r"(?P<g1>\w+)['\u2019]s", re.UNICODE)
@@ -109,8 +104,8 @@ def find_similiar(articles, db='sqlite'):
 	
 	con.close()
 	
-	interesting_word_pairs = get_word_pairs(config.interesting_words)
-	boring_word_pairs = get_word_pairs(config.boring_words)
+	interesting_word_pairs = get_word_pairs(get_conf.config.interesting_words)
+	boring_word_pairs = get_word_pairs(get_conf.config.boring_words)
 	
 	ignored_links = [i['link'] for i in blacklist]
 	processed, scores = [], []

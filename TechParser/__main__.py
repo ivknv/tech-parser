@@ -28,7 +28,7 @@ import sqlite3
 
 import atexit
 
-from TechParser import recommend, parser
+from TechParser import get_conf, recommend, parser
 
 try:
 	from urllib.parse import urlencode
@@ -40,12 +40,10 @@ try:
 except NameError:
 	unicode_ = str
 
-sys.path.append(os.path.expanduser("~/.tech-parser"))
+if get_conf.config is None:
+	get_conf.set_config_auto()
 
-try:
-	import user_parser_config as config
-except ImportError:
-	import TechParser.parser_config as config
+get_conf.auto_fix_config()
 
 running_as_daemon = False
 
@@ -72,8 +70,8 @@ mylookup = TemplateLookup(directories=template_dir_path,
 	default_filters=["decode.utf8"],
 	input_encoding="utf-8", output_encoding="utf-8")
 
-liked = recommend.get_interesting_articles(db=config.db)
-disliked = recommend.get_blacklist(db=config.db)
+liked = recommend.get_interesting_articles(db=get_conf.config.db)
+disliked = recommend.get_blacklist(db=get_conf.config.db)
 liked_links = [i['link'] for i in liked]
 disliked_links = [i['link'] for i in disliked]
 
@@ -142,6 +140,8 @@ def show_progress(s, shared_object):
 	return "\033[0;32m[{}%]\033[0m ".format(progress)+s
 
 def parse_site(queue, articles, progress):
+	config = get_conf.config
+	
 	while not queue.empty():
 		site = queue.get()
 		s = "Got {} {} from {}"
@@ -206,17 +206,17 @@ def dump_articles(filename="articles_dumped"):
 	
 	main_queue = m.Queue()
 	
-	for i in config.sites_to_parse:
+	for i in get_conf.config.sites_to_parse:
 		main_queue.put(i)
 
-	for i in config.rss_feeds:
+	for i in get_conf.config.rss_feeds:
 		main_queue.put(i)
 	
 	s = "\033[0;32m[{}%]\033[0m Parsing articles from {}... "
 	
-	pool = multiprocessing.Pool(processes=config.num_threads)
+	pool = multiprocessing.Pool(processes=get_conf.config.num_threads)
 	
-	for i in range(config.num_threads):
+	for i in range(get_conf.config.num_threads):
 		pool.apply_async(parse_site, (main_queue, articles, progress))
 	
 	pool.close()
@@ -231,7 +231,7 @@ def dump_articles(filename="articles_dumped"):
 	log("New articles: %d"
 		%(len([i for i in list_articles if i not in articles_before])))
 	
-	if config.save_articles:
+	if get_conf.config.save_articles:
 		log("Saving articles to archive...")
 		
 		setup_db()
@@ -252,12 +252,12 @@ def dump_articles(filename="articles_dumped"):
 		con.commit()
 		con.close()
 	
-	num = len(recommend.get_interesting_articles(db=config.db))
-	num += len(recommend.get_blacklist(db=config.db))
+	num = len(recommend.get_interesting_articles(db=get_conf.config.db))
+	num += len(recommend.get_blacklist(db=get_conf.config.db))
 	
 	if num >= 20:
 		log("Ranking articles...")
-		list_articles = recommend.find_similiar(list_articles, db=config.db)
+		list_articles = recommend.find_similiar(list_articles, db=get_conf.config.db)
 		list_articles.sort(key=lambda x: x[1], reverse=True)
 	else:
 		log("Shuffling articles...")
@@ -285,6 +285,8 @@ def dump_articles_per(s):
 
 def filter_articles(articles):
 	"""Filter articles"""
+	
+	config = get_conf.config
 	
 	articles_filtered = []
 	
@@ -346,12 +348,14 @@ def serve_static(filename):
 
 @route('/go/<addr:path>')
 def go_to_url(addr):
-	recommend.add_article(addr, db=config.db)
+	recommend.add_article(addr, db=get_conf.config.db)
 	redirect(addr)
 
 @route('/histadd/<addr:path>')
 def add_to_history(addr):
 	global liked, disliked, liked_links, disliked_links
+	
+	config = get_conf.config
 	
 	recommend.add_article(addr, db=config.db)
 	liked = recommend.get_interesting_articles(db=config.db)
@@ -363,6 +367,8 @@ def add_to_history(addr):
 def add_to_blacklist(addr):
 	global liked, disliked, liked_links, disliked_links
 	
+	config = get_conf.config
+	
 	recommend.add_article_to_blacklist(addr, db=config.db)
 	liked = recommend.get_interesting_articles(db=config.db)
 	disliked = recommend.get_blacklist(db=config.db)
@@ -371,11 +377,11 @@ def add_to_blacklist(addr):
 
 @route('/blacklistrm/<addr:path>')
 def rm_from_blacklist(addr):
-	recommend.remove_from_blacklist(addr, db=config.db)
+	recommend.remove_from_blacklist(addr, db=get_conf.config.db)
 
 @route('/histrm/<addr:path>')
 def rm_from_history(addr):
-	recommend.remove_from_history(addr, db=config.db)
+	recommend.remove_from_history(addr, db=get_conf.config.db)
 
 @route('/history')
 @route('/history/<page_number>')
@@ -383,7 +389,7 @@ def show_history(page_number=1):
 	history_page = mylookup.get_template('history.html')
 	q = request.GET.get('q', '')
 	
-	articles = recommend.get_interesting_articles(db=config.db)
+	articles = recommend.get_interesting_articles(db=get_conf.config.db)
 	
 	try:
 		page_number = int(page_number)
@@ -415,7 +421,7 @@ def show_blacklist(page_number=1):
 	history_page = mylookup.get_template('blacklist.html')
 	q = request.GET.get('q', '')
 	
-	articles = recommend.get_blacklist(db=config.db)
+	articles = recommend.get_blacklist(db=get_conf.config.db)
 	
 	try:
 		page_number = int(page_number)
@@ -440,7 +446,6 @@ def show_blacklist(page_number=1):
 		page_num=page_number,
 		q=q,
 		all_articles=all_articles)
-
 
 def has_words(qs, article):
 	"""Check if article title contains words:"""
@@ -526,6 +531,8 @@ class ParserDaemon(Daemon):
 		super(ParserDaemon, self).__init__(pidfile, stdout=so, stderr=se)
 	
 	def onStart(self):
+		config = get_conf.config
+		
 		p1 = multiprocessing.Process(target=dump_articles_per, args=(config.update_interval,))
 		atexit.register(p1.terminate)
 		p1.start()
@@ -540,15 +547,14 @@ def is_hostname(hostname):
 	return all(allowed.match(x) for x in hostname.split("."))
 
 def run_server(host, port):
+	config = get_conf.config
+	
 	p1 = multiprocessing.Process(target=dump_articles_per, args=(config.update_interval,))
 	atexit.register(p1.terminate)
 	p1.start()
 	run(host=host, port=port, server=config.server)
 
 if __name__ == "__main__":
-	parser_daemon = ParserDaemon()
-	running_as_daemon = True
-	
 	arg_parser = argparse.ArgumentParser(description="""\
 Article parser.
 Available commands: start|stop|restart|update|run HOST:PORT""")
@@ -560,13 +566,12 @@ Available commands: start|stop|restart|update|run HOST:PORT""")
 	args = arg_parser.parse_args()
 	
 	if args.config:
-		import imp
-		config = imp.load_source('config', args.config)
+		get_conf.set_config_from_fname(args.config)
 	
 	if args.action:
 		if args.action[0] == "run":
 			if len(args.action) == 1:
-				addr = config.host + ":" + config.port
+				addr = get_conf.config.host + ":" + get_conf.config.port
 			else:
 				addr = args.action[1]
 			if not ":" in addr:
@@ -591,14 +596,14 @@ Available commands: start|stop|restart|update|run HOST:PORT""")
 			else:
 				run_server(host, port)
 		elif args.action[0] == "update":
-			oldlog = log
-			def log(*args, **kwargs):
-				kwargs["ignore_daemon"] = True
-				oldlog(*args, **kwargs)
 			dump_articles()
 		elif args.action[0] == "start":
+			running_as_daemon = True
+			parser_daemon = ParserDaemon()
 			parser_daemon.start()
 		elif args.action[0] == "stop":
+			running_as_daemon = True
+			parser_daemon = ParserDaemon()
 			parser_daemon.stop()
 else:
 	app = default_app()
