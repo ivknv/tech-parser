@@ -6,7 +6,10 @@ import os
 import sqlite3
 import pickle
 
-from itertools import chain, repeat
+try:
+	from itertools import zip_longest
+except ImportError:
+	from itertools import izip_longest as zip_longest
 
 from TechParser import get_conf
 
@@ -16,6 +19,11 @@ except ImportError:
 	pass
 
 try:
+	import htmlentitydefs
+except ImportError:
+	from html import entities as htmlentitydefs
+
+try:
 	from urllib.parse import urlparse
 except ImportError:
 	from urlparse import urlparse
@@ -23,6 +31,12 @@ except ImportError:
 if get_conf.config is None:
 	get_conf.set_config_auto()
 
+try:
+	chr_ = unichr
+except NameError:
+	chr_ = chr
+
+r0 = re.compile(r"<.*?>")
 r1 = re.compile(r"(?P<g1>\w+)n['\u2019]t", re.UNICODE)
 r2 = re.compile(r"(?P<g1>\w+)['\u2019]s", re.UNICODE)
 r3 = re.compile(r"(?P<g1>\w+)['\u2019]m", re.UNICODE)
@@ -30,41 +44,41 @@ r4 = re.compile(r"(?P<g1>\w+)['\u2019]re", re.UNICODE)
 r5 = re.compile(r"(?P<g1>\w+)['\u2019]ve", re.UNICODE)
 r6 = re.compile(r"(?P<g1>\w+)['\u2019]d", re.UNICODE)
 r7 = re.compile(r"(?P<g1>\w+)['\u2019]ll", re.UNICODE)
-r8 = re.compile(r"gonna", re.UNICODE)
+r8 = re.compile(r"\bgonna\b", re.UNICODE)
 r9 = re.compile(r"\W", re.UNICODE)
+r10 = re.compile(r"&#?\w+;")
 
-class OuterZipStopIteration(Exception):
-	pass
-
-def outer_zip(*args):
-	count = [len(args) - 1]
-
-	def sentinel(default):
-		if not count[0]:
-			raise OuterZipStopIteration
-		count[0] -= 1
-		yield default
-
-	iters = [chain(p, sentinel(default), repeat(default)) for p, default in args]
-	result = []
-	
-	try:
-		while iters:
-			result.append(tuple(map(next, iters)))
-	except OuterZipStopIteration:
-		return result
+def unescape(text):
+	def fixup(m):
+		text = m.group(0)
+		if text[:2] == "&#":
+			try:
+				if text[:3] == "&#x":
+					return chr_(int(text[3:-1], 16))
+				else:
+					return chr_(int(text[2:-1]))
+			except ValueError:
+				pass
+		else:
+			try:
+				text = chr_(htmlentitydefs.name2codepoint[text[1:-1]])
+			except KeyError:
+				pass
+		return text
+	return r10.sub(fixup, text)
 
 def get_similarity(pairs1, pairs2):
 	len_all_pairs = len(pairs1) + len(pairs2)
-	shrd = pairs1 & pairs2
 	
 	if len_all_pairs == 0:
 		return 0.0
-	
-	return 2.0 * len(shrd) / len_all_pairs
 
-def get_similarity2(pairs1, pairs2):
-	if len(pairs1[1]) < 80 or len(pairs2[1]) < 80:
+	len_shrd = len(pairs1 & pairs2)
+	
+	return 2.0 * len_shrd / len_all_pairs
+
+def get_similarity2(pairs1, pairs2, force=False):
+	if not force and (len(pairs1[1]) < 80 or len(pairs2[1]) < 80):
 		return get_similarity(pairs1[0], pairs2[0])
 	
 	new_pairs1 = pairs1[0]
@@ -86,7 +100,7 @@ def get_word_pairs(words):
 	for i in words:
 		if isinstance(i, tuple):
 			word = i[0]
-			priority = i[1]
+			priority = 0.0 + i[1] # A faster way to cast to float
 		else:
 			word = i
 			priority = 1.0
@@ -117,8 +131,8 @@ def find_similiar(articles, db='sqlite'):
 	ignored_pairs = [article_pairs(i)
 		for i in blacklist[:150]]
 	
-	zipped = outer_zip((interesting_pairs, set()), (ignored_pairs, set()),
-		(interesting_word_pairs, tuple()), (boring_word_pairs, tuple()))
+	zipped = list(zip_longest(interesting_pairs, ignored_pairs,
+		interesting_word_pairs, boring_word_pairs, fillvalue=tuple()))
 	
 	for article in articles:
 		if article['link'] in interesting_links or \
@@ -135,9 +149,11 @@ def find_similiar(articles, db='sqlite'):
 			if pairs3:
 				score -= get_similarity2(pairs1, pairs3)
 			if pairs4:
-				score += get_similarity2(pairs1, [pairs4[0], set()])*pairs4[1]
+				score += get_similarity2(pairs1,
+					[pairs4[0], set()], True)*pairs4[1]
 			if pairs5:
-				score -= get_similarity2(pairs1, [pairs5[0], set()])*pairs5[1]
+				score -= get_similarity2(pairs1,
+					[pairs5[0], set()], True)*pairs5[1]
 		
 		processed.append(article)
 		scores.append(score)
@@ -147,7 +163,8 @@ def find_similiar(articles, db='sqlite'):
 def prepare_string(s, exclude=["a", "an", "the", "is", "am", "there", "this",
 		"are", "for", "that", "of", "to", "so", "in", "on", "off", "those",
 		"these", "you", "he", "she", "they", "we", "out"]):
-	s = s.strip().lower()
+	s = unescape(s.strip().lower())
+	s = r0.sub("", s)
 	s = r1.sub("\g<g1> not", s)
 	s = r2.sub("\g<g1>", s)
 	s = r3.sub("\g<g1> am", s)
@@ -215,7 +232,7 @@ def get_blacklist(db='sqlite', cur=None):
 			'source': x[6]} for x in res]
 
 def add_article(addr, db='sqlite', cur=None):
-	f = open(os.path.join(logdir, "articles_dumped"), 'rb')
+	f = open(os.path.join(get_conf.logdir, "articles_dumped"), 'rb')
 	dumped = f.read()
 	f.close()
 	
@@ -276,7 +293,7 @@ def add_to_interesting(article, db='sqlite', cur=None):
 		pass
 
 def add_article_to_blacklist(addr, db='sqlite', cur=None):
-	f = open(os.path.join(logdir, "articles_dumped"), 'rb')
+	f = open(os.path.join(get_conf.logdir, "articles_dumped"), 'rb')
 	dumped = f.read()
 	f.close()
 	
@@ -284,7 +301,7 @@ def add_article_to_blacklist(addr, db='sqlite', cur=None):
 	
 	for article in articles:
 		if article[0]['link'] == addr:
-			f = open(os.path.join(logdir, "articles_dumped"), 'wb')
+			f = open(os.path.join(get_conf.logdir, "articles_dumped"), 'wb')
 			add_to_blacklist(article, db, cur)
 			articles.remove(article)
 			f.write(pickle.dumps(articles))
@@ -416,10 +433,10 @@ def which_db(db):
 		try:
 			connect = lambda: psycopg2.connect(**parse_dburl())
 		except NameError:
-			arg = os.path.join(logdir, 'interesting.db')
+			arg = os.path.join(get_conf.logdir, 'interesting.db')
 			connect = lambda: sqlite3.connect(arg)
 	elif db == 'sqlite':
-		arg = os.path.join(logdir, 'interesting.db')
+		arg = os.path.join(get_conf.logdir, 'interesting.db')
 		connect = lambda: sqlite3.connect(arg)
 	else:
 		raise Exception('db must be sqlite or postgresql')
