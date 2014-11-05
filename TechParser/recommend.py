@@ -32,11 +32,17 @@ if get_conf.config is None:
 	get_conf.set_config_auto()
 
 try:
-	chr_ = unichr
+	chr = unichr
 except NameError:
-	chr_ = chr
+	pass
 
-r0 = re.compile(r"<.*?>")
+try:
+	unicode_ = unicode
+	unicode_ = lambda s: unicode(s, 'utf-8')
+except NameError:
+	unicode_ = str
+
+r0 = re.compile(r"<.*?>", re.UNICODE)
 r1 = re.compile(r"(?P<g1>\w+)n['\u2019]t", re.UNICODE)
 r2 = re.compile(r"(?P<g1>\w+)['\u2019]s", re.UNICODE)
 r3 = re.compile(r"(?P<g1>\w+)['\u2019]m", re.UNICODE)
@@ -46,25 +52,31 @@ r6 = re.compile(r"(?P<g1>\w+)['\u2019]d", re.UNICODE)
 r7 = re.compile(r"(?P<g1>\w+)['\u2019]ll", re.UNICODE)
 r8 = re.compile(r"\bgonna\b", re.UNICODE)
 r9 = re.compile(r"\W", re.UNICODE)
-r10 = re.compile(r"&#?\w+;")
+r10 = re.compile(r"&#?\w+;", re.UNICODE)
 
 def unescape(text):
+	try:
+		text = unicode_(text)
+	except TypeError:
+		pass
+	
 	def fixup(m):
 		text = m.group(0)
 		if text[:2] == "&#":
 			try:
 				if text[:3] == "&#x":
-					return chr_(int(text[3:-1], 16))
+					return chr(int(text[3:-1], 16))
 				else:
-					return chr_(int(text[2:-1]))
+					return chr(int(text[2:-1]))
 			except ValueError:
 				pass
 		else:
 			try:
-				text = chr_(htmlentitydefs.name2codepoint[text[1:-1]])
+				text = chr(htmlentitydefs.name2codepoint[text[1:-1]])
 			except KeyError:
 				pass
 		return text
+	
 	return r10.sub(fixup, text)
 
 def get_similarity(pairs1, pairs2):
