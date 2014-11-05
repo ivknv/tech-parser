@@ -69,7 +69,7 @@ sites_to_parse = {
 	
 	"Read/Write Web": { # readwrite.com
 		"module": readwrite,
-		"kwargs": {"browser": "firefox"}
+		"kwargs": {}
 	},
 	
 	"Tech Republic": { # techrepublic.com
