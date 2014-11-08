@@ -11,7 +11,7 @@ from bottle import route, run, static_file, default_app, request
 from Daemo import Daemon, DaemonError
 
 from TechParser import get_conf, recommend, parser
-from TechParser.py2x import unicode_, range, pickle, urlencode
+from TechParser.py2x import unicode_, unicode__, range, pickle, urlencode
 
 if get_conf.config is None:
 	get_conf.set_config_auto()
@@ -51,9 +51,9 @@ disliked_links = [i['link'] for i in disliked]
 def encoded_dict(in_dict):
 	out_dict = {}
 	for k, v in in_dict.items():
-		if isinstance(v, unicode_):
+		if isinstance(v, str):
 			v = v.encode('utf8')
-		elif isinstance(v, str):
+		elif isinstance(v, unicode__):
 			# Must be encoded in UTF-8
 			v.decode('utf8')
 		out_dict[k] = v

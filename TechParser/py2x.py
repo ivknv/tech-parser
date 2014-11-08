@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 try:
-	unicode_ = unicode
+	unicode__ = unicode
 	unicode_ = lambda s: unicode(s, 'utf8')
 except NameError:
-	unicode_ = str
+	unicode_, unicode__ = str, str
 
 try:
 	chr = unichr
