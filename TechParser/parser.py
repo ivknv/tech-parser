@@ -1,21 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import grab
+import grab, re, feedparser
 from grab.error import GrabError
-import re
 from lxml.html import fromstring, tostring
 from lxml.etree import Error as LXMLError
-import feedparser
 
-try:
-	unicode_ = unicode
-except NameError:
-	unicode_ = str
+from TechParser.py2x import unicode_
+
+REMOVE_TAGS_REGEX = re.compile(r'<.*?>')
 
 def setup_grab(grab_object):
-	grab_object.setup(
-		hammer_mode=True,
+	grab_object.setup(hammer_mode=True,
 		hammer_timeouts=((10, 15), (20, 30), (25, 40)))
 
 def absolutize_link(link, site_url):
@@ -27,7 +23,7 @@ def absolutize_link(link, site_url):
 	return link
 
 def remove_tags(s):
-	return re.sub(r'<.*?>', '', s)
+	return REMOVE_TAGS_REGEX.sub('', s)
 
 def escape_title(s):
 	s = s.replace('&', '&amp;')
@@ -49,7 +45,7 @@ def parse_article_image(article, site_url=''):
 		return tostring(img).strip()
 	except IndexError:
 		return b''
-	except AttributeError as e:
+	except AttributeError:
 		try:
 			img = grab.Grab(article).css_one('img:first-child')
 		except GrabError:
@@ -132,7 +128,7 @@ def get_articles_from_rss(url, source, parse_image=True):
 		if parse_image and not len(image):
 			for link in entry['links']:
 				if link.get('type', '').startswith('image/'):
-					image = '<img src="{}" />'.format(link['href'])
+					image = '<img src="{0}" />'.format(link['href'])
 					text = image + text
 					break
 		

@@ -2,41 +2,16 @@
 # -*- coding: utf-8 -*-
 
 from random import shuffle
-
-try:
-	import cPickle as pickle
-except ImportError:
-	import pickle
-
-import os, sys, re
-
+import os, sys, re, multiprocessing, argparse, sqlite3, atexit
 from time import time, sleep
 
-import multiprocessing
-
 from mako.lookup import TemplateLookup
-
 from bottle import route, run, static_file, default_app, request
 
 from Daemo import Daemon, DaemonError
 
-import argparse
-
-import sqlite3
-
-import atexit
-
 from TechParser import get_conf, recommend, parser
-
-try:
-	from urllib.parse import urlencode
-except ImportError:
-	from urllib import urlencode
-
-try:
-	unicode_ = unicode
-except NameError:
-	unicode_ = str
+from TechParser.py2x import unicode_, range, pickle, urlencode
 
 if get_conf.config is None:
 	get_conf.set_config_auto()

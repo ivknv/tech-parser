@@ -1,46 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import re
-import os
-import sqlite3
-import pickle
-
-try:
-	from itertools import zip_longest
-except ImportError:
-	from itertools import izip_longest as zip_longest
+import re, os, sqlite3
 
 from TechParser import get_conf
+from TechParser.py2x import *
 
 try:
 	import psycopg2
 except ImportError:
 	pass
 
-try:
-	import htmlentitydefs
-except ImportError:
-	from html import entities as htmlentitydefs
-
-try:
-	from urllib.parse import urlparse
-except ImportError:
-	from urlparse import urlparse
-
 if get_conf.config is None:
 	get_conf.set_config_auto()
-
-try:
-	chr = unichr
-except NameError:
-	pass
-
-try:
-	unicode_ = unicode
-	unicode_ = lambda s: unicode(s, 'utf-8')
-except NameError:
-	unicode_ = str
 
 r0 = re.compile(r"<.*?>", re.UNICODE)
 r1 = re.compile(r"(?P<g1>\w+)n['\u2019]t", re.UNICODE)
