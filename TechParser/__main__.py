@@ -10,17 +10,15 @@ except ImportError:
 
 import os, sys, re
 
-from grab.error import GrabError
-
 from time import time, sleep
 
 import multiprocessing
 
 from mako.lookup import TemplateLookup
 
-from bottle import route, run, static_file, default_app, redirect, request
+from bottle import route, run, static_file, default_app, request
 
-from Daemo import Daemon
+from Daemo import Daemon, DaemonError
 
 import argparse
 
@@ -109,6 +107,10 @@ def log(text, f=sys.stdout, add_newline=True, clear_str=False,
 	f.write(text)
 	f.flush()
 
+def logerr(*args, **kwargs):
+	kwargs['f'] = sys.stderr
+	log(*args, **kwargs)
+
 def split_into_pages(articles, n=30):
 	"""Split list into pages"""
 	
@@ -124,7 +126,7 @@ def split_into_pages(articles, n=30):
 		else:
 			pages[-1].append(j)
 		
-		i+=1
+		i += 1
 	
 	return pages
 
@@ -137,14 +139,14 @@ def simple_plural(n, s):
 
 def show_progress(s, shared_object):
 	progress = round(shared_object.value, 2)
-	return "\033[0;32m[{}%]\033[0m ".format(progress)+s
+	return "\033[0;32m[{0}%]\033[0m ".format(progress)+s
 
 def parse_site(queue, articles, progress):
 	config = get_conf.config
 	
 	while not queue.empty():
 		site = queue.get()
-		s = "Got {} {} from {}"
+		s = "Got {0} {1} from {2}"
 		
 		if site not in config.sites_to_parse:
 			d = config.rss_feeds[site]
@@ -153,7 +155,7 @@ def parse_site(queue, articles, progress):
 		
 		update_progress(progress,
 			100.0 / (len(config.sites_to_parse) + len(config.rss_feeds)) / 2.0)
-		log(show_progress("Parsing articles from {}".format(site), progress))
+		log(show_progress("Parsing articles from {0}".format(site), progress))
 		
 		if 'module' not in d:
 			url = d.get('url', 'about:blank')
@@ -174,8 +176,8 @@ def parse_site(queue, articles, progress):
 				log(show_progress(s.format(len(new_articles),
 					simple_plural(len(new_articles), 'article'), site), progress))
 			except Exception as error:
-				log('Fail')
-				log(str(error), f=sys.stderr)
+				logerr('Fail')
+				logerr(str(error))
 		else:
 			module = d["module"]
 			kwargs = d["kwargs"]
@@ -189,8 +191,8 @@ def parse_site(queue, articles, progress):
 				log(show_progress(s.format(len(found),
 					simple_plural(len(found), 'article'), site), progress))
 			except Exception as error:
-				log("Failed to parse articles from {}".format(site))
-				log(str(error), f=sys.stderr)
+				logerr("Failed to parse articles from {0}".format(site))
+				logerr(str(error))
 
 def update_progress(shared_object, num):
 	shared_object.value += num
@@ -211,8 +213,6 @@ def dump_articles(filename="articles_dumped"):
 
 	for i in get_conf.config.rss_feeds:
 		main_queue.put(i)
-	
-	s = "\033[0;32m[{}%]\033[0m Parsing articles from {}... "
 	
 	pool = multiprocessing.Pool(processes=get_conf.config.num_threads)
 	
@@ -264,7 +264,7 @@ def dump_articles(filename="articles_dumped"):
 		shuffle(list_articles)
 		list_articles = [[a, -1] for a in list_articles]
 	
-	log("Dumping data to file: {}...".format(filename))
+	log("Dumping data to file: {0}...".format(filename))
 	
 	dumped = pickle.dumps(list_articles)
 	path = os.path.join(os.path.expanduser("~"), ".tech-parser")
@@ -324,11 +324,11 @@ def filter_articles(articles):
 def load_articles(filename="articles_dumped"):
 	"""Load articles from ~/.tech-parser/<filename>"""
 	
-	log("Reading articles from file: {}...".format(filename))
+	log("Reading articles from file: {0}...".format(filename))
 	try:
 		f = open(os.path.join(logdir, filename), 'rb')
 	except IOError:
-		log("File '{}' doesn't exist: returning empty list".format(filename))
+		log("File '{0}' doesn't exist: returning empty list".format(filename))
 		return []
 	
 	dumped = f.read()
@@ -537,13 +537,14 @@ def is_hostname(hostname):
 		return False
 	if hostname[-1] == ".":
 		hostname = hostname[:-1]
-	allowed = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
+	allowed = re.compile(r"(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
 	return all(allowed.match(x) for x in hostname.split("."))
 
 def run_server(host, port):
 	config = get_conf.config
 	
-	p1 = multiprocessing.Process(target=dump_articles_per, args=(config.update_interval,))
+	p1 = multiprocessing.Process(target=dump_articles_per,
+		args=(config.update_interval,))
 	atexit.register(p1.terminate)
 	p1.start()
 	run(host=host, port=port, server=config.server)
@@ -582,10 +583,10 @@ Available commands: start|stop|restart|update|run HOST:PORT""")
 				is_port_correct = False
 				
 			if not is_host_correct:
-				log("Incorrect hostname", f=sys.stderr)
+				logerr("Invalid hostname")
 				sys.exit(1)
 			elif not is_port_correct:
-				log("Incorrect port", f=sys.stderr)
+				logerr("Invalid port")
 				sys.exit(1)
 			else:
 				run_server(host, port)
@@ -594,10 +595,18 @@ Available commands: start|stop|restart|update|run HOST:PORT""")
 		elif args.action[0] == "start":
 			running_as_daemon = True
 			parser_daemon = ParserDaemon()
-			parser_daemon.start()
+			try:
+				parser_daemon.start()
+			except DaemonError as e:
+				logerr('Failed to start server: {0}'.format(e))
+				sys.exit(1)
 		elif args.action[0] == "stop":
 			running_as_daemon = True
 			parser_daemon = ParserDaemon()
-			parser_daemon.stop()
+			try:
+				parser_daemon.stop()
+			except DaemonError as e:
+				logerr('Failed to stop server: {0}'.format(e))
+				sys.exit(1)
 else:
 	app = default_app()
