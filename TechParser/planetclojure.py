@@ -3,15 +3,7 @@
 
 import grab
 from TechParser import parser
-
-try:
-	unicode_ = unicode
-except NameError:
-	unicode_ = str
-
-def concat_texts(x, y):
-	if not isinstance(x, str): return x.text_content() + y.text_content()
-	else: return x + y.text_content(),
+from TechParser.py2x import unicode_
 
 def get_articles():
 	g = grab.Grab()
