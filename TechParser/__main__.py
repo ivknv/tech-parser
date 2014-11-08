@@ -423,8 +423,8 @@ def show_blacklist(page_number=1):
 def has_words(qs, article):
 	"""Check if article contains words"""
 	
-	title = article['title'].lower()
-	summary = article['summary'].lower()
+	title = unicode_(article['title']).lower()
+	summary = unicode_(article['summary']).lower()
 	
 	for i in qs:
 		if i not in title and i not in summary:
