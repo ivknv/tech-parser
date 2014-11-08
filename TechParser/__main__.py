@@ -51,9 +51,9 @@ disliked_links = [i['link'] for i in disliked]
 def encoded_dict(in_dict):
 	out_dict = {}
 	for k, v in in_dict.items():
-		if isinstance(v, str):
+		if isinstance(v, unicode__):
 			v = v.encode('utf8')
-		elif isinstance(v, unicode__):
+		elif isinstance(v, str):
 			# Must be encoded in UTF-8
 			v.decode('utf8')
 		out_dict[k] = v
@@ -532,11 +532,18 @@ Available commands: start|stop|restart|update|run HOST:PORT""")
 	arg_parser.add_argument("action", nargs="+",
 		action="store", default=[], help="Action to run")
 	arg_parser.add_argument("--config", help="Path to configuration")
+	arg_parser.add_argument("--num-threads", help="Number of threads for parsing articles")
 	
 	args = arg_parser.parse_args()
 	
 	if args.config:
 		get_conf.set_config_from_fname(args.config)
+	
+	if args.num_threads:
+		try:
+			get_conf.config.num_threads = int(args.num_threads)
+		except ValueError:
+			logerr("'{0}' is not an integer".format(args.num_threads))
 	
 	if args.action:
 		if args.action[0] == "run":
