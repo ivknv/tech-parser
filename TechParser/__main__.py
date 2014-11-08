@@ -532,7 +532,12 @@ Available commands: start|stop|restart|update|run HOST:PORT""")
 	arg_parser.add_argument("action", nargs="+",
 		action="store", default=[], help="Action to run")
 	arg_parser.add_argument("--config", help="Path to configuration")
-	arg_parser.add_argument("--num-threads", help="Number of threads for parsing articles")
+	arg_parser.add_argument("--num-threads",
+		help="Number of threads for parsing articles")
+	arg_parser.add_argument("--update-interval", help="Update interval")
+	arg_parser.add_argument("--server", help="Server to use")
+	arg_parser.add_argument("--db", choices=['sqlite', 'postgresql'],
+		default='sqlite', help="Database to use: sqlite or postgresql")
 	
 	args = arg_parser.parse_args()
 	
@@ -544,6 +549,19 @@ Available commands: start|stop|restart|update|run HOST:PORT""")
 			get_conf.config.num_threads = int(args.num_threads)
 		except ValueError:
 			logerr("'{0}' is not an integer".format(args.num_threads))
+			sys.exit(1)
+
+	if args.update_interval:
+		try:
+			get_conf.config.update_interval = int(args.update_interval)
+		except ValueError:
+			logerr("'{0}' is not an integer".format(args.update_interval))
+			sys.exit(1)
+	
+	if args.server:
+		get_conf.config.server = args.server
+	
+	get_conf.config.db = args.db
 	
 	if args.action:
 		if args.action[0] == "run":
