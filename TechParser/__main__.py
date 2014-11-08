@@ -346,48 +346,46 @@ def serve_static(filename):
 	
 	return static_file(filename, root=static_dir_path)
 
-@route('/go/<addr:path>')
-def go_to_url(addr):
-	recommend.add_article(addr, db=get_conf.config.db)
-	redirect(addr)
+def update_liked_disliked():
+	global liked, disliked, liked_links, disliked_links
+
+	config = get_conf.config
+	
+	liked = recommend.get_interesting_articles(db=config.db)
+	disliked = recommend.get_blacklist(db=config.db)
+	liked_links = [i['link'] for i in liked]
+	disliked_links = [i['link'] for i in disliked]
 
 @route('/histadd/<addr:path>')
 def add_to_history(addr):
-	global liked, disliked, liked_links, disliked_links
 	
-	config = get_conf.config
+	recommend.add_article(addr, db=get_conf.config.db)
 	
-	recommend.add_article(addr, db=config.db)
-	liked = recommend.get_interesting_articles(db=config.db)
-	disliked = recommend.get_blacklist(db=config.db)
-	liked_links = [i['link'] for i in liked]
-	disliked_links = [i['link'] for i in disliked]
-
+	update_liked_disliked()
+	
 @route('/blacklistadd/<addr:path>')
 def add_to_blacklist(addr):
-	global liked, disliked, liked_links, disliked_links
+	recommend.add_article_to_blacklist(addr, db=get_conf.config.db)
 	
-	config = get_conf.config
-	
-	recommend.add_article_to_blacklist(addr, db=config.db)
-	liked = recommend.get_interesting_articles(db=config.db)
-	disliked = recommend.get_blacklist(db=config.db)
-	liked_links = [i['link'] for i in liked]
-	disliked_links = [i['link'] for i in disliked]
+	update_liked_disliked()
 
 @route('/blacklistrm/<addr:path>')
 def rm_from_blacklist(addr):
 	recommend.remove_from_blacklist(addr, db=get_conf.config.db)
+	
+	update_liked_disliked()
 
 @route('/histrm/<addr:path>')
 def rm_from_history(addr):
 	recommend.remove_from_history(addr, db=get_conf.config.db)
+	
+	update_liked_disliked()
 
 @route('/history')
 @route('/history/<page_number>')
 def show_history(page_number=1):
 	history_page = mylookup.get_template('history.html')
-	q = request.GET.get('q', '')
+	q = unicode_(request.GET.get('q', ''))
 	
 	articles = recommend.get_interesting_articles(db=get_conf.config.db)
 	
@@ -413,13 +411,13 @@ def show_history(page_number=1):
 		num_pages=len(articles),
 		page_num=page_number,
 		q=q,
-		all_articles=all_articles,)
+		all_articles=all_articles)
 
 @route('/blacklist')
 @route('/blacklist/<page_number>')
 def show_blacklist(page_number=1):
 	history_page = mylookup.get_template('blacklist.html')
-	q = request.GET.get('q', '')
+	q = unicode_(request.GET.get('q', ''))
 	
 	articles = recommend.get_blacklist(db=get_conf.config.db)
 	
@@ -448,12 +446,13 @@ def show_blacklist(page_number=1):
 		all_articles=all_articles)
 
 def has_words(qs, article):
-	"""Check if article title contains words:"""
+	"""Check if article contains words"""
 	
 	title = article['title'].lower()
+	summary = article['summary'].lower()
 	
 	for i in qs:
-		if i not in title:
+		if i not in title and i not in summary:
 			return False
 	return True
 
@@ -485,7 +484,7 @@ def article_list(page_number=1):
 	"""Show list of articles | Search for articles"""
 	
 	main_page = mylookup.get_template("articles.html")
-	q = request.GET.get('q', '')
+	q = unicode_(request.GET.get('q', ''))
 	
 	try:
 		page_number = int(page_number)
@@ -531,12 +530,7 @@ class ParserDaemon(Daemon):
 		super(ParserDaemon, self).__init__(pidfile, stdout=so, stderr=se)
 	
 	def onStart(self):
-		config = get_conf.config
-		
-		p1 = multiprocessing.Process(target=dump_articles_per, args=(config.update_interval,))
-		atexit.register(p1.terminate)
-		p1.start()
-		run(host=config.host, port=config.port, server=config.server)
+		run_server(host=get_conf.config.host, port=get_conf.config.port)
 
 def is_hostname(hostname):
 	if len(hostname) > 255:
