@@ -93,10 +93,6 @@ All these modules can be installed with pip or easy_install.
 You can install TechParser by running<br/>
 ```pip install TechParser```<br/> or<br/>
 ```python setup.py install```<br/>
-And also, to make it easier to use I recommend to make an alias like this:<br/>
-```alias tech-parser="python -m TechParser"``` on \*nix based OS or<br/>
-```doskey tech-parser=python -m TechParser $*``` on Windows<br/>
-After that You will be able to run  ```tech-parser``` instead of ```python -m TechParser```.
 
 ## How to use ##
 Run ```python -m TechParser start``` to start server<br/>
@@ -105,7 +101,14 @@ And then open [localhost:8080](http://localhost:8080) in your browser.<br/>
 ```python -m TechParser update``` to manually update list of articles.<br/>
 ```python -m TechParser run HOST:PORT``` run server without starting daemon.<br/>
 ```python -m TechParser -h``` show help.<br/>
-```python -m TechParser <action> --config <path to configuration file>``` set path to configuration file.
+```python -m TechParser <action> --config <path to configuration file>``` set path to configuration file.<br/>
+
+Run ```python -m TechParser --help``` for more info.<br/>
+
+To make usage easier I recommend to make an alias like this:<br/>
+```alias tech-parser="python -m TechParser"``` on \*nix based OS or<br/>
+```doskey tech-parser=python -m TechParser $*``` on Windows<br/>
+After that You will be able to run  ```tech-parser``` instead of ```python -m TechParser```.<br/>
 
 ## Configuring ##
 ### Enabling/disabling parsers ###
