@@ -537,7 +537,7 @@ Available commands: start|stop|restart|update|run HOST:PORT""")
 	arg_parser.add_argument("--update-interval", help="Update interval")
 	arg_parser.add_argument("--server", help="Server to use")
 	arg_parser.add_argument("--db", choices=['sqlite', 'postgresql'],
-		default='sqlite', help="Database to use: sqlite or postgresql")
+		help="Database to use: sqlite or postgresql")
 	
 	args = arg_parser.parse_args()
 	
@@ -561,7 +561,8 @@ Available commands: start|stop|restart|update|run HOST:PORT""")
 	if args.server:
 		get_conf.config.server = args.server
 	
-	get_conf.config.db = args.db
+	if args.db:
+		get_conf.config.db = args.db
 	
 	if args.action:
 		if args.action[0] == "run":
