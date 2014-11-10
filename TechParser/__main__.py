@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from random import shuffle
-import os, sys, re, multiprocessing, argparse, sqlite3, atexit
+import os, sys, re, multiprocessing
+import argparse, sqlite3, atexit, traceback
 from time import time, sleep
 
 from mako.lookup import TemplateLookup
@@ -151,8 +152,8 @@ def parse_site(queue, articles, progress):
 				log(show_progress(s.format(len(new_articles),
 					simple_plural(len(new_articles), 'article'), site), progress))
 			except Exception as error:
-				logerr('Fail')
-				logerr(str(error))
+				logerr('Failed to parse articles from {0}'.format(site))
+				logerr(traceback.format_exc())
 		else:
 			module = d["module"]
 			kwargs = d["kwargs"]
@@ -165,9 +166,9 @@ def parse_site(queue, articles, progress):
 					100.0 / (len(config.sites_to_parse) + len(config.rss_feeds)) / 2.0)
 				log(show_progress(s.format(len(found),
 					simple_plural(len(found), 'article'), site), progress))
-			except Exception as error:
-				logerr("Failed to parse articles from {0}".format(site))
-				logerr(str(error))
+			except Exception:
+				logerr('Failed to parse articles from {0}'.format(site))
+				logerr(traceback.format_exc())
 
 def update_progress(shared_object, num):
 	shared_object.value += num
