@@ -3,7 +3,11 @@
 
 try:
 	unicode__ = unicode
-	unicode_ = lambda s: unicode(s, 'utf8')
+	def unicode_(s):
+		try:
+			return unicode(s, 'utf8')
+		except TypeError:
+			return s
 except NameError:
 	unicode_, unicode__ = str, str
 
