@@ -198,7 +198,11 @@ def dump_articles(filename="articles_dumped"):
 	pool.close()
 	pool.join()
 	
-	articles_before = [i[0] for i in load_articles()]
+	try:
+		articles_before = [i[0] for i in load_articles()]
+	except ValueError:
+		articles_before = []
+	
 	list_articles = []
 	while not articles.empty():
 		list_articles.append(articles.get())
