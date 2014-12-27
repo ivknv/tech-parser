@@ -52,17 +52,19 @@ def unescape(text):
 	return r10.sub(fixup, text)
 
 def get_similarity(pairs1, pairs2):
-	len_all_pairs = len(pairs1) + len(pairs2)
+	len_all_pairs = sum(dict_values(pairs1)) + sum(dict_values(pairs2))
 	
 	if len_all_pairs == 0:
 		return 0.0
-
-	len_shrd = len(pairs1 & pairs2)
+	
+	len_shrd = 0
+	for i in find_shared(dict_keys(pairs1), dict_keys(pairs2)):
+		len_shrd += min(pairs1[i], pairs2[i])
 	
 	return 2.0 * len_shrd / len_all_pairs
 
 def get_similarity2(pairs1, pairs2, force=False):
-	if not force and (len(pairs1[1]) < 80 or len(pairs2[1]) < 80):
+	if not force and (sum(dict_values(pairs1[1])) < 80 or sum(dict_values(pairs2[1])) < 80):
 		return get_similarity(pairs1[0], pairs2[0])
 	
 	new_pairs1 = pairs1[0]
@@ -162,9 +164,11 @@ def prepare_string(s, exclude=["a", "an", "the", "is", "am", "there", "this",
 	return [word for word in words if len(word) and word not in exclude]
 
 def get_pairs(words):
-	pairs = set()
+	pairs = {}
 	for word in words:
-		pairs.update({word[i:i+2] for i in range(len(word))})
+		for i in range(len(word)):
+			pair = word[i:i+2]
+			pairs[pair] = pairs.get(pair, 0) + 1
 	return pairs
 
 def get_interesting_articles(db='sqlite', cur=None):
