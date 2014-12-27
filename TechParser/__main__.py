@@ -180,7 +180,7 @@ def dump_articles(filename="articles_dumped"):
 	
 	articles = m.Queue()
 	
-	progress = m.Value('d', 0.0, lock=False)
+	progress = m.Value('d', 0.0)
 	
 	main_queue = m.Queue()
 	
@@ -315,8 +315,6 @@ def load_articles(filename="articles_dumped"):
 	f.close()
 	
 	articles = pickle.loads(dumped)
-	
-	log("Done!")
 	
 	return articles
 
