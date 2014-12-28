@@ -13,23 +13,17 @@ except ImportError:
 def remove_from_blacklist(link):
 	"""Remove article from blacklist by link"""
 	
-	db.Database.main_database.execute_query(Q_DELETE_FROM_BLACKLIST, (link,))
+	db.Database.main_database.execute_query(Q_DELETE_FROM_BLACKLIST, [(link,)])
 
 def remove_from_history(link):
 	"""Remove article from history by link"""
 	
-	db.Database.main_database.execute_query(Q_DELETE_FROM_HISTORY, (link,))
+	db.Database.main_database.execute_query(Q_DELETE_FROM_HISTORY, [(link,)])
 
 def add_to_blacklist(article):
 	"""Add article to blacklist"""
 	
-	if db.Database.main_database.db == 'sqlite':
-		IntegrityError = sqlite3.IntegrityError
-	else:
-		try:
-			IntegrityError = psycopg2.IntegrityError
-		except NameError:
-			IntegrityError = sqlite3.IntegrityError
+	IntegrityError = db.Database.main_database.userData # userData contains exception
 	
 	try:
 		title = article[0]['title']
@@ -39,7 +33,7 @@ def add_to_blacklist(article):
 		fromrss = article[0].get('fromrss', 0)
 		icon = article[0].get('icon', '')
 		color = article[0].get('color', '#000')
-		parameters = (title, link, summary, fromrss, icon, color, source)
+		parameters = [(title, link, summary, fromrss, icon, color, source)]
 		db.Database.main_database.execute_query(Q_ADD_TO_BLACKLIST, parameters)
 	except IntegrityError:
 		pass
@@ -47,13 +41,7 @@ def add_to_blacklist(article):
 def add_to_interesting(article):	
 	"""Add article to history"""
 	
-	if db.Database.main_database.db == 'sqlite':
-		IntegrityError = sqlite3.IntegrityError
-	else:
-		try:
-			IntegrityError = psycopg2.IntegrityError
-		except NameError:
-			IntegrityError = sqlite3.IntegrityError
+	IntegrityError = db.Database.main_database.userData # userData contains exception
 	
 	try:
 		title = article[0]['title']
@@ -63,7 +51,7 @@ def add_to_interesting(article):
 		fromrss = article[0].get('fromrss', 0)
 		icon = article[0].get('icon', '')
 		color = article[0].get('color', '#000')
-		parameters = (title, link, summary, fromrss, icon, color, source)
+		parameters = [(title, link, summary, fromrss, icon, color, source)]
 		
 		db.Database.main_database.execute_query(Q_ADD_TO_HISTORY, parameters)
 	except IntegrityError:
