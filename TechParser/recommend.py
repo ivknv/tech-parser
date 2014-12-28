@@ -1,15 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import re, os, sqlite3
+import re
+import os
 
 from TechParser import get_conf
 from TechParser.py2x import *
-
-try:
-	import psycopg2
-except ImportError:
-	pass
+from TechParser.db_functions import *
 
 if get_conf.config is None:
 	get_conf.set_config_auto()
@@ -95,14 +92,9 @@ def get_word_pairs(words):
 	
 	return pairs
 
-def find_similiar(articles, db='sqlite'):
-	con = connect_db(db)
-	cur = con.cursor()
-	
-	interesting_articles = get_interesting_articles(db, cur)
-	blacklist = get_blacklist(db, cur)
-	
-	con.close()
+def find_similiar(articles):
+	interesting_articles = get_interesting_articles()
+	blacklist = get_blacklist()
 	
 	interesting_word_pairs = get_word_pairs(get_conf.config.interesting_words)
 	boring_word_pairs = get_word_pairs(get_conf.config.boring_words)
@@ -171,55 +163,7 @@ def get_pairs(words):
 			pairs[pair] = pairs.get(pair, 0) + 1
 	return pairs
 
-def get_interesting_articles(db='sqlite', cur=None):
-	if cur is None:
-		con = connect_db(db)
-		cur = con.cursor()
-	
-	setup_db(db, cur)
-	
-	cur.execute('''SELECT title, link, summary, fromrss, icon, color, source
-		FROM interesting_articles ORDER BY id DESC;''')
-	res = cur.fetchall()
-	
-	try:
-		con.close()
-	except NameError:
-		pass
-	
-	return [{'title': x[0],
-			'link': x[1],
-			'summary': x[2],
-			'fromrss': x[3],
-			'icon': x[4],
-			'color': x[5],
-			'source': x[6]} for x in res]
-
-def get_blacklist(db='sqlite', cur=None):
-	if cur is None:
-		con = connect_db(db)
-		cur = con.cursor()
-	
-	setup_db(db, cur)
-	
-	cur.execute('''SELECT title, link, summary, fromrss, icon, color, source
-		FROM blacklist ORDER BY id DESC;''')
-	res = cur.fetchall()
-	
-	try:
-		con.close()
-	except NameError:
-		pass
-	
-	return [{'title': x[0],
-			'link': x[1],
-			'summary': x[2],
-			'fromrss': x[3],
-			'icon': x[4],
-			'color': x[5],
-			'source': x[6]} for x in res]
-
-def add_article(addr, db='sqlite', cur=None):
+def add_article(addr):
 	f = open(os.path.join(get_conf.logdir, "articles_dumped"), 'rb')
 	dumped = f.read()
 	f.close()
@@ -228,59 +172,10 @@ def add_article(addr, db='sqlite', cur=None):
 	
 	for article in articles:
 		if article[0]['link'] == addr:
-			add_to_interesting(article, db, cur)
+			add_to_interesting(article)
 			break
 
-def add_to_interesting(article, db='sqlite', cur=None):	
-	if db == 'sqlite':
-		IntegrityError = sqlite3.IntegrityError
-	else:
-		try:
-			IntegrityError = psycopg2.IntegrityError
-		except NameError:
-			IntegrityError = sqlite3.IntegrityError
-	if cur is None:
-		con = connect_db(db)
-		cur = con.cursor()
-	
-	setup_db(db, cur)
-	
-	cur.execute('SELECT count(link) FROM interesting_articles;')
-	if cur.fetchone()[0] > 1000:
-		cur.execute("""DELETE FROM interesting_articles
-			WHERE id = (SELECT MIN(id) FROM interesting_articles);""")
-	sqlite_code = """INSERT INTO
-			interesting_articles(title, link, summary, fromrss, icon, color, source)
-				VALUES(?, ?, ?, ?, ?, ?, ?);"""
-	postgres_code = """INSERT INTO
-			interesting_articles(title, link, summary, fromrss, icon, color, source)
-				VALUES(%s, %s, %s, %s, %s, %s, %s);"""
-	
-	if db == 'sqlite':
-		code = sqlite_code
-	else:
-		code = postgres_code
-	
-	try:
-		title = article[0]['title']
-		link = article[0]['link']
-		summary = article[0]['summary']
-		source = article[0]['source']
-		fromrss = article[0].get('fromrss', 0)
-		icon = article[0].get('icon', '')
-		color = article[0].get('color', '#000')
-		
-		cur.execute(code, (title, link, summary, fromrss, icon, color, source))
-	except IntegrityError:
-		pass
-	
-	try:
-		con.commit()
-		con.close()
-	except NameError:
-		pass
-
-def add_article_to_blacklist(addr, db='sqlite', cur=None):
+def add_article_to_blacklist(addr):
 	f = open(os.path.join(get_conf.logdir, "articles_dumped"), 'rb')
 	dumped = f.read()
 	f.close()
@@ -290,155 +185,8 @@ def add_article_to_blacklist(addr, db='sqlite', cur=None):
 	for article in articles:
 		if article[0]['link'] == addr:
 			f = open(os.path.join(get_conf.logdir, "articles_dumped"), 'wb')
-			add_to_blacklist(article, db, cur)
+			add_to_blacklist(article)
 			articles.remove(article)
 			f.write(pickle.dumps(articles))
 			f.close()
 			break
-
-def add_to_blacklist(article, db='sqlite', cur=None):
-	if db == 'sqlite':
-		IntegrityError = sqlite3.IntegrityError
-	else:
-		try:
-			IntegrityError = psycopg2.IntegrityError
-		except NameError:
-			IntegrityError = sqlite3.IntegrityError
-	
-	if cur is None:
-		con = connect_db(db)
-		cur = con.cursor()
-	
-	setup_db(db, cur)
-
-	sqlite_code = '''INSERT INTO
-			blacklist(title, link, summary, fromrss, icon, color, source)
-				VALUES(?, ?, ?, ?, ?, ?, ?);'''
-	postgres_code = '''INSERT INTO
-			blacklist(title, link, summary, fromrss, icon, color, source)
-				VALUES(%s, %s, %s, %s, %s, %s, %s);'''
-	
-	if db == 'sqlite':
-		code = sqlite_code
-	else:
-		code = postgres_code
-	
-	try:
-		title = article[0]['title']
-		link = article[0]['link']
-		summary = article[0]['summary']
-		source = article[0]['source']
-		fromrss = article[0].get('fromrss', 0)
-		icon = article[0].get('icon', '')
-		color = article[0].get('color', '#000')
-		cur.execute(code, (title, link, summary, fromrss, icon, color, source))
-	except IntegrityError:
-		pass
-	
-	try:
-		con.commit()
-		con.close()
-	except NameError:
-		pass
-
-def remove_from_history(link, db='sqlite', cur=None):
-	if cur is None:
-		con = connect_db(db)
-		cur = con.cursor()
-	
-	setup_db(db, cur)
-	
-	sqlite_code = 'DELETE FROM interesting_articles WHERE link=?;'
-	postgres_code = 'DELETE FROM interesting_articles WHERE link=%s;'
-	
-	code = postgres_code if db == 'postgresql' else sqlite_code
-	
-	cur.execute(code, (link,))
-	
-	try:
-		con.commit()
-		con.close()
-	except NameError:
-		pass
-
-def remove_from_blacklist(link, db='sqlite', cur=None):
-	if cur is None:
-		con = connect_db(db)
-		cur = con.cursor()
-	
-	setup_db(db, cur)
-	
-	sqlite_code = 'DELETE FROM blacklist WHERE link=?;'
-	postgres_code = 'DELETE FROM blacklist WHERE link=%s;'
-	
-	code = postgres_code if db == 'postgresql' else sqlite_code
-	
-	cur.execute(code, (link,))
-	try:
-		con.commit()
-		con.close()
-	except NameError:
-		pass
-
-def setup_db(db='sqlite', cur=None):
-	if cur is None:
-		con = connect_db(db)
-		cur = con.cursor()
-	
-	sqlite_code = '''CREATE TABLE IF NOT EXISTS interesting_articles
-			(id INTEGER PRIMARY KEY AUTOINCREMENT,
-				title TEXT, link TEXT, summary TEXT, source TEXT,
-				fromrss INTEGER, icon TEXT, color TEXT,
-				UNIQUE(link));
-		CREATE TABLE IF NOT EXISTS blacklist
-			(id INTEGER PRIMARY KEY AUTOINCREMENT,
-				fromrss INTEGER, icon TEXT, color TEXT,
-				title TEXT, link TEXT, summary TEXT, source TEXT,
-				UNIQUE(link))'''
-	postgres_code = '''CREATE TABLE IF NOT EXISTS interesting_articles
-			(id SERIAL,	title TEXT, link TEXT, summary TEXT,
-				fromrss INTEGER, icon TEXT, color TEXT,
-				source TEXT, UNIQUE(link));
-		CREATE TABLE IF NOT EXISTS blacklist
-			(id SERIAL, title TEXT, link TEXT, summary TEXT,
-				fromrss INTEGER, icon TEXT, color TEXT,
-				source TEXT, UNIQUE(link))'''
-	if db == 'sqlite':
-		code = sqlite_code
-	elif db == 'postgresql':
-		code = postgres_code
-	for statement in code.split(';'):
-		cur.execute(statement)
-	
-	try:
-		con.commit()
-		con.close()
-	except NameError:
-		pass
-
-def which_db(db):
-	if db == 'postgresql':
-		try:
-			connect = lambda: psycopg2.connect(**parse_dburl())
-		except NameError:
-			arg = os.path.join(get_conf.logdir, 'interesting.db')
-			connect = lambda: sqlite3.connect(arg)
-	elif db == 'sqlite':
-		arg = os.path.join(get_conf.logdir, 'interesting.db')
-		connect = lambda: sqlite3.connect(arg)
-	else:
-		raise Exception('db must be sqlite or postgresql')
-	
-	return connect
-
-def parse_dburl(var='DATABASE_URL'):
-	parsed = urlparse(os.environ.get(var, ''))
-	
-	return {'user': parsed.username,
-			'password': parsed.password,
-			'host': parsed.hostname,
-			'port': parsed.port,
-			'dbname': parsed.path[1:]}
-
-def connect_db(db='sqlite'):
-	return which_db(db)()
