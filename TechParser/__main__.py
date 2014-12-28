@@ -11,7 +11,7 @@ from bottle import route, run, static_file, default_app, request
 
 from Daemo import Daemon, DaemonError
 
-from TechParser import get_conf, recommend, parser
+from TechParser import get_conf, recommend, parser, db, db_functions
 from TechParser.py2x import unicode_, unicode__, range, pickle, urlencode
 
 if get_conf.config is None:
@@ -44,10 +44,10 @@ mylookup = TemplateLookup(directories=template_dir_path,
 	default_filters=["decode.utf8"],
 	input_encoding="utf-8", output_encoding="utf-8")
 
-liked = recommend.get_interesting_articles(db=get_conf.config.db)
-disliked = recommend.get_blacklist(db=get_conf.config.db)
-liked_links = [i['link'] for i in liked]
-disliked_links = [i['link'] for i in disliked]
+liked = []
+disliked = []
+liked_links = []
+disliked_links = []
 
 def encoded_dict(in_dict):
 	out_dict = {}
@@ -118,6 +118,8 @@ def show_progress(s, shared_object):
 	return "\033[0;32m[{0}%]\033[0m ".format(progress)+s
 
 def parse_site(queue, articles, progress):
+	"""Worker for parsing articles"""
+	
 	config = get_conf.config
 	
 	while not queue.empty():
@@ -232,12 +234,12 @@ def dump_articles(filename="articles_dumped"):
 		con.commit()
 		con.close()
 	
-	num = len(recommend.get_interesting_articles(db=get_conf.config.db))
-	num += len(recommend.get_blacklist(db=get_conf.config.db))
+	num = len(recommend.get_interesting_articles())
+	num += len(recommend.get_blacklist())
 	
 	if num >= 20:
 		log("Ranking articles...")
-		list_articles = recommend.find_similiar(list_articles, db=get_conf.config.db)
+		list_articles = recommend.find_similiar(list_articles)
 		list_articles.sort(key=lambda x: x[1], reverse=True)
 	else:
 		log("Shuffling articles...")
@@ -329,33 +331,33 @@ def update_liked_disliked():
 
 	config = get_conf.config
 	
-	liked = recommend.get_interesting_articles(db=config.db)
-	disliked = recommend.get_blacklist(db=config.db)
+	liked = recommend.get_interesting_articles()
+	disliked = recommend.get_blacklist()
 	liked_links = [i['link'] for i in liked]
 	disliked_links = [i['link'] for i in disliked]
 
 @route('/histadd/<addr:path>')
 def add_to_history(addr):
 	
-	recommend.add_article(addr, db=get_conf.config.db)
+	recommend.add_article(addr)
 	
 	update_liked_disliked()
 	
 @route('/blacklistadd/<addr:path>')
 def add_to_blacklist(addr):
-	recommend.add_article_to_blacklist(addr, db=get_conf.config.db)
+	recommend.add_article_to_blacklist(addr)
 	
 	update_liked_disliked()
 
 @route('/blacklistrm/<addr:path>')
 def rm_from_blacklist(addr):
-	recommend.remove_from_blacklist(addr, db=get_conf.config.db)
+	recommend.remove_from_blacklist(addr)
 	
 	update_liked_disliked()
 
 @route('/histrm/<addr:path>')
 def rm_from_history(addr):
-	recommend.remove_from_history(addr, db=get_conf.config.db)
+	recommend.remove_from_history(addr)
 	
 	update_liked_disliked()
 
@@ -365,7 +367,7 @@ def show_history(page_number=1):
 	history_page = mylookup.get_template('history.html')
 	q = unicode_(request.GET.get('q', ''))
 	
-	articles = recommend.get_interesting_articles(db=get_conf.config.db)
+	articles = recommend.get_interesting_articles()
 	
 	try:
 		page_number = int(page_number)
@@ -397,7 +399,7 @@ def show_blacklist(page_number=1):
 	history_page = mylookup.get_template('blacklist.html')
 	q = unicode_(request.GET.get('q', ''))
 	
-	articles = recommend.get_blacklist(db=get_conf.config.db)
+	articles = recommend.get_blacklist()
 	
 	try:
 		page_number = int(page_number)
@@ -566,6 +568,13 @@ Available commands: start|stop|restart|update|run HOST:PORT""")
 	
 	if args.db:
 		get_conf.config.db = args.db
+	
+	db.Database.initialize()
+	
+	liked = recommend.get_interesting_articles()
+	disliked = recommend.get_blacklist()
+	liked_links = [i['link'] for i in liked]
+	disliked_links = [i['link'] for i in disliked]
 	
 	if args.action:
 		if args.action[0] == "run":
