@@ -11,6 +11,7 @@ from bottle import default_app
 from Daemo import Daemon, DaemonError
 
 from TechParser import get_conf, recommend, parser, db, server
+from TechParser.query import Q_SAVE_ARTICLES
 from TechParser.py2x import range, pickle, urlencode
 
 running_as_daemon = False
@@ -34,17 +35,6 @@ if not os.path.exists(os.path.join(logdir, "user_parser_config.py")):
 	f.write(default_config.read())
 	default_config.close()
 	f.close()
-
-def setup_db():
-	"""Setup archive database"""
-	
-	con = sqlite3.connect(os.path.join(logdir, "archive.db"))
-	cur = con.cursor()
-	cur.execute("""CREATE TABLE IF NOT EXISTS articles
-		(id INTEGER PRIMARY KEY AUTOINCREMENT,
-			title TEXT, link TEXT, source TEXT, UNIQUE(link));""")
-	con.commit()
-	con.close()
 
 def log(text, f=sys.stdout, add_newline=True, clear_str=False,
 	ignore_daemon=False):
@@ -171,10 +161,8 @@ def dump_articles(filename="articles_dumped"):
 	
 	if get_conf.config.save_articles:
 		log("Saving articles to archive...")
-		
-		setup_db()
-		con = sqlite3.connect(os.path.join(logdir, "archive.db"))
-		cur = con.cursor()
+		archiveDB = db.Database.databases['Archive']
+		IntegrityError = archiveDB.userData # userData contains exception
 		
 		for article in list_articles:
 			title = article["title"]
@@ -182,14 +170,10 @@ def dump_articles(filename="articles_dumped"):
 			source = article["source"]
 			
 			try:
-				cur.execute("""INSERT INTO articles(title, link, source)
-					values(?, ?, ?);""", (title, link, source))
-			except sqlite3.IntegrityError:
+				archiveDB.execute_query(Q_SAVE_ARTICLES, [(title, link, source)])
+			except IntegrityError:
 				pass
 		
-		con.commit()
-		con.close()
-	
 	num = len(recommend.get_interesting_articles())
 	num += len(recommend.get_blacklist())
 	
@@ -293,7 +277,9 @@ Available commands: start|stop|restart|update|run HOST:PORT""")
 	if args.db:
 		get_conf.config.db = args.db
 	
-	db.Database.initialize()
+	db.initialize_main_database()
+	if get_conf.config.save_articles:
+		db.initialize_archive_db()
 	
 	server.liked = recommend.get_interesting_articles()
 	server.disliked = recommend.get_blacklist()
