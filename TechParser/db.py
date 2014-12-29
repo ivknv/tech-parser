@@ -31,11 +31,8 @@ class Database(object):
 	databases = {}
 	_last_id = 0
 	
-	def __init__(self, db='sqlite', name='', con=None, setup_query=None):
-		if con is None:
-			self.con = connect_db(db)
-		else:
-			self.con = con
+	def __init__(self, con, db='sqlite', name='', setup_query=None):
+		self.con = con
 		self.cur = self.con.cursor()
 		self.db = db
 		self.setup_query = setup_query
@@ -103,23 +100,28 @@ class Database(object):
 	
 	def __repr__(self):
 		return '<Database name=\'{0}\', id={1}, db=\'{2}\'>'.format(self.name, self.id, self.db)
+
+class MainDatabase(Database):
+	def __init__(self):
+		con = connect_db(get_conf.config.db)
+		super(MainDatabase, self).__init__(con, get_conf.config.db, 'Main-Database',
+			setup_query=Q_SETUP)
+		if get_conf.config.db == 'sqlite':
+			self.userData = sqlite3.IntegrityError
+		else:
+			self.userData = psycopg2.IntegrityError
 	
 def initialize_main_database():
 	"""Setup main database"""
 	
-	Database.main_database = Database(get_conf.config.db, 'Main-Database',
-		setup_query=Q_SETUP)
-	if get_conf.config.db == 'sqlite':
-		Database.main_database.userData = sqlite3.IntegrityError
-	else:
-		Database.main_database.userData = psycopg2.IntegrityError
+	Database.main_database = MainDatabase()
 	Database.register(Database.main_database)
 
 def initialize_archive_db():
 	"""Setup archive database"""
 	logdir = os.path.join(os.path.expanduser('~'), '.tech-parser')
 	con = sqlite3.connect(os.path.join(logdir, "archive.db"))
-	archiveDB = Database(db='sqlite', name='Archive', con=con, setup_query=Q_SETUP_ARCHIVE)
+	archiveDB = Database(con, db='sqlite', name='Archive', setup_query=Q_SETUP_ARCHIVE)
 	archiveDB.userData = sqlite3.IntegrityError
 	Database.register(archiveDB)
 
@@ -149,7 +151,7 @@ return corresponding functions to connect it"""
 	
 	if db == 'postgresql':
 		try:
-			connect = lambda: psycopg2.connect(**parse_dburl())
+			connect = lambda: psycopg2.connect(**parse_dburl_from_var())
 		except NameError:
 			arg = os.path.join(get_conf.logdir, 'interesting.db')
 			connect = lambda: sqlite3.connect(arg)
@@ -161,16 +163,21 @@ return corresponding functions to connect it"""
 	
 	return connect
 
-def parse_dburl(var='DATABASE_URL'):
-	"""Parse database URL from environment variable"""
+def parse_dburl(s):
+	"""Parse URL to database from string"""
 	
-	parsed = urlparse(os.environ.get(var, ''))
+	parsed = urlparse(s)
 	
 	return {'user': parsed.username,
 			'password': parsed.password,
 			'host': parsed.hostname,
 			'port': parsed.port,
 			'dbname': parsed.path[1:]}
+
+def parse_dburl_from_var(var='DATABASE_URL'):
+	"""Parse URL to database from environment variable"""
+	
+	return parse_dburl(os.environ.get(var, ''))
 
 def connect_db(db='sqlite'):
 	return which_db(db)()
