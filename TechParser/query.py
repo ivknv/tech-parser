@@ -25,9 +25,9 @@ Q_ADD_TO_HISTORY_POSTGRESQL = Query('postgresql',
 	'''INSERT INTO interesting_articles(title, link, summary, fromrss, icon, color, source)
 		VALUES(%s, %s, %s, %s, %s, %s, %s);''')
 Q_SAVE_ARTICLES_SQLITE = Query('sqlite',
-	'INSERT INTO articles(title, link, source) values(?, ?, ?);')
+	'INSERT INTO articles(title, link, source) VALUES(?, ?, ?);')
 Q_SAVE_ARTICLES_POSTGRESQL = Query('postgresql',
-	'INSERT INTO articles(title, link, source) values(%s, %s, %s);')
+	'INSERT INTO articles(title, link, source) VALUES(%s, %s, %s);')
 
 Q_DELETE_FROM_BLACKLIST = MultiDBQuery(Q_DELETE_FROM_BLACKLIST_SQLITE,
 	Q_DELETE_FROM_BLACKLIST_POSTGRESQL)

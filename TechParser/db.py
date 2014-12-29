@@ -23,7 +23,7 @@ class DBError(Exception):
 class UnsupportedDBError(DBError):
 	def __init__(self, db):
 		msg = '\'{0}\' database is not supported (yet)'.format(db)
-		super(UnsupportedDBException, self).__init__(msg)
+		super(UnsupportedDBError, self).__init__(msg)
 
 class Database(object):
 	"""Used to automatically determine which query to execute"""
@@ -119,10 +119,26 @@ def initialize_main_database():
 
 def initialize_archive_db():
 	"""Setup archive database"""
-	logdir = os.path.join(os.path.expanduser('~'), '.tech-parser')
-	con = sqlite3.connect(os.path.join(logdir, "archive.db"))
-	archiveDB = Database(con, db='sqlite', name='Archive', setup_query=Q_SETUP_ARCHIVE)
-	archiveDB.userData = sqlite3.IntegrityError
+	
+	if get_conf.config.archive_db_path == 'default':
+		path = os.path.join(get_conf.logdir, 'archive.db')
+		get_conf.config.archive_db_path = 'sqlite://{0}'.format(path)
+	
+	parsed = parse_dburl(get_conf.config.archive_db_path)
+	db = parsed['scheme']
+	if db == 'sqlite':
+		con = sqlite3.connect(parsed['dbname'])
+	elif db == 'postgres':
+		db = 'postgresql'
+		parsed.pop('scheme')
+		con = psycopg2.connect(**parsed)
+	else:
+		raise UnsupportedDBError(db)
+	archiveDB = Database(con, db, name='Archive', setup_query=Q_SETUP_ARCHIVE)
+	if db == 'postgresql':
+		archiveDB.userData = psycopg2.IntegrityError
+	else:
+		archiveDB.userData = sqlite3.IntegrityError
 	Database.register(archiveDB)
 
 class Query(object):
@@ -150,11 +166,9 @@ def which_db(db):
 return corresponding functions to connect it"""
 	
 	if db == 'postgresql':
-		try:
-			connect = lambda: psycopg2.connect(**parse_dburl_from_var())
-		except NameError:
-			arg = os.path.join(get_conf.logdir, 'interesting.db')
-			connect = lambda: sqlite3.connect(arg)
+		parsed = parse_dburl_from_var()
+		parsed.pop('scheme')
+		connect = lambda: psycopg2.connect(**parsed)
 	elif db == 'sqlite':
 		arg = os.path.join(get_conf.logdir, 'interesting.db')
 		connect = lambda: sqlite3.connect(arg)
@@ -168,11 +182,15 @@ def parse_dburl(s):
 	
 	parsed = urlparse(s)
 	
-	return {'user': parsed.username,
+	res = {'scheme': parsed.scheme,
+			'user': parsed.username,
 			'password': parsed.password,
 			'host': parsed.hostname,
 			'port': parsed.port,
-			'dbname': parsed.path[1:]}
+			'dbname': parsed.path}
+	if parsed.scheme != 'sqlite':
+		res['dbname'] = parsed.path[1:]
+	return res
 
 def parse_dburl_from_var(var='DATABASE_URL'):
 	"""Parse URL to database from environment variable"""
