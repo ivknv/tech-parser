@@ -172,7 +172,7 @@ def dump_articles(filename="articles_dumped"):
 			try:
 				archiveDB.execute_query(Q_SAVE_ARTICLES, [(title, link, source)])
 			except IntegrityError:
-				pass
+				archiveDB.con.rollback()
 		
 	num = len(recommend.get_interesting_articles())
 	num += len(recommend.get_blacklist())

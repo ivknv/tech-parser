@@ -241,7 +241,10 @@ num_threads = 2 # Number of threads for parsing articles
 # Server to use
 # It's recommended to use tornado.
 # You can install it by running pip install tornado
-server = "auto" # See http://bottlepy.org/docs/dev/deployment.html#switching-the-server-backend
+# See http://bottlepy.org/docs/dev/deployment.html#switching-the-server-backend
+server = "auto"
 
-save_articles = False # Save articles into db.
-# Can be found at ~/.tech-parser/archive.db
+# Save articles into db.
+save_articles = False
+# Should look like 'sqlite:///PATH' or 'postgres://user:password@host:port/dbname'
+archive_db_path = 'default'

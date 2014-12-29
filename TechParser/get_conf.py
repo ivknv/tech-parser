@@ -56,3 +56,4 @@ def auto_fix_config():
 	setdefault(config, 'server', 'auto')
 	setdefault(config, 'update_interval', 1800)
 	setdefault(config, 'filters', {'All': {'has': [], 'or': [], 'not': []}})
+	setdefault(config, 'archive_db_path', 'default')
