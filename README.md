@@ -5,7 +5,7 @@ Parses articles from 34 sites and outputs it into HTML.
 Also, it's some sort of RSS reader.
 
 You can see it in action [here](http://tech-parser.herokuapp.com).
-And [here's](https://github.com/SPython/web-tech-parser) repo for that Heroku app.
+And [here's](https://github.com/SPython/web-tech-parser) template repository for deploying at [heroku](https://www.heroku.com).
 
 ## Table of contents ##
 <ol>
