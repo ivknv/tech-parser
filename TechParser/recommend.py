@@ -4,7 +4,7 @@
 import re
 import os
 
-from TechParser import get_conf
+from TechParser import get_conf, save
 from TechParser.py2x import *
 from TechParser.db_functions import *
 
@@ -164,11 +164,13 @@ def get_pairs(words):
 	return pairs
 
 def add_article(addr):
-	f = open(os.path.join(get_conf.logdir, "articles_dumped"), 'rb')
-	dumped = f.read()
-	f.close()
+	path = os.path.join(get_conf.logdir, 'articles_dumped')
 	
-	articles = pickle.loads(dumped)
+	try:
+		articles = save.load_from_file(path)
+	except IOError:
+		log('WARNING: articles_dumped is missing!')
+		return
 	
 	for article in articles:
 		if article[0]['link'] == addr:
@@ -176,17 +178,17 @@ def add_article(addr):
 			break
 
 def add_article_to_blacklist(addr):
-	f = open(os.path.join(get_conf.logdir, "articles_dumped"), 'rb')
-	dumped = f.read()
-	f.close()
+	path = os.path.join(get_conf.logdir, 'articles_dumped')
 	
-	articles = pickle.loads(dumped)
+	try:
+		articles = save.load_from_file(path)
+	except IOError:
+		log('WARNING: articles_dumped is missing!')
+		return
 	
 	for article in articles:
 		if article[0]['link'] == addr:
-			f = open(os.path.join(get_conf.logdir, "articles_dumped"), 'wb')
 			add_to_blacklist(article)
 			articles.remove(article)
-			f.write(pickle.dumps(articles))
-			f.close()
+			save.dump_to_file(articles, path)
 			break

@@ -6,8 +6,8 @@ import os
 from mako.lookup import TemplateLookup
 from bottle import route, run, static_file, request
 
-from TechParser import get_conf, recommend
-from TechParser.py2x import unicode_, unicode__, range, pickle, urlencode
+from TechParser import get_conf, recommend, save
+from TechParser.py2x import unicode_, unicode__, range, urlencode, pickle
 
 module_path = os.path.dirname(os.path.realpath(__file__))
 template_dir_path = os.path.join(module_path, "templates")
@@ -96,16 +96,9 @@ def load_articles(filename="articles_dumped"):
 	"""Load articles from ~/.tech-parser/<filename>"""
 	
 	try:
-		f = open(os.path.join(logdir, filename), 'rb')
-	except IOError:
+		return save.load_from_file(os.path.join(logdir, filename))
+	except (IOError, pickle.PickleError, TypeError):
 		return []
-	
-	dumped = f.read()
-	f.close()
-	
-	articles = pickle.loads(dumped)
-	
-	return articles
 
 @route('/static/<filename:path>')
 def serve_static(filename):
