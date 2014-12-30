@@ -15,7 +15,7 @@ setup(name="TechParser",
 	keywords=["parser", "article", "web", "ranking", "rss"],
 	requires=["grab", "mako", "bottle", "Daemo"],
 	classifiers=[],
-	packages=["TechParser"],
+	packages=["TechParser", "TechParser.parsers"],
 	package_data={"TechParser": ["templates/*",
 		"static/jquery.touchSwipe.min.js", "static/fonts/*",
 		"static/style.css", "static/jquery-2.1.1.min.js", "static/icons/*"]})
