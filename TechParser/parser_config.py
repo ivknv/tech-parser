@@ -227,14 +227,22 @@ boring_words = {}
 
 update_interval = 1800 # Parse articles every 30 minutes
 
-# Database for keeping history
-# must be sqlite or postgresql.
-# If You're using postgresql make sure
-# to set environment variable DATABASE_URL
-# like this: postgres://user:password@host:port/dbname
+# Database for keeping history must be sqlite or postgresql
 db = 'sqlite'
-host = "0.0.0.0" # Server host
-port = "8080" # Server port
+# If You're using PostgreSQL make sure
+# to set database url as environment variable <db_path_variable>
+# like this: postgres://user:password@host:port/dbname
+# or just set db_path equal to that database url.
+# Example 1:
+# db_path_variable = 'DATABASE_URL'
+# db_path = os.environ.get(db_path_variable)
+# Example 2:
+# db_path_variable = 'DATABASE_URL'
+# db_path = postgres://user:password@localhost:5432/mydb
+db_path_variable = 'DATABASE_URL'
+db_path = os.environ.get(db_path_variable, '')
+host = '0.0.0.0' # Server host
+port = '8080' # Server port
 
 num_threads = 2 # Number of threads for parsing articles
 
