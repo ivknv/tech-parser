@@ -59,3 +59,4 @@ def auto_fix_config():
 	setdefault(config, 'archive_db_path', 'default')
 	setdefault(config, 'db_path_variable', 'DATABASE_URL')
 	setdefault(config, 'db_path', os.environ.get(config.db_path_variable, ''))
+	setdefault(config, 'data_format', 'pickle')

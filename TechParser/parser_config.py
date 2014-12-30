@@ -209,7 +209,14 @@ sites_to_parse = {
 	}
 }
 
-rss_feeds = {}
+# RSS feeds
+rss_feeds = {
+	# 'Feed name': {
+	#	'short-name': 'feed-name',
+	#	'icon': 'http://<address-to-feed>.com/<address-to-feed-icon>',
+	#	'color': '#123ABC' # CSS color for titles
+	#}
+}
 
 filters = {
 	"All": {
@@ -227,18 +234,19 @@ boring_words = {}
 
 update_interval = 1800 # Parse articles every 30 minutes
 
-# Database for keeping history must be sqlite or postgresql
+# Database for keeping history
+# Must be sqlite or postgresql
 db = 'sqlite'
 # If You're using PostgreSQL make sure
 # to set database url as environment variable <db_path_variable>
 # like this: postgres://user:password@host:port/dbname
 # or just set db_path equal to that database url.
 # Example 1:
-# db_path_variable = 'DATABASE_URL'
-# db_path = os.environ.get(db_path_variable)
+#  db_path_variable = 'DATABASE_URL'
+#  db_path = os.environ.get(db_path_variable)
 # Example 2:
-# db_path_variable = 'DATABASE_URL'
-# db_path = postgres://user:password@localhost:5432/mydb
+#  db_path_variable = 'DATABASE_URL'
+#  db_path = postgres://user:password@localhost:5432/mydb
 db_path_variable = 'DATABASE_URL'
 db_path = os.environ.get(db_path_variable, '')
 host = '0.0.0.0' # Server host
@@ -252,7 +260,14 @@ num_threads = 2 # Number of threads for parsing articles
 # See http://bottlepy.org/docs/dev/deployment.html#switching-the-server-backend
 server = "auto"
 
-# Save articles into db.
+# Save articles to the database at <archive_db_path>.
 save_articles = False
 # Should look like 'sqlite:///PATH' or 'postgres://user:password@host:port/dbname'
+# 'default' means 'sqlite:///<your-home-directory>/.tech-parser/archive.db'
 archive_db_path = 'default'
+
+# Format to be used when dumping articles.
+# Can be 'pickle' or 'json'.
+# JSON doesn't have problems with compatibility between 2.x and 3.x versions of Python so it's recommended.
+# Pickle is default for compatibility with previous versions of TechParser
+data_format = 'pickle'

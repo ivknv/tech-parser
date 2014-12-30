@@ -10,9 +10,9 @@ from bottle import default_app
 
 from Daemo import Daemon, DaemonError
 
-from TechParser import get_conf, recommend, parser, db, server
+from TechParser import get_conf, recommend, parser, db, server, save
 from TechParser.query import Q_SAVE_ARTICLES
-from TechParser.py2x import range, pickle, urlencode
+from TechParser.py2x import range, urlencode
 
 running_as_daemon = False
 
@@ -188,14 +188,10 @@ def dump_articles(filename="articles_dumped"):
 	
 	log("Dumping data to file: {0}...".format(filename))
 	
-	dumped = pickle.dumps(list_articles)
 	path = os.path.join(os.path.expanduser("~"), ".tech-parser")
 	path = os.path.join(path, filename)
-	f = open(path, "wb")
-	f.write(dumped)
-	f.close()
 	
-	log("Done!")
+	save.dump_to_file(list_articles, path)
 
 def dump_articles_per(s):
 	"""Dump articles per <s> seconds"""
