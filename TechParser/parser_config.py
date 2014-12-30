@@ -1,40 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from TechParser import habrahabr
-from TechParser import venturebeat
-from TechParser import engadget
-from TechParser import techcrunch
-from TechParser import techrepublic
-from TechParser import readwrite
-from TechParser import smashingmagazine
-from TechParser import gizmodo
-from TechParser import slashdot
-from TechParser import androidcentral
-from TechParser import verge
-from TechParser import topdesignmag
-from TechParser import flowa
-from TechParser import ittoolbox
-from TechParser import dzone
-from TechParser import codeproject
-from TechParser import hackernews
-from TechParser import mashable
-from TechParser import maketecheasier
-from TechParser import digg
-from TechParser import wired
-from TechParser import medium
-from TechParser import planetclojure
-from TechParser import reddit
-from TechParser import trashbox
-from TechParser import droider
-from TechParser import redroid
-from TechParser import threednews
-from TechParser import ixbt
-from TechParser import mobilereview
-from TechParser import helpix
-from TechParser import recode
-from TechParser import zdnet
-from TechParser import geektimes
+from TechParser.parsers import *
 
 sites_to_parse = {
 	"Habrahabr": { # habrahabr.ru
