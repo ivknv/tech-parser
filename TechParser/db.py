@@ -166,10 +166,10 @@ class MultiDBQuery(object):
 
 def which_db(db):
 	"""Determine which database should be used and \
-return corresponding functions to connect it"""
+return corresponding function to connect it"""
 	
 	if db == 'postgresql':
-		parsed = parse_dburl_from_var()
+		parsed = parse_dburl(get_conf.config.db_path)
 		parsed.pop('scheme')
 		connect = lambda: psycopg2.connect(**parsed)
 	elif db == 'sqlite':
@@ -194,11 +194,6 @@ def parse_dburl(s):
 	if parsed.scheme != 'sqlite':
 		res['dbname'] = parsed.path[1:]
 	return res
-
-def parse_dburl_from_var(var='DATABASE_URL'):
-	"""Parse URL to database from environment variable"""
-	
-	return parse_dburl(os.environ.get(var, ''))
 
 def connect_db(db='sqlite'):
 	return which_db(db)()
