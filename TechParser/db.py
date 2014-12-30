@@ -43,7 +43,10 @@ class Database(object):
 						self.cur.execute(i, j)
 			self.execute = func
 		elif db == 'postgresql':
-			self.execute = lambda q, p: self.cur.execute(q, p[0] if p else [])
+			def func(q, p):
+				self.cur.execute(q, [j for i in p for j in i])
+				
+			self.execute = func
 		self.id = Database._last_id
 		self.userData = None
 		Database._last_id += 1
