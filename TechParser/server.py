@@ -6,6 +6,7 @@ import re
 
 from mako.lookup import TemplateLookup
 from bottle import route, run, static_file, request
+from collections import OrderedDict
 
 from TechParser import get_conf, recommend, save
 from TechParser.py2x import unicode_, unicode__, range, urlencode, pickle
@@ -63,13 +64,13 @@ def filter_articles(articles):
 	
 	config = get_conf.config
 	
-	articles_filtered = []
+	articles_filtered = OrderedDict()
 	
-	for article in articles:
+	for article in articles.values():
 		passing = True
 		
 		words_len = len(config.filters["All"]["or"])
-		title = article[0]["title"].lower()
+		title = article["title"].lower()
 		
 		for word in config.filters["All"]["or"]:
 			if word.lower() in title:
@@ -90,9 +91,9 @@ def filter_articles(articles):
 			for word in config.filters["All"]["has"]:
 				if word.lower() not in title:
 					passing = False
-					break	
+					break
 		if passing:
-			articles_filtered.append(article)
+			articles_filtered[article['link']] = article
 	
 	return articles_filtered
 
@@ -257,9 +258,9 @@ def article_list(page_number=1):
 	articles = filter_articles(articles)
 	if q:
 		qs = q.lower().split()
-		articles = filter(lambda x: has_words(qs, x[0]), articles)
+		articles = filter(lambda x: has_words(qs, x), articles)
 	
-	articles = map(lambda x: escape_link(x[0]), articles)
+	articles = map(lambda x: escape_link(x), articles.values())
 	all_articles = articles
 	articles = split_into_pages(articles, 30)
 	try:
