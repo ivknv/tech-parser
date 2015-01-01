@@ -158,7 +158,7 @@ def show_history(page_number=1):
 		qs = q.lower().split()
 		articles = filter(lambda x: has_words(qs, x), articles)
 	
-	articles = map(lambda x: replace_newlines(escape_link(x)), articles)
+	articles = map(lambda x: escape_link(x), articles)
 	
 	all_articles = articles
 	articles = split_into_pages(articles, 30)
@@ -190,7 +190,7 @@ def show_blacklist(page_number=1):
 		qs = q.lower().split()
 		articles = filter(lambda x: has_words(qs, x), articles)
 	
-	articles = map(lambda x: replace_newlines(escape_link(x)), articles)
+	articles = map(lambda x: escape_link(x), articles)
 	
 	all_articles = articles
 	articles = split_into_pages(articles, 30)
@@ -231,13 +231,6 @@ def set_liked(articles):
 		article['liked'] = article['original_link'] in liked_links
 		article['disliked'] = article['original_link'] in disliked_links
 
-def replace_newlines(article):
-	new_article = {}
-	new_article.update(article)
-	new_article['summary'] = new_article['summary'].replace('\n', '<br/>')
-	
-	return new_article
-
 @route("/")
 @route("/<page_number>")
 def article_list(page_number=1):
@@ -262,7 +255,7 @@ def article_list(page_number=1):
 		qs = q.lower().split()
 		articles = filter(lambda x: has_words(qs, x[0]), articles)
 	
-	articles = map(lambda x: replace_newlines(escape_link(x[0])), articles)
+	articles = map(lambda x: escape_link(x[0]), articles)
 	all_articles = articles
 	articles = split_into_pages(articles, 30)
 	try:
