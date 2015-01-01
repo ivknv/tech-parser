@@ -8,8 +8,6 @@ from lxml.etree import Error as LXMLError
 
 from TechParser.py2x import unicode_
 
-REMOVE_TAGS_REGEX = re.compile(r'<.*?>')
-
 def setup_grab(grab_object):
 	grab_object.setup(hammer_mode=True,
 		hammer_timeouts=((10, 15), (20, 30), (25, 40)))
@@ -21,9 +19,6 @@ def absolutize_link(link, site_url):
 		link = "http://" + site_url + link
 	
 	return link
-
-def remove_tags(s):
-	return REMOVE_TAGS_REGEX.sub('', s)
 
 def escape_title(s):
 	s = s.replace('&', '&amp;')
@@ -56,12 +51,6 @@ def parse_article_image(article, site_url=''):
 		img.set('src', absolutize_link(img.get('src'), site_url))
 		return tostring(img).strip()
 
-def cut_text(s):
-	splitted = s.split(' ')
-	if len(splitted) > 50:
-		return ' '.join(splitted[:50]) + '...'
-	return s
-
 def get_articles(grab_object, title_path, link_path, source, site_url="",
 		summary_path=''):
 	posts = []
@@ -84,20 +73,6 @@ def get_articles(grab_object, title_path, link_path, source, site_url="",
 	for (title, link, summary_text) in zip_object:
 		title = unicode_(title.text_content()).strip()
 		link = grab_object.make_url_absolute(link.get("href"))
-		if len(summary_text):
-			try:
-				article_image = parse_article_image(summary_text,
-					site_url).decode()
-			except AttributeError:
-				article_image = parse_article_image(summary_text, site_url)
-		else:
-			article_image = ''
-		
-		try:
-			summary_text = summary_text.text_content()
-			summary_text = article_image + cut_text(summary_text)
-		except AttributeError:
-			summary_text = cut_text(remove_tags(summary_text))
 		
 		posts.append(
 			{"title": escape_title(title),
@@ -123,8 +98,7 @@ def get_articles_from_rss(url, source, parse_image=True):
 	entries = []
 	for entry in parsed_entries:
 		cleaned = clean_text(entry['summary'], parse_image)
-		text = cleaned[0]
-		image = cleaned[1]
+		text, image = cleaned
 		if parse_image and not len(image):
 			for link in entry['links']:
 				if link.get('type', '').startswith('image/'):
@@ -149,6 +123,6 @@ def remove_bad_tags(s):
 def clean_text(s, parse_image=True):
 	try:
 		image = parse_article_image(s).decode() if parse_image else ''
-		return (image + cut_text(remove_tags((remove_bad_tags(s)))), image)
+		return (remove_bad_tags(s), image)
 	except LXMLError:
 		return ('', '')
