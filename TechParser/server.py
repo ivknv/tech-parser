@@ -258,9 +258,10 @@ def article_list(page_number=1):
 	articles = filter_articles(articles)
 	if q:
 		qs = q.lower().split()
-		articles = filter(lambda x: has_words(qs, x), articles)
-	
-	articles = map(lambda x: escape_link(x), articles.values())
+		articles = filter(lambda x: has_words(qs, x), articles.values())
+		articles = map(lambda x: escape_link(x), articles)
+	else:
+		articles = map(lambda x: escape_link(x), articles.values())
 	all_articles = articles
 	articles = split_into_pages(articles, 30)
 	try:

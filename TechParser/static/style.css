@@ -302,3 +302,16 @@ a:hover {
 .liked, .disliked, .liked:hover, .disliked:hover {
 	opacity: 1;
 }
+
+pre {
+	background-color: #F7F7F7;
+	border: 1px solid #DDD;
+	border-radius: 5px;
+	font-family: "Courier New";
+	padding: 5px;
+	white-space: pre-wrap;
+	white-space: -moz-pre-wrap;
+	white-space: -o-pre-wrap;
+	white-space: -pre-wrap;
+	word-wrap: break-word;
+}
