@@ -6,6 +6,9 @@ import os, sys, re, multiprocessing
 import argparse, sqlite3, atexit, traceback
 from time import time, sleep
 
+from operator import itemgetter
+from collections import OrderedDict
+
 from bottle import default_app
 
 from Daemo import Daemon, DaemonError
@@ -183,18 +186,19 @@ def dump_articles(filename="articles_dumped"):
 	if num >= 20:
 		log("Ranking articles...")
 		list_articles = recommend.find_similiar(list_articles)
-		list_articles.sort(key=lambda x: x[1], reverse=True)
+		list_articles.sort(key=itemgetter(1), reverse=True)
+		ordered = OrderedDict([(i[0]['link'], i[0]) for i in list_articles])
 	else:
 		log("Shuffling articles...")
 		shuffle(list_articles)
-		list_articles = [[a, -1] for a in list_articles]
+		ordered = OrderedDict([(i['link'], i) for i in list_articles])
 	
 	log("Dumping data to file: {0}...".format(filename))
 	
 	path = os.path.join(os.path.expanduser("~"), ".tech-parser")
 	path = os.path.join(path, filename)
 	
-	save.dump_to_file(list_articles, path)
+	save.dump_to_file(ordered, path)
 
 def dump_articles_per(s):
 	"""Dump articles per <s> seconds"""

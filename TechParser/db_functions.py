@@ -26,13 +26,13 @@ def add_to_blacklist(article):
 	IntegrityError = db.Database.main_database.userData # userData contains exception
 	
 	try:
-		title = article[0]['title']
-		link = article[0]['link']
-		summary = article[0]['summary']
-		source = article[0]['source']
-		fromrss = article[0].get('fromrss', 0)
-		icon = article[0].get('icon', '')
-		color = article[0].get('color', '#000')
+		title = article['title']
+		link = article['link']
+		summary = article['summary']
+		source = article['source']
+		fromrss = article.get('fromrss', 0)
+		icon = article.get('icon', '')
+		color = article.get('color', '#000')
 		parameters = [(title, link, summary, fromrss, icon, color, source)]
 		db.Database.main_database.execute_query(Q_ADD_TO_BLACKLIST, parameters)
 	except IntegrityError:
@@ -44,13 +44,13 @@ def add_to_interesting(article):
 	IntegrityError = db.Database.main_database.userData # userData contains exception
 	
 	try:
-		title = article[0]['title']
-		link = article[0]['link']
-		summary = article[0]['summary']
-		source = article[0]['source']
-		fromrss = article[0].get('fromrss', 0)
-		icon = article[0].get('icon', '')
-		color = article[0].get('color', '#000')
+		title = article['title']
+		link = article['link']
+		summary = article['summary']
+		source = article['source']
+		fromrss = article.get('fromrss', 0)
+		icon = article.get('icon', '')
+		color = article.get('color', '#000')
 		parameters = [(title, link, summary, fromrss, icon, color, source)]
 		
 		db.Database.main_database.execute_query(Q_ADD_TO_HISTORY, parameters)

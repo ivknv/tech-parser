@@ -3,6 +3,7 @@
 
 from TechParser import get_conf
 from TechParser.py2x import pickle
+from collections import OrderedDict
 import json
 
 if not get_conf.config:
@@ -10,46 +11,38 @@ if not get_conf.config:
 
 get_conf.auto_fix_config()
 
-open_file = open
-
-def jsonopen(filename, mode):
-	return open(filename, mode)
-
-def pickleopen(filename, mode):
-	return open(filename, mode + 'b')
-
-def set_open_file():
-	global open_file
+def check_format(func):
+	def newfunc(*args, **kwargs):
+		msg = "data_format should be either 'json' or 'pickle'"
+		assert get_conf.config.data_format in {'pickle', 'json'}, msg
+		return func(*args, **kwargs)
 	
-	if get_conf.config.data_format == 'pickle':
-		open_file = pickleopen
-	else:
-		open_file = jsonopen
+	return newfunc
 
-def get_module():
-	msg = "data_format should be either 'json' or 'pickle'"
-	assert get_conf.config.data_format in {'pickle', 'json'}, msg
-	if get_conf.config.data_format == 'pickle':
-		open_file = pickleopen
-		return pickle
-	else:
-		open_file = jsonopen
-		return json
-
+@check_format
 def dump_data(data):
-	return get_module().dumps(data)
+	if get_conf.config.data_format == 'pickle':
+		return pickle.dumps(data)
+	else:
+		return json.dumps(data)
 
+@check_format
 def load_data(dumped_data):
-	return get_module().loads(dumped_data)
+	if get_conf.config.data_format == 'pickle':
+		return pickle.loads(dumped_data)
+	else:
+		return json.loads(dumped_data, object_pairs_hook=OrderedDict)
 
 def dump_to_file(data, filename):
-	set_open_file()
-	
-	with open_file(filename, 'w') as f:
+	mode = 'w'
+	if get_conf.config.data_format == 'pickle':
+		mode += 'b'
+	with open(filename, mode) as f:
 		f.write(dump_data(data))
 
 def load_from_file(filename):
-	set_open_file()
-	
-	with open_file(filename, 'r') as f:
+	mode = 'r'
+	if get_conf.config.data_format == 'pickle':
+		mode += 'b'
+	with open(filename, mode) as f:
 		return load_data(f.read())
