@@ -31,9 +31,9 @@ class Database(object):
 	databases = {}
 	_last_id = 0
 	
-	def __init__(self, con, db='sqlite', name='', setup_query=None):
-		self.con = con
-		self.cur = self.con.cursor()
+	def __init__(self, connect_func, db='sqlite', name='', setup_query=None):
+		self.connect_func = connect_func
+		self.open()
 		self.db = db
 		self.setup_query = setup_query
 		if db == 'sqlite':
@@ -55,6 +55,10 @@ class Database(object):
 		else:
 			self.name = name
 		self.setup()
+	
+	def open(self):
+		self.con = self.connect_func()
+		self.cur = self.con.cursor()
 	
 	@staticmethod
 	def register(database):
@@ -106,9 +110,9 @@ class Database(object):
 
 class MainDatabase(Database):
 	def __init__(self):
-		con = connect_db(get_conf.config.db)
-		super(MainDatabase, self).__init__(con, get_conf.config.db, 'Main-Database',
-			setup_query=Q_SETUP)
+		connect_func = which_db(get_conf.config.db)
+		super(MainDatabase, self).__init__(connect_func,
+			get_conf.config.db, 'Main-Database', setup_query=Q_SETUP)
 		if get_conf.config.db == 'sqlite':
 			self.userData = sqlite3.IntegrityError
 		else:
@@ -130,14 +134,15 @@ def initialize_archive_db():
 	parsed = parse_dburl(get_conf.config.archive_db_path)
 	db = parsed['scheme']
 	if db == 'sqlite':
-		con = sqlite3.connect(parsed['dbname'])
+		connect_func = lambda: sqlite3.connect(parsed['dbname'])
 	elif db == 'postgres':
 		db = 'postgresql'
 		parsed.pop('scheme')
-		con = psycopg2.connect(**parsed)
+		connect_func = lambda: psycopg2.connect(**parsed)
 	else:
 		raise UnsupportedDBError(db)
-	archiveDB = Database(con, db, name='Archive', setup_query=Q_SETUP_ARCHIVE)
+	archiveDB = Database(connect_func, db, name='Archive',
+		setup_query=Q_SETUP_ARCHIVE)
 	if db == 'postgresql':
 		archiveDB.userData = psycopg2.IntegrityError
 	else:
