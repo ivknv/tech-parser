@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import re
 
 from mako.lookup import TemplateLookup
 from bottle import route, run, static_file, request
@@ -34,6 +35,9 @@ def encoded_dict(in_dict):
 			v.decode('utf8')
 		out_dict[k] = v
 	return out_dict
+
+def remove_tags(s):
+	return recommend.r0.sub('', s)
 
 def split_into_pages(articles, n=30):
 	"""Split list into pages"""
@@ -208,8 +212,8 @@ def show_blacklist(page_number=1):
 def has_words(qs, article):
 	"""Check if article contains words"""
 	
-	title = unicode_(article['title']).lower()
-	summary = unicode_(article['summary']).lower()
+	title = remove_tags(unicode_(article['title']).lower())
+	summary = remove_tags(unicode_(article['summary']).lower())
 	
 	for i in qs:
 		if i not in title and i not in summary:
