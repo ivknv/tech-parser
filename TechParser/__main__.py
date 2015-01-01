@@ -147,17 +147,20 @@ def dump_articles(filename="articles_dumped"):
 	pool.join()
 	
 	try:
-		articles_before = [i[0] for i in server.load_articles()]
+		links_before = [i[0]['link'] for i in server.load_articles()]
 	except ValueError:
 		articles_before = []
 	
 	list_articles = []
-	while not articles.empty():
-		list_articles.append(articles.get())
+	_append = list_articles.append # OPTIMISATION
+	_get = articles.get # OPTIMISATION
+	_empty = articles.empty # OPTIMISATION
+	while not _empty():
+		_append(_get())
 	
 	log("Total articles: %d" %(len(list_articles)))
 	log("New articles: %d"
-		%(len([i for i in list_articles if i not in articles_before])))
+		%(len([i for i in list_articles if i['link'] not in links_before])))
 	
 	if get_conf.config.save_articles:
 		log("Saving articles to archive...")
