@@ -196,6 +196,12 @@ def dump_articles(filename="articles_dumped"):
 def dump_articles_per(s):
 	"""Dump articles per <s> seconds"""
 	
+	db.Database.main_database.con.close()
+	db.Database.main_database.open()
+	archiveDB = db.Database.databases['Archive']
+	archiveDB.con.close()
+	archiveDB.open()
+	
 	while True:
 		if int(time()) % s == 0:
 			dump_articles()
@@ -231,6 +237,11 @@ def run_server(host, port):
 		args=(config.update_interval,))
 	atexit.register(p1.terminate)
 	p1.start()
+	db.Database.main_database.con.close()
+	db.Database.main_database.open()
+	archiveDB = db.Database.databases['Archive']
+	archiveDB.con.close()
+	archiveDB.open()
 	server.run(host=host, port=port, server=config.server)
 
 if __name__ == "__main__":
