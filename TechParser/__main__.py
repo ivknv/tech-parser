@@ -150,9 +150,9 @@ def dump_articles(filename="articles_dumped"):
 	pool.join()
 	
 	try:
-		links_before = [i[0]['link'] for i in server.load_articles()]
+		links_before = set(server.load_articles().keys())
 	except ValueError:
-		articles_before = []
+		links_before = set()
 	
 	list_articles = []
 	_append = list_articles.append # OPTIMISATION
@@ -162,8 +162,6 @@ def dump_articles(filename="articles_dumped"):
 		_append(_get())
 	
 	log("Total articles: %d" %(len(list_articles)))
-	log("New articles: %d"
-		%(len([i for i in list_articles if i['link'] not in links_before])))
 	
 	if get_conf.config.save_articles:
 		log("Saving articles to archive...")
@@ -192,6 +190,9 @@ def dump_articles(filename="articles_dumped"):
 		log("Shuffling articles...")
 		shuffle(list_articles)
 		ordered = OrderedDict([(i['link'], i) for i in list_articles])
+
+	log("New articles: %d"
+		%(len([i for i in ordered.values() if i['link'] not in links_before])))
 	
 	log("Dumping data to file: {0}...".format(filename))
 	
@@ -203,6 +204,7 @@ def dump_articles(filename="articles_dumped"):
 def dump_articles_per(s):
 	"""Dump articles per <s> seconds"""
 	
+	# Reopen databases to avoid OperationalError
 	db.Database.main_database.con.close()
 	db.Database.main_database.open()
 	archiveDB = db.Database.databases['Archive']
@@ -244,11 +246,14 @@ def run_server(host, port):
 		args=(config.update_interval,))
 	atexit.register(p1.terminate)
 	p1.start()
+	
+	# Reopen databases to avoid OperationalError
 	db.Database.main_database.con.close()
 	db.Database.main_database.open()
 	archiveDB = db.Database.databases['Archive']
 	archiveDB.con.close()
 	archiveDB.open()
+	
 	server.run(host=host, port=port, server=config.server)
 
 if __name__ == "__main__":
