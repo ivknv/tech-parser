@@ -34,7 +34,7 @@ if not os.path.exists(os.path.join(logdir, "__init__.py")):
 
 if not os.path.exists(os.path.join(logdir, "user_parser_config.py")):
 	f = open(os.path.join(logdir, "user_parser_config.py"), "w")
-	default_config = open(os.path.join(module_path, "parser_config.py"))
+	default_config = open(os.path.join(server.module_path, "parser_config.py"))
 	f.write(default_config.read())
 	default_config.close()
 	f.close()
@@ -207,9 +207,12 @@ def dump_articles_per(s):
 	# Reopen databases to avoid OperationalError
 	db.Database.main_database.con.close()
 	db.Database.main_database.open()
-	archiveDB = db.Database.databases['Archive']
-	archiveDB.con.close()
-	archiveDB.open()
+	try:
+		archiveDB = db.Database.databases['Archive']
+		archiveDB.con.close()
+		archiveDB.open()
+	except KeyError:
+		pass
 	
 	while True:
 		if int(time()) % s == 0:
@@ -250,9 +253,12 @@ def run_server(host, port):
 	# Reopen databases to avoid OperationalError
 	db.Database.main_database.con.close()
 	db.Database.main_database.open()
-	archiveDB = db.Database.databases['Archive']
-	archiveDB.con.close()
-	archiveDB.open()
+	try:
+		archiveDB = db.Database.databases['Archive']
+		archiveDB.con.close()
+		archiveDB.open()
+	except KeyError:
+		pass
 	
 	server.run(host=host, port=port, server=config.server)
 
