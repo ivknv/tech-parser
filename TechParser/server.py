@@ -103,7 +103,7 @@ def load_articles(filename="articles_dumped"):
 	try:
 		return save.load_from_file(os.path.join(logdir, filename))
 	except (IOError, pickle.PickleError, TypeError):
-		return []
+		return OrderedDict()
 
 @route('/static/<filename:path>')
 def serve_static(filename):
