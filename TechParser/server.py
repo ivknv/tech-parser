@@ -3,12 +3,16 @@
 
 import os
 import re
+import json
+import datetime
 
 from mako.lookup import TemplateLookup
-from bottle import route, run, static_file, request
+from bottle import route, run, static_file, request, redirect, response
 from collections import OrderedDict
 
 from TechParser import get_conf, recommend, save
+from TechParser.db_functions import add_session, check_password
+from TechParser.db_functions import check_session_existance
 from TechParser.py2x import unicode_, unicode__, range, urlencode, pickle
 
 module_path = os.path.dirname(os.path.realpath(__file__))
@@ -58,6 +62,20 @@ def split_into_pages(articles, n=30):
 		i += 1
 	
 	return pages
+
+def logged_in():
+	password = not len(get_conf.config.password)
+	return check_session_existance(request.get_cookie('sid', '')) or password
+
+def encode_url(url):
+	return urlencode(encoded_dict({'': url}))[1:]
+
+def login_required(func):
+	def newfunc(*args, **kwargs):
+		if logged_in():
+			return func(*args, **kwargs)
+		redirect('/login/?return_to={0}'.format(encode_url(request.path)))
+	return newfunc
 
 def filter_articles(articles):
 	"""Filter articles"""
@@ -122,6 +140,7 @@ def update_liked_disliked():
 	disliked_links = [i['link'] for i in disliked]
 
 @route('/histadd/<addr:path>')
+@login_required
 def add_to_history(addr):
 	
 	recommend.add_article(addr)
@@ -129,18 +148,21 @@ def add_to_history(addr):
 	update_liked_disliked()
 	
 @route('/blacklistadd/<addr:path>')
+@login_required
 def add_to_blacklist(addr):
 	recommend.add_article_to_blacklist(addr)
 	
 	update_liked_disliked()
 
 @route('/blacklistrm/<addr:path>')
+@login_required
 def rm_from_blacklist(addr):
 	recommend.remove_from_blacklist(addr)
 	
 	update_liked_disliked()
 
 @route('/histrm/<addr:path>')
+@login_required
 def rm_from_history(addr):
 	recommend.remove_from_history(addr)
 	
@@ -148,6 +170,7 @@ def rm_from_history(addr):
 
 @route('/history')
 @route('/history/<page_number>')
+@login_required
 def show_history(page_number=1):
 	history_page = mylookup.get_template('history.html')
 	q = unicode_(request.GET.get('q', ''))
@@ -180,6 +203,7 @@ def show_history(page_number=1):
 
 @route('/blacklist')
 @route('/blacklist/<page_number>')
+@login_required
 def show_blacklist(page_number=1):
 	history_page = mylookup.get_template('blacklist.html')
 	q = unicode_(request.GET.get('q', ''))
@@ -228,7 +252,7 @@ def escape_link(article):
 	new_article.update(article)
 	new_article['original_link'] = new_article['link']
 	
-	new_article['link'] = urlencode(encoded_dict({'': new_article['link']}))[1:]
+	new_article['link'] = encode_url(new_article['link'])
 	return new_article
 
 def set_liked(articles):
@@ -238,6 +262,7 @@ def set_liked(articles):
 
 @route("/")
 @route("/<page_number>")
+@login_required
 def article_list(page_number=1):
 	"""Show list of articles | Search for articles"""
 	
@@ -274,4 +299,41 @@ def article_list(page_number=1):
 		num_pages=len(articles),
 		page_num=page_number,
 		q=q,
-		all_articles=all_articles,)
+		all_articles=all_articles)
+
+@route('/checkpass/', method='POST')
+def checkpass():
+	password = request.POST.get('password', '')
+	if check_password(password):
+		if not logged_in():
+			new_sid = add_session()
+			now = datetime.datetime.now()
+			expiration_date = datetime.datetime(now.year+1, now.month,
+				now.day, now.hour, now.minute, now.second, now.microsecond)
+			response.set_cookie('sid', new_sid, path='/',
+				expires=expiration_date)
+		return json.dumps({'success': True})
+	else:
+		return '{"success": false}'
+
+@route('/login')
+@route('/login/')
+@route('/login/', method='POST')
+def login():
+	ret = request.GET.get('return_to', '/')
+	if logged_in():
+		redirect(ret)
+	else:
+		password = request.POST.get('password', None)
+		if password is not None and check_password(password):
+			new_sid = add_session()
+			now = datetime.datetime.now()
+			expiration_date = datetime.datetime(now.year+1, now.month,
+				now.day, now.hour, now.minute, now.second, now.microsecond)
+			response.set_cookie('sid', new_sid, path='/',
+				expires=expiration_date)
+			redirect(ret)
+		else:
+			template = mylookup.get_template('login.html')
+			return template.render(return_path=encode_url(ret),
+				error=True)

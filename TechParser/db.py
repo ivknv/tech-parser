@@ -191,11 +191,11 @@ def parse_dburl(s):
 	parsed = urlparse(s)
 	
 	res = {'scheme': parsed.scheme,
-			'user': parsed.username,
-			'password': parsed.password,
-			'host': parsed.hostname,
-			'port': parsed.port,
-			'dbname': parsed.path}
+		'user': parsed.username,
+		'password': parsed.password,
+		'host': parsed.hostname,
+		'port': parsed.port,
+		'dbname': parsed.path}
 	if parsed.scheme != 'sqlite':
 		res['dbname'] = parsed.path[1:]
 	return res
@@ -214,7 +214,11 @@ Q_SETUP_SQLITE = Query('sqlite',
 		(id INTEGER PRIMARY KEY AUTOINCREMENT,
 			fromrss INTEGER, icon TEXT, color TEXT,
 			title TEXT, link TEXT, summary TEXT, source TEXT,
-			UNIQUE(link))''')
+			UNIQUE(link));
+	CREATE TABLE IF NOT EXISTS sessions
+		(id INTEGER PRIMARY KEY AUTOINCREMENT, sid TEXT,
+			expires DATETIME DEFAULT (datetime('now', '+1 years')),
+			UNIQUE(sid))''')
 
 Q_SETUP_POSTGRESQL = Query('postgresql',
 	'''CREATE TABLE IF NOT EXISTS interesting_articles
@@ -224,7 +228,10 @@ Q_SETUP_POSTGRESQL = Query('postgresql',
 	CREATE TABLE IF NOT EXISTS blacklist
 		(id SERIAL, title TEXT, link TEXT, summary TEXT,
 			fromrss INTEGER, icon TEXT, color TEXT,
-			source TEXT, UNIQUE(link))''')
+			source TEXT, UNIQUE(link));
+	CREATE TABLE IF NOT EXISTS sessions
+		(id SERIAL, sid TEXT,
+			expires TIMESTAMP DEFAULT now() + INTERVAL '1 year', UNIQUE(sid))''')
 Q_SETUP_ARCHIVE_SQLITE = Query('sqlite',
 	'''CREATE TABLE IF NOT EXISTS articles
 		(id INTEGER PRIMARY KEY AUTOINCREMENT,

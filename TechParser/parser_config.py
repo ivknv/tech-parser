@@ -238,3 +238,6 @@ archive_db_path = 'default'
 # JSON doesn't have problems with compatibility between 2.x and 3.x versions of Python so it's recommended.
 # Pickle is default for compatibility with previous versions of TechParser
 data_format = 'pickle'
+
+# Password
+password = os.environ.get('TechParser_PASSWORD', '')

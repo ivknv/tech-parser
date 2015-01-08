@@ -1,10 +1,20 @@
 <%inherit file="base.html"/>
+<%block name="head">
+	<script type="text/javascript">
+		onLoad();
+	</script>
+</%block>
 <%block name="title">Articles from some sites</%block>
 <%block name="content">
 	<div id="searchbox">
 		<form method="get" action="/">
-			<input name="q" type="search" placeholder="Search articles" value='${q}' autocomplete="off" />
-			<button type="submit">Search</button>
+			<input name="q"
+				class="input-field"
+				type="search"
+				placeholder="Search articles"
+				value='${q}'
+				autocomplete="off" />
+			<button class="submit-button" type="submit">Search</button>
 		</form>
 		% if q:
 			<br/>

@@ -13,7 +13,7 @@ from bottle import default_app
 
 from Daemo import Daemon, DaemonError
 
-from TechParser import get_conf, recommend, parser, db, server, save
+from TechParser import get_conf, recommend, parser, db, server, save, auto_alter
 from TechParser.query import Q_SAVE_ARTICLES
 from TechParser.py2x import range, urlencode
 
@@ -303,8 +303,10 @@ Available commands: start|stop|restart|update|run HOST:PORT""")
 		get_conf.config.db = args.db
 	
 	db.initialize_main_database()
+	auto_alter.alter_main_database(False)
 	if get_conf.config.save_articles:
 		db.initialize_archive_db()
+		auto_alter.alter_archive_database(False)
 	
 	server.liked = recommend.get_interesting_articles()
 	server.disliked = recommend.get_blacklist()
