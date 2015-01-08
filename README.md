@@ -21,6 +21,7 @@ And [here's](https://github.com/SPython/web-tech-parser) template repository for
 	<li><a href="#configuring">Configuring</a>
 		<ul>
 			<li><a href="#enablingdisabling-parsers">Enabling/disabling parsers</a></li>
+			<li><a href="#setting-password">Setting password</a></li>
 			<li><a href="#adding-rss-feeds">Adding RSS feeds</a></li>
 			<li><a href="#asynchronous-parsing">Asynchronous parsing</a></li>
 			<li><a href="#word-lists">Word lists</a></li>
@@ -135,6 +136,25 @@ and make it look like this:
 		#	"kwargs": {}
 		#},
 ```
+
+### Setting password ###
+New in 1.8.2<br/>
+
+You can set password inside your configuration like this:
+
+```python
+password = 'your password'
+```
+
+or
+
+```python
+password = os.environ.get('TechParser_PASSWORD', '')
+```
+
+In last case you need to set environment variable ```TechParser_PASSWORD``` equal to your password.<br/>
+After that when you'll open TechParser in your browser it will ask you to enter password.<br/>
+Session expires after a year.
 
 ### Adding RSS feeds ###
 New in 1.7.0<br/>
