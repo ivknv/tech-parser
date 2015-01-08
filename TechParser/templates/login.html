@@ -1,0 +1,15 @@
+<%inherit file="base.html"/>
+<%block name="title">Log in</%block>
+<%block name="content">
+	<h2>Log in to TechParser</h2>
+	<form method="POST" action="/login/?return_to=${return_path}">
+		<input name="password"
+			class="input-field"
+			type="password"
+			placeholder="Your password" />
+		<button class="submit-button" type="submit">Submit</button>
+	</form>
+	% if error:
+		<p class="error">You entered incorrect password</p>
+	% endif
+</%block>

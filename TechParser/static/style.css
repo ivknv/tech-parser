@@ -50,7 +50,7 @@
 	text-decoration: none !important;
 }
 
-#searchbox input {
+.input-field {
 	border: 1px solid #AAB2BD;
 	border-radius: 1px;
 	font-size: 14px;
@@ -64,11 +64,11 @@
 	width: 150px;
 }
 
-#searchbox input:focus {
+.input-field:focus {
 	border-color: #3399FF;
 }
 
-#searchbox button {
+.submit-button {
 	background: #3399FF;
 	border: 2px solid #2288EE;
 	border-radius: 4px;
@@ -81,11 +81,11 @@
 	padding: 1px 6px;
 }
 
-#searchbox button:hover {
+.submit-button:hover {
 	border-color: #147ADF;
 }
 
-#searchbox button:active {
+.submit-button:active {
 	background: #44AAFF
 }
 
@@ -95,7 +95,7 @@ a {
 }
 
 @media screen and (max-width: 450px) {
-	#searchbox input {
+	.input-field {
 		max-width: 92%;
 	}
 }
@@ -314,4 +314,9 @@ pre {
 	white-space: -o-pre-wrap;
 	white-space: -pre-wrap;
 	word-wrap: break-word;
+}
+
+.error {
+	color: red;
+	font-size: 18px;
 }
