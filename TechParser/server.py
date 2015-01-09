@@ -336,4 +336,4 @@ def login():
 		else:
 			template = mylookup.get_template('login.html')
 			return template.render(return_path=encode_url(ret),
-				error=True)
+				error=password is not None)
