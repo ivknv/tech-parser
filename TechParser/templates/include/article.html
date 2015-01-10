@@ -49,11 +49,13 @@
 					<img src="/static/icons/dislike-32.ico" />
 				</a>
 			% endif
-			<p>
-				<a data-pocket-label="pocket" data-pocket-count="horizontal"
-					class="pocket-btn" data-lang="en"
-					data-save-url="${article['link']}"></a>
-			</p>
+			% if config.enable_pocket:
+				<p>
+					<a data-pocket-label="pocket" data-pocket-count="horizontal"
+						class="pocket-btn" data-lang="en"
+						data-save-url="${article['link']}"></a>
+				</p>
+			% endif
 		</div>
 	</div>
 % endfor

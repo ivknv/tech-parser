@@ -201,7 +201,8 @@ def show_history(page_number=1):
 	return history_page.render(articles=requested_page,
 		num_pages=len(articles),
 		page_num=page_number,
-		q=q, page='history')
+		q=q, page='history',
+		config=get_conf.config)
 
 @route('/blacklist')
 @route('/blacklist/<page_number>')
@@ -233,7 +234,8 @@ def show_blacklist(page_number=1):
 	return blacklist_page.render(articles=requested_page,
 		num_pages=len(articles),
 		page_num=page_number,
-		q=q, page='blacklist')
+		q=q, page='blacklist',
+		config=get_conf.config)
 
 def has_words(qs, article):
 	"""Check if article contains words"""
@@ -299,7 +301,8 @@ def article_list(page_number=1):
 	return main_page.render(articles=requested_page,
 		num_pages=len(articles),
 		page_num=page_number,
-		q=q, page='main')
+		q=q, page='main',
+		config=get_conf.config)
 
 @route('/checkpass/', method='POST')
 def checkpass():
