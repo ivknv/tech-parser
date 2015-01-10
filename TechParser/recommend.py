@@ -189,7 +189,6 @@ def add_article_to_blacklist(addr):
 	try:
 		article = articles[addr]
 		add_to_blacklist(article)
-		articles.pop(addr)
 		save.dump_to_file(articles, path)
 	except KeyError:
 		print('KeyError({0})'.format(addr))

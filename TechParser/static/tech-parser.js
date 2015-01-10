@@ -11,35 +11,52 @@ function toggleText(element) {
 	}
 }
 
-function ignore_article(element) {
-	var $summary = $(element).parent('.summary');
-	var $article = $summary.parent('.article');
-	var link = $article.attr('data-escaped-link');
-	$.get('/blacklistadd/' + link, function(data) {
-		$article.fadeOut();
-	});
-}
-
-function add_to_history(element) {
-	var $summary = $(element).parent('.summary');
-	var $article = $summary.parent('.article');
-	var link = $article.attr('data-escaped-link');
-	$.get('/histadd/' + link, function(data){});
-}
-
-function remove_from(where, element) {
-	var $summary = $(element).parent('.summary');
+function add_to(where, $element) {
+	var $summary = $element.parent('.summary');
 	var $article = $summary.parent('.article');
 	var link = $article.attr('data-escaped-link');
 	
-	if (where == 'history' || where == 'blacklist') {
-		if (where == 'history') {
-			var url = '/histrm/' + link;
-		} else if (where == 'blacklist') {
-			var url = '/blacklistrm/' + link;
+	if (where == 'history') {
+		$.get('/histadd/' + link, function(data) {
+			$element.attr('class', 'like liked');
+		});
+	} else if (where == 'blacklist') {
+		$.get('/blacklistadd/' + link, function(data) {
+			$element.attr('class', 'dislike disliked');
+		});
+	}
+}
+
+function RateArticle(element) {
+	var $element = $(element);
+	if ($element.hasClass('like'))
+		if ($element.hasClass('liked')) {
+			remove_from('history', $element);
+		} else {
+			add_to('history', $element);
+	} else if ($element.hasClass('dislike')) {
+		if ($element.hasClass('disliked')) {
+			remove_from('blacklist', $element);
+		} else {
+			add_to('blacklist', $element);
 		}
+	}
+}
+
+function remove_from(where, $element) {
+	var $summary = $element.parent('.summary');
+	var $article = $summary.parent('.article');
+	var link = $article.attr('data-escaped-link');
+	
+	if (where == 'history') {
+		var url = '/histrm/' + link;
 		$.get(url, function(data) {
-			$article.fadeOut();
+			$element.attr('class', 'like');
+		});
+	} else if (where == 'blacklist') {
+		var url = '/blacklistrm/' + link;
+		$.get(url, function(data) {
+			$element.attr('class', 'dislike');
 		});
 	}
 }
@@ -112,16 +129,4 @@ function onLoad() {
 			$(this).removeAttr('src');
 		});
 	});
-}
-
-function login(return_path) {
-	var $input = $('input[name=password]');
-	$.post('/checkpass/', {password: $input.val()},
-		function(data) {
-			if(data.success) {
-				window.location.href = return_path;
-			} else {
-				alert('Invalid password');
-			}
-	}, 'json');
 }
