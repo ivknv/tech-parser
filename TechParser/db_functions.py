@@ -89,7 +89,9 @@ def get_blacklist():
 			'fromrss': x[3],
 			'icon': x[4],
 			'color': x[5],
-			'source': x[6]} for x in db.Database.main_database.fetchall()]
+			'source': x[6],
+			'liked': False,
+			'disliked': True} for x in db.Database.main_database.fetchall()]
 
 def get_interesting_articles():
 	"""Get list of articles from history (that were marked as interesting)"""
@@ -102,7 +104,9 @@ def get_interesting_articles():
 			'fromrss': x[3],
 			'icon': x[4],
 			'color': x[5],
-			'source': x[6]} for x in db.Database.main_database.fetchall()]
+			'source': x[6],
+			'liked': True,
+			'disliked': False} for x in db.Database.main_database.fetchall()]
 
 def generate_sessionid(num_bytes=16):
 	return uuid.UUID(bytes=Random.get_random_bytes(num_bytes))
@@ -125,3 +129,6 @@ def check_session_existance(sid):
 
 def remove_old_sessions():
 	db.Database.main_database.execute_query(Q_REMOVE_OLD_SESSIONIDS)
+
+def remove_session(sid):
+	db.Database.main_database.execute_query(Q_REMOVE_SESSIONID, [(sid,)])

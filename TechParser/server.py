@@ -12,7 +12,7 @@ from collections import OrderedDict
 
 from TechParser import get_conf, recommend, save
 from TechParser.db_functions import add_session, check_password
-from TechParser.db_functions import check_session_existance
+from TechParser.db_functions import check_session_existance, remove_session
 from TechParser.py2x import unicode_, unicode__, range, urlencode, pickle
 
 module_path = os.path.dirname(os.path.realpath(__file__))
@@ -63,9 +63,12 @@ def split_into_pages(articles, n=30):
 	
 	return pages
 
+def get_sid():
+	return request.get_cookie('sid', '')
+
 def logged_in():
 	password = not len(get_conf.config.password)
-	return check_session_existance(request.get_cookie('sid', '')) or password
+	return check_session_existance(get_sid()) or password
 
 def encode_url(url):
 	return urlencode(encoded_dict({'': url}))[1:]
@@ -198,14 +201,13 @@ def show_history(page_number=1):
 	return history_page.render(articles=requested_page,
 		num_pages=len(articles),
 		page_num=page_number,
-		q=q,
-		all_articles=all_articles)
+		q=q, page='history')
 
 @route('/blacklist')
 @route('/blacklist/<page_number>')
 @login_required
 def show_blacklist(page_number=1):
-	history_page = mylookup.get_template('blacklist.html')
+	blacklist_page = mylookup.get_template('blacklist.html')
 	q = unicode_(request.GET.get('q', ''))
 	
 	articles = recommend.get_blacklist()
@@ -228,11 +230,10 @@ def show_blacklist(page_number=1):
 	except IndexError:
 		requested_page = []
 	
-	return history_page.render(articles=requested_page,
+	return blacklist_page.render(articles=requested_page,
 		num_pages=len(articles),
 		page_num=page_number,
-		q=q,
-		all_articles=all_articles)
+		q=q, page='blacklist')
 
 def has_words(qs, article):
 	"""Check if article contains words"""
@@ -298,8 +299,7 @@ def article_list(page_number=1):
 	return main_page.render(articles=requested_page,
 		num_pages=len(articles),
 		page_num=page_number,
-		q=q,
-		all_articles=all_articles)
+		q=q, page='main')
 
 @route('/checkpass/', method='POST')
 def checkpass():
@@ -337,3 +337,13 @@ def login():
 			template = mylookup.get_template('login.html')
 			return template.render(return_path=encode_url(ret),
 				error=password is not None)
+
+@route('/logout')
+@route('/logout/')
+def logout():
+	if not logged_in():
+		redirect('/login/')
+	else:
+		remove_session(get_sid())
+		response.set_cookie('sid', '', expires=datetime.datetime(1970, 1, 1, 0, 0, 0))
+		redirect('/login/')

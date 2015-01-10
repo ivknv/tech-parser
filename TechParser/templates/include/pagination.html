@@ -1,0 +1,25 @@
+<div id="pagination">
+	% if page == 'main':
+	<%
+		url = ''
+	%>
+	% elif page == 'history':
+	<%
+		url = '/history'
+	%>
+	% elif page == 'blacklist':
+	<%
+		url = '/blacklist'
+	%>
+	% endif
+	
+	% if page_num > 1:
+		<a href="${url}/${page_num-1}?q=${q}">Previous</a>
+	% endif
+	
+	<a class="current">${page_num}</a>
+	
+	% if page_num < num_pages:
+		<a href="${url}/${page_num+1}?q=${q}">Next</a>
+	% endif
+</div>

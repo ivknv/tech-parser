@@ -1,0 +1,37 @@
+<div id="searchbox">
+	% if page == 'main':
+		<%
+			submit_url = '/'
+		%>
+	% elif page == 'history':
+		<%
+			submit_url = '/history'
+		%>
+	% elif page == 'blacklist':
+		<%
+			submit_url = '/blacklist'
+		%>
+	% endif
+	<form method="get" action="${submit_url}">
+		<input name="q"
+			class="input-field"
+			type="search"
+			placeholder="Search articles"
+			value='${q}'
+			autocomplete="off" />
+		<button class="submit-button" type="submit">Search</button>
+	</form>
+	% if q:
+		<a href="/">Go back</a>
+	% endif
+	% if page != 'main':
+		<a href="/">Main page</a>
+	% endif
+	% if page != 'history':
+		<a href="/history">History</a>
+	% endif
+	% if page != 'blacklist':
+		<a href="/blacklist">Blacklist</a>
+	% endif
+	<a href="/logout/">Log out</a>
+</div>

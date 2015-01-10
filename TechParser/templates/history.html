@@ -6,80 +6,8 @@
 </%block>
 <%block name="title">History</%block>
 <%block name="content">
-	<div id="searchbox">
-		<form method="get" action="/history">
-			<input name="q"
-				class="input-field"
-				type="search"
-				placeholder="Search articles"
-				value='${q}'
-				autocomplete="off" />
-			<button class="submit-button" type="submit">Search</button>
-		</form>
-		% if q:
-			<br/>
-			<a href="/history">Go back</a>
-		% endif
-		<a href="/">Main page</a>
-		<a href="/blacklist">Blacklist</a>
-	</div>
-	% for article in articles:
-		<div class="article" data-escaped-link="${article['link']}">
-			<h3>
-				<a class="open-tab" target="_blank" href="${article['original_link']}">
-					% if article.get('fromrss', 0):
-						% if len(article['icon']):
-							<img src="${article['icon']}" width="16" />
-						% endif
-					% else:
-						<img src="/static/icons/${article['source']}.ico" width="16" />
-					% endif
-				</a>
-				% if article.get('fromrss', 0):
-					<a data-spoiler="true" class="${article['source']}" style="color: ${article['color']}" onclick="toggleText(this)">
-						${article['title']}
-					</a>
-				% else:
-					<a data-spoiler="true" class="${article['source']}" onclick="toggleText(this)">
-						${article['title']}
-					</a>
-				% endif
-			</h3>
-			<div class="summary">
-				<div>
-					% if len(article['summary']):
-						${article['summary']}
-					% else:
-						No summary text available.
-					% endif
-				</div>
-				<a href="${article['original_link']}" target="_blank">
-					Open article in new tab
-				</a><br/>
-				<a style="cursor: pointer" onclick="remove_from('history', this)">
-					Remove from history
-				</a><br/>
-				<a onclick="ignore_article(this);" style="cursor: pointer;">
-					Don't want to see articles like this?
-				</a>
-				<p>
-					<a data-pocket-label="pocket" data-pocket-count="horizontal"
-						class="pocket-btn" data-lang="en"
-						data-save-url="${article['link']}"></a>
-				</p>
-			</div>
-		</div>
-	% endfor
-	<div id="pagination">
-		% if page_num > 1:
-			<a href="/history/${page_num-1}?q=${q}">Previous</a>
-		% endif
-		
-		<a class="current">${ page_num }</a>
-		
-		% if page_num < num_pages:
-			<a href="/history/${page_num+1}?q=${q}">Next</a>
-		% endif
-	</div>
+	<%include file="include/searchbox.html" />
+	<%include file="include/article.html" />
+	<%include file="include/pagination.html" />
 	<script type="text/javascript">!function(d,i){if(!d.getElementById(i)){var j=d.createElement("script");j.id=i;j.src="https://widgets.getpocket.com/v1/j/btn.js?v=1";var w=d.getElementById(i);d.body.appendChild(j);}}(document,"pocket-btn-js");</script>
 </%block>
