@@ -241,3 +241,8 @@ data_format = 'pickle'
 
 # Password
 password = os.environ.get('TechParser_PASSWORD', '')
+
+# Show Pocket button under every article.
+# Disabled by default because it slows down page loading.
+# Besides, you can save links to Pocket with a plugin for your browser.
+enable_pocket = False

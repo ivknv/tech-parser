@@ -61,3 +61,4 @@ def auto_fix_config():
 	setdefault(config, 'db_path', os.environ.get(config.db_path_variable, ''))
 	setdefault(config, 'data_format', 'pickle')
 	setdefault(config, 'password', '')
+	setdefault(config, 'enable_pocket', False)
