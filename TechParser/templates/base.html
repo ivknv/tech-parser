@@ -6,15 +6,26 @@
 		<title>
 			<%block name="title" />
 		</title>
-		<script type="text/javascript" src="/static/jquery-2.1.1.min.js"></script>
 		<link rel="stylesheet" type="text/css" href="/static/style.css" />
-		<script type="text/javascript" src="/static/jquery.touchSwipe.min.js"></script>
-		<script type="text/javascript" src="/static/tech-parser.js"></script>
-		<%block name="head" />
+		<%block name="scripts">
+			<script type="text/javascript" src="/static/jquery-2.1.1.min.js"></script>
+			<script type="text/javascript" src="/static/jquery.touchSwipe.min.js"></script>
+			<script type="text/javascript" src="/static/tech-parser.js"></script>
+		</%block>
+		<%block name="head">
+			<script type="text/javascript">
+				onLoad();
+			</script>
+		</%block>
 	</head>
 	<body>
 		<div id="main">
-			<%block name="content" />
+			<%block name="content">
+				<%include file="include/searchbox.html" />
+				<%include file="include/article.html" />
+				<%include file="include/pagination.html" />
+				<%include file="include/pocket.html" />
+			</%block>
 		</div>
 	</body>
 </html>

@@ -11,8 +11,7 @@ from bottle import route, run, static_file, request, redirect, response
 from collections import OrderedDict
 
 from TechParser import get_conf, recommend, save
-from TechParser.db_functions import add_session, check_password
-from TechParser.db_functions import check_session_existance, remove_session
+from TechParser.db_functions import *
 from TechParser.py2x import unicode_, unicode__, range, urlencode, pickle
 
 module_path = os.path.dirname(os.path.realpath(__file__))
@@ -302,7 +301,8 @@ def article_list(page_number=1):
 		num_pages=len(articles),
 		page_num=page_number,
 		q=q, page='main',
-		config=get_conf.config)
+		config=get_conf.config,
+		is_parsing=get_var('parsing', '0') == '1')
 
 @route('/checkpass/', method='POST')
 def checkpass():

@@ -14,6 +14,7 @@ from bottle import default_app
 from Daemo import Daemon, DaemonError
 
 from TechParser import get_conf, recommend, parser, db, server, save, auto_alter
+from TechParser.db_functions import set_var, get_var
 from TechParser.query import Q_SAVE_ARTICLES
 from TechParser.py2x import range, urlencode
 
@@ -127,79 +128,88 @@ def update_progress(shared_object, num):
 def dump_articles(filename="articles_dumped"):
 	"""Dump articles to ~/.tech-parser/<filename>"""
 	
-	m = multiprocessing.Manager()
-	
-	articles = m.Queue()
-	
-	progress = m.Value('d', 0.0)
-	
-	main_queue = m.Queue()
-	
-	for i in get_conf.config.sites_to_parse:
-		main_queue.put(i)
-
-	for i in get_conf.config.rss_feeds:
-		main_queue.put(i)
-	
-	pool = multiprocessing.Pool(processes=get_conf.config.num_threads)
-	
-	for i in range(get_conf.config.num_threads):
-		pool.apply_async(parse_site, (main_queue, articles, progress))
-	
-	pool.close()
-	pool.join()
+	if get_var('parsing', '0') == '1':
+		log('Already parsing articles. Hold on.')
+		return
 	
 	try:
-		links_before = set(server.load_articles().keys())
-	except ValueError:
-		links_before = set()
-	
-	list_articles = []
-	_append = list_articles.append # OPTIMISATION
-	_get = articles.get # OPTIMISATION
-	_empty = articles.empty # OPTIMISATION
-	while not _empty():
-		_append(_get())
-	
-	log("Total articles: %d" %(len(list_articles)))
-	
-	if get_conf.config.save_articles:
-		log("Saving articles to archive...")
-		archiveDB = db.Database.databases['Archive']
-		IntegrityError = archiveDB.userData # userData contains exception
+		set_var('parsing', '1')
 		
-		for article in list_articles:
-			title = article["title"]
-			link = article["link"]
-			source = article["source"]
+		m = multiprocessing.Manager()
+		
+		articles = m.Queue()
+		
+		progress = m.Value('d', 0.0)
+		
+		main_queue = m.Queue()
+		
+		for i in get_conf.config.sites_to_parse:
+			main_queue.put(i)
+	
+		for i in get_conf.config.rss_feeds:
+			main_queue.put(i)
+		
+		pool = multiprocessing.Pool(processes=get_conf.config.num_threads)
+		
+		for i in range(get_conf.config.num_threads):
+			pool.apply_async(parse_site, (main_queue, articles, progress))
+		
+		pool.close()
+		pool.join()
+		
+		try:
+			links_before = set(server.load_articles().keys())
+		except ValueError:
+			links_before = set()
+		
+		list_articles = []
+		_append = list_articles.append # OPTIMISATION
+		_get = articles.get # OPTIMISATION
+		_empty = articles.empty # OPTIMISATION
+		while not _empty():
+			_append(_get())
+		
+		log("Total articles: %d" %(len(list_articles)))
+		
+		if get_conf.config.save_articles:
+			log("Saving articles to archive...")
+			archiveDB = db.Database.databases['Archive']
+			IntegrityError = archiveDB.userData # userData contains exception
 			
-			try:
-				archiveDB.execute_query(Q_SAVE_ARTICLES, [(title, link, source)])
-			except IntegrityError:
-				archiveDB.con.rollback()
+			for article in list_articles:
+				title = article["title"]
+				link = article["link"]
+				source = article["source"]
+				
+				try:
+					archiveDB.execute_query(Q_SAVE_ARTICLES, [(title, link, source)])
+				except IntegrityError:
+					archiveDB.con.rollback()
+			
+		num = len(recommend.get_interesting_articles())
+		num += len(recommend.get_blacklist())
 		
-	num = len(recommend.get_interesting_articles())
-	num += len(recommend.get_blacklist())
-	
-	if num >= 20:
-		log("Ranking articles...")
-		list_articles = recommend.find_similiar(list_articles)
-		list_articles.sort(key=itemgetter(1), reverse=True)
-		ordered = OrderedDict([(i[0]['link'], i[0]) for i in list_articles])
-	else:
-		log("Shuffling articles...")
-		shuffle(list_articles)
-		ordered = OrderedDict([(i['link'], i) for i in list_articles])
+		if num >= 20:
+			log("Ranking articles...")
+			list_articles = recommend.find_similiar(list_articles)
+			list_articles.sort(key=itemgetter(1), reverse=True)
+			ordered = OrderedDict([(i[0]['link'], i[0]) for i in list_articles])
+		else:
+			log("Shuffling articles...")
+			shuffle(list_articles)
+			ordered = OrderedDict([(i['link'], i) for i in list_articles])
 
-	log("New articles: %d"
-		%(len([i for i in ordered.values() if i['link'] not in links_before])))
-	
-	log("Dumping data to file: {0}...".format(filename))
-	
-	path = os.path.join(os.path.expanduser("~"), ".tech-parser")
-	path = os.path.join(path, filename)
-	
-	save.dump_to_file(ordered, path)
+		log("New articles: %d"
+			%(len([i for i in ordered.values() if i['link'] not in links_before])))
+		
+		log("Dumping data to file: {0}...".format(filename))
+		
+		path = os.path.join(os.path.expanduser("~"), ".tech-parser")
+		path = os.path.join(path, filename)
+		
+		save.dump_to_file(ordered, path)
+	finally:
+		set_var('parsing', '0')
 
 def dump_articles_per(s):
 	"""Dump articles per <s> seconds"""
