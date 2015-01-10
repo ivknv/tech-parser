@@ -8,11 +8,6 @@ import uuid
 from Crypto import Random
 import datetime
 
-try:
-	import psycopg2
-except ImportError:
-	pass
-
 def format_date(date):
 	try:
 		return datetime.datetime.strftime(date, '%Y-%m-%d %H:%M:%S.%f')
@@ -132,3 +127,19 @@ def remove_old_sessions():
 
 def remove_session(sid):
 	db.Database.main_database.execute_query(Q_REMOVE_SESSIONID, [(sid,)])
+
+def get_var(name, default=None):
+	db.Database.main_database.execute_query(Q_GET_VAR, [(name,)])
+	try:
+		return db.Database.main_database.fetchone()[0]
+	except TypeError:
+		return default
+
+def set_var(name, value):
+	mainDB = db.Database.main_database
+	IntegrityError = mainDB.userData
+	try:
+		mainDB.execute_query(Q_ADD_VAR, [(name, value)])
+	except IntegrityError:
+		mainDB.con.rollback()
+		mainDB.execute_query(Q_SET_VAR, [(value, name)])

@@ -218,7 +218,9 @@ Q_SETUP_SQLITE = Query('sqlite',
 	CREATE TABLE IF NOT EXISTS sessions
 		(id INTEGER PRIMARY KEY AUTOINCREMENT, sid TEXT,
 			expires DATETIME DEFAULT (datetime('now', '+1 years')),
-			UNIQUE(sid))''')
+			UNIQUE(sid));
+	CREATE TABLE IF NOT EXISTS variables
+		(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE, value TEXT)''')
 
 Q_SETUP_POSTGRESQL = Query('postgresql',
 	'''CREATE TABLE IF NOT EXISTS interesting_articles
@@ -231,7 +233,9 @@ Q_SETUP_POSTGRESQL = Query('postgresql',
 			source TEXT, UNIQUE(link));
 	CREATE TABLE IF NOT EXISTS sessions
 		(id SERIAL, sid TEXT,
-			expires TIMESTAMP DEFAULT now() + INTERVAL '1 year', UNIQUE(sid))''')
+			expires TIMESTAMP DEFAULT now() + INTERVAL '1 year', UNIQUE(sid));
+	CREATE TABLE IF NOT EXISTS variables
+		(id SERIAL, name TEXT UNIQUE, value TEXT)''')
 Q_SETUP_ARCHIVE_SQLITE = Query('sqlite',
 	'''CREATE TABLE IF NOT EXISTS articles
 		(id INTEGER PRIMARY KEY AUTOINCREMENT,

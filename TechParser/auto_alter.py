@@ -58,7 +58,11 @@ def alter_main_database(verbose=False):
 		'columns': ({'name': 'id', 'type': SERIAL(main_db)},
 			{'name': 'sid', 'type': 'TEXT UNIQUE'},
 			{'name': 'expires', 'type': DATETIME(main_db),
-				'default': __expiration_date(main_db)})})
+				'default': __expiration_date(main_db)})},
+		{'name': 'variables',
+		'columns': ({'name': 'id', 'type': SERIAL(main_db)},
+			{'name': 'name', 'type': 'TEXT UNIQUE'},
+			{'name': 'value', 'type': 'TEXT'})})
 		
 	for table in TABLES:
 		base_q = 'ALTER TABLE {0} ADD COLUMN {{0}} {{1}};'

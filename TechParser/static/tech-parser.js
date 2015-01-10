@@ -130,3 +130,20 @@ function onLoad() {
 		});
 	});
 }
+
+function parsingTime(interval) {
+	var remains = Math.floor((interval - (new Date().getTime() / 1000) % interval) / 60);
+	return remains + simplePlural(' minute', remains)
+}
+
+function endsWith(str, suffix) {
+    return str.indexOf(suffix, str.length - suffix.length) !== -1;
+}
+
+function simplePlural(str, n) {
+	var str_n = '' + n;
+	if (!endsWith(str_n, '1') || str_n == '11') {
+		str += 's';
+	}
+	return str;
+}
