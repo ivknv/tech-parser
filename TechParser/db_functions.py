@@ -3,28 +3,8 @@
 
 from TechParser.query import *
 from TechParser import db, get_conf
-import sqlite3
 import uuid
 from Crypto import Random
-import datetime
-
-def format_date(date):
-	try:
-		return datetime.datetime.strftime(date, '%Y-%m-%d %H:%M:%S.%f')
-	except ValueError:
-		return datetime.datetime.strftime(date, '%Y-%m-%d %H:%M:%S')
-
-def date_fromstr(s):
-	try:
-		return datetime.datetime.strptime(s, '%Y-%m-%d %H:%M:%S')
-	except ValueError:
-		return datetime.datetime.strptime(s, '%Y-%m-%d %H:%M:%S.%f')
-
-def todatetime(date_or_string):
-	if isinstance(date_or_string, str):
-		return date_fromstr(s)
-	
-	return date_or_string
 
 def remove_from_blacklist(link):
 	"""Remove article from blacklist by link"""
