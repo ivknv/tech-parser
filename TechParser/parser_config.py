@@ -194,10 +194,10 @@ filters = {
 }
 
 # Words that you're interested in
-interesting_words = {}
+interesting_words = []
 
 # Words that you find boring
-boring_words = {}
+boring_words = []
 
 update_interval = 1800 # Parse articles every 30 minutes
 
@@ -229,9 +229,13 @@ server = "auto"
 
 # Save articles to the database at <archive_db_path>.
 save_articles = False
+
+# Environment variable that stores path to archive database
+archive_db_path_variable = 'ARCHIVE_DATABASE_URL'
+
 # Should look like 'sqlite:///PATH' or 'postgres://user:password@host:port/dbname'
 # 'default' means 'sqlite:///<your-home-directory>/.tech-parser/archive.db'
-archive_db_path = 'default'
+archive_db_path = os.environ.get(archive_db_path_variable, 'default')
 
 # Format to be used when dumping articles.
 # Can be 'pickle' or 'json'.
@@ -239,8 +243,11 @@ archive_db_path = 'default'
 # Pickle is default for compatibility with previous versions of TechParser
 data_format = 'pickle'
 
+# Environment variable to keep your password
+password_variable = 'TechParser_PASSWORD'
+
 # Password
-password = os.environ.get('TechParser_PASSWORD', '')
+password = os.environ.get(password_variable, '')
 
 # Show Pocket button under every article.
 # Disabled by default because it slows down page loading.
