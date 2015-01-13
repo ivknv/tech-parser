@@ -32,7 +32,7 @@ def add_to_blacklist(article):
 		parameters = [(title, link, summary, fromrss, icon, color, source)]
 		db.Database.main_database.execute_query(Q_ADD_TO_BLACKLIST, parameters)
 	except IntegrityError:
-		pass
+		db.Database.main_database.con.rollback()
 
 def add_to_interesting(article):	
 	"""Add article to history"""
@@ -51,7 +51,7 @@ def add_to_interesting(article):
 		
 		db.Database.main_database.execute_query(Q_ADD_TO_HISTORY, parameters)
 	except IntegrityError:
-		pass
+		db.Database.main_database.con.rollback()
 
 def get_blacklist():
 	"""Get list of articles from blacklist"""
