@@ -10,6 +10,7 @@ import argparse
 import sqlite3
 import traceback
 import signal
+import atexit
 from time import time, sleep
 
 from operator import itemgetter
@@ -22,7 +23,7 @@ from Daemo import Daemon, DaemonError
 from TechParser import get_conf, recommend, parser, db, server, save, auto_alter
 from TechParser.db_functions import set_var, get_var
 from TechParser.query import Q_SAVE_ARTICLES
-from TechParser.py2x import range, urlencode, atexit
+from TechParser.py2x import range, urlencode
 
 running_as_daemon = False
 # TODO add description for this variable

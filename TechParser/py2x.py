@@ -1,15 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import atexit
-
-if not hasattr(atexit, 'unregister'):
-    def temp_func(func):
-        for i in atexit._exithandlers:
-            if i[0] == func:
-                atexit._exithandlers.remove(i)
-    atexit.unregister = temp_func
-
 try:
     chr = unichr
     range = xrange
