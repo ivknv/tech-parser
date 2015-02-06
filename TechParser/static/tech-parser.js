@@ -90,7 +90,33 @@ function onLoad() {
 			setTimeout(function() {$('#searchbox button').fadeIn('fast')}, 400);
 		});
 		
-		swipefunc = function(e, d, distance) {
+		$('.triangle-spoiler').click(function() {
+			var $this = $(this);
+			var $element = $this.parent().find('.triangle-spoiler-data');
+			
+			if ($element.css('display') == 'none') {
+				$element.fadeIn('fast');
+				$this.attr('data-opened', 'true');
+			} else {
+				$element.fadeOut('fast');
+				$this.attr('data-opened', 'false');
+			}
+		});
+		
+		$('.delete-icon').click(function() {
+			var $this = $(this);
+			if ($this.hasClass('delete-icon')) {
+				$this.parent().find('.triangle-spoiler').css('text-decoration', 'line-through');
+				$this.attr('class', 'undo-icon');
+				$this.parent().find('input[data-field-name=is_deleted]').val('1');
+			} else if ($this.hasClass('undo-icon')) {
+				$this.parent().find('.triangle-spoiler').css('text-decoration', 'inherit');
+				$this.attr('class', 'delete-icon');
+				$this.parent().find('input[data-field-name=is_deleted]').val('0');
+			}
+		});
+		
+		var swipefunc = function(e, d, distance) {
 			if (distance < 150) {
 				return;
 			}
@@ -146,4 +172,10 @@ function simplePlural(str, n) {
 		str += 's';
 	}
 	return str;
+}
+
+function AddFeed() {
+	$new_feed = $('#new-feed');
+	$new_feed.css('display', 'inherit');
+	$new_feed.find('input[name=new_feed]').val('0');
 }
