@@ -16,6 +16,10 @@ setup(name="TechParser",
 	requires=["grab", "mako", "bottle", "Daemo"],
 	classifiers=[],
 	packages=["TechParser", "TechParser.parsers"],
-	package_data={"TechParser": ["templates/*", "static/tech-parser.js",
-		"static/jquery.touchSwipe.min.js", "static/fonts/*",
-		"static/style.css", "static/jquery-2.1.1.min.js", "static/icons/*"]})
+	package_data={"TechParser": ["templates/base.html",
+		"templates/articles.html", "templates/blacklist.html",
+		"templates/history.html", "templates/edit.html",
+		"templates/login.html", "templates/include/*",
+		"static/tech-parser.js", "static/jquery.touchSwipe.min.js",
+		"static/fonts/*", "static/style.css",
+		"static/jquery-2.1.1.min.js", "static/icons/*"]})

@@ -96,7 +96,7 @@ sites_to_parse = {
 	
 	"Code Project": { # www.codeproject.com
 		"module": codeproject,
-		"kwargs": {'categories': ['all']} # 'web', 'android', 'c#', 'c++' and 'ios',
+		"kwargs": {'categories': ['all']}, # 'web', 'android', 'c#', 'c++' and 'ios'
 		"enabled": True
 	},
 	
@@ -199,7 +199,7 @@ sites_to_parse = {
 	
 	"ZDNet": { # www.zdnet.com
 		"module": zdnet,
-		"kwargs": {'categories': ['all']} # 'news', 'reviews' and 'downloads',
+		"kwargs": {'categories': ['all']}, # 'news', 'reviews' and 'downloads',
 		"enabled": True
 	},
 		
