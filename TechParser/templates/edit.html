@@ -1,0 +1,329 @@
+<%inherit file="base.html" />
+<%block name="title">Configuration editor</%block>
+<%block name="content">
+	<%def name="SubmitButton(type)">
+		<input type="hidden" name="type" value="${type}" />
+		<button class="submit-button">Save</button>
+	</%def>
+	<form method="POST" action="/update/">
+		<h2 id="parsers">Parsers</h2>
+		% for k,v in sorted(config.sites_to_parse.items()):
+			<%
+				Hash = v['hash']
+			%>
+			<div class="parser margin-bottom">
+				<div class="triangle-spoiler">${k}</div>
+				<div class="triangle-spoiler-data">
+					<div class="margin-bottom">
+						<input type="checkbox" name="parser_${Hash}"
+							   value="on"
+							   % if v['enabled']:
+						           checked=""
+							   % endif
+							   autocomplete='off' />
+						<label for="parser_${Hash}">Enabled</label>
+					</div>
+					<label for="kwargs_${Hash}">Arguments:</label>
+					<textarea class="textarea" name="kwargs_${Hash}" autocomplete="off">${v['kwargs']}</textarea>
+				</div>
+			</div>
+		% endfor
+	
+		${SubmitButton('parsers')}
+	</form>
+	
+	<form method="POST" action="/update/">
+		<h2 id="rss_feeds">RSS Feeds</h2>
+		% for k,v in sorted(config.rss_feeds.items()):
+			<%
+				Hash = v['hash']
+			%>
+			<div class="rss-feed margin-bottom">
+				<input type="hidden" name="is_deleted_${Hash}" value="0" data-field-name="is_deleted"
+					   autocomplete="off" />
+				<div class="triangle-spoiler">${k}</div>
+				<div class="delete-icon"></div>
+				<div class="triangle-spoiler-data">
+					<div class="margin-bottom">
+						<input type="checkbox" name="enabled_${Hash}"
+							   value="1"
+							   % if v['enabled']:
+							       checked=""
+							   % endif
+							   autocomplete="off" />
+						<label for="enabled_${Hash}">Enabled</label>
+					</div>
+					<div class="margin-bottom">
+						<label for="name_${Hash}">Feed name:</label>
+						<input class="input" type="text" value="${k}"
+							   name="name_${Hash}" autocomplete="off"
+							   placeholder="Feed name" />
+					</div>
+					<div class="margin-bottom">
+						<label for="sn_${Hash}">Feed short name:</label>
+						<input class="input" type="text" value="${v['short-name']}"
+							   name="sn_${Hash}" autocomplete="off"
+							   placeholder="feed-short-name" />
+					</div>
+					<div class="margin-bottom">
+						<label for="url_${Hash}">Feed url:</label>
+						<input class="input" type="url" value="${v['url']}"
+							   name="url_${Hash}" autocomplete="off"
+							   placeholder="http://example.com/feed-url" />
+					</div>
+					<div class="margin-bottom">
+						<label for="icon_${Hash}">Feed icon url:</label>
+						<input class="input" type="url" value="${v['icon']}"
+							   name="icon_${Hash}" autocomplete="off"
+							   placholder="http://example.com/icon" />
+					</div>
+					<div class="margin-bottom">
+						<label for="color_${Hash}">Feed title color:</label>
+						<input class="input" type="color" value="${v['color']}"
+							   name="color_${Hash}" autocomplete="off" />
+					</div>
+				</div>
+			</div>
+		% endfor
+		
+		<div class="margin-bottom" style="display:none" id="new-feed">
+			<input type="hidden" name="new_feed" data-field-name="is_deleted" value="1"
+				   autocomplete="off" />
+			<div class="triangle-spoiler" data-opened="true">New feed</div>
+			<div class="delete-icon"></div>
+			<div class="triangle-spoiler-data" style="display: block;">
+				<div class="margin-bottom">
+					<input type="checkbox" name="new_feed_enabled" checked=""
+						   value="1"
+						   autocomplete="off" />
+					<label for="new_feed_enabled">Enabled</label>
+				</div>
+				<div class="margin-bottom">
+					<label for="new_feed_name">Feed name:</label>
+					<input class="input" type="text" name="new_feed_name"
+						   autocomplete="off"
+						   placeholder="Feed name" />
+				</div>
+				<div class="margin-bottom">
+					<label for="new_feed_sn">Feed short name:</label>
+					<input class="input" type="text" name="new_feed_sn"
+						   autocomplete="off"
+						   placeholder="feed-short-name" />
+				</div>
+				<div class="margin-bottom">
+					<label for="new_feed_url">Feed url:</label>
+					<input class="input" type="url" name="new_feed_url"
+						   autocomplete="off"
+						   placeholder="http://example.com/feed-url" />
+				</div>
+				<div class="margin-bottom">
+					<label for="new_feed_icon">Feed icon url:</label>
+					<input class="input" type="url" name="new_feed_icon"
+						   autocomplete="off"
+						   placeholder="http://example.com/icon" />
+				</div>
+				<div class="margin-bottom">
+					<label for="new_feed_color">Feed title color:</label>
+					<input class="input" type="color" name="new_feed_color"
+						   autocomplete="off" />
+				</div>
+			</div>
+			<div class="margin-bottom"></div>
+			<div class="margin-bottom">
+				<button type="submit" class="submit-button">Save new feed</button>
+			</div>
+		</div>
+		
+		<div class="margin-bottom">
+			<button type="button" class="submit-button" onclick="AddFeed()">Add feed</button>
+			
+			${SubmitButton('rss_feeds')}
+		</div>
+	</form>
+	
+	<form method="POST" action="/update/">
+		<h2 id="filters">Filters</h2>
+		<div class="margin-bottom">
+			<textarea name="t_filters" class="textarea" autocomplete='off'>${config.filters}</textarea>
+		</div>
+		
+		${SubmitButton('filters')}
+	</form>
+	
+	<form method="POST" action="/update/">
+		<h2 id="interesting_words">Interesting words</h2>
+		<div class="margin-bottom">
+			<textarea name="t_interesting_words" class="textarea" autocomplete='off'>${config.interesting_words}</textarea>
+		</div>
+		
+		${SubmitButton('interesting_words')}
+	</form>
+	
+	<form method="POST" action="/update/">
+		<h2 id="boring_words">Boring words</h2>
+		<div class="margin-bottom">
+			<textarea name="t_boring_words" class="textarea" autocomplete='off'>${config.boring_words}</textarea>
+		</div>
+		
+		${SubmitButton('boring_words')}
+	</form>
+	
+	<form method="POST" action="/update/">
+		<h2 id="variables">Variables</h2>
+		<div class="margin-bottom">
+			<label for="v_update_interval">Update interval in seconds:</label>
+			<input type="number" min="0" step="10"
+				   name="v_update_interval" class="input"
+				   value="${config.update_interval}"
+				   autocomplete='off' />
+		</div>
+		<div class="margin-bottom">
+			<label for="v_db">Database type:</label>
+			<div>
+				<label for="v_db_sqlite">
+					<input id="v_db_sqlite" type="radio"
+						   name="v_db" value="sqlite"
+						   % if config.db == 'sqlite':
+						   	checked=""
+						   % endif
+						   autocomplete='off' />
+					SQLite
+				</label>
+			</div>
+			<div>
+				<label for="v_db_postgresql">
+					<input id="v_db_postgresql" type="radio" name="v_db" value="postgresql"
+						   % if config.db == 'postgresql':
+						   	checked=""
+						   % endif
+						   autocomplete='off' />
+					PostgreSQL
+				</label>
+			</div>
+		</div>
+		<div class="margin-bottom">
+			<label for="v_db_path_var">Database path variable:</label>
+			<input type="text" name="v_db_path_var" class="input"
+				   value="${config.db_path_variable}"
+				   autocomplete='off' />
+		</div>
+		<div class="margin-bottom">
+			<label for="v_db_path">Database path:</label>
+			<input type="text" name="v_db_path" class="input"
+				   % if not config.db_path_variable:
+					   value="${config.db_path}"
+					   placeholder="protocol://user:password@host:port/dbname"
+				   % else:
+					   placeholder="$${config.db_path_variable}, not needed"
+				   % endif
+				   autocomplete='off' />
+		</div>
+		<div class="margin-bottom">
+			<label for="v_host">Host:</label>
+			<input type="text" name="v_host" class="input"
+				   value="${config.host}"
+				   autocomplete='off' />
+		</div>
+		<div class="margin-bottom">
+			<label for="v_port">Port:</label>
+			<input type="number" min="0" step="1"
+				   name="v_port" class="input"
+				   value="${config.port}"
+				   autocomplete='off' />
+		</div>
+		<div class="margin-bottom">
+			<label for="v_num_threads">Number of threads (for parsing articles):</label>
+			<input type="number" min="1" step="1" max="10"
+				   name="v_num_threads" class="input"
+				   value="${config.num_threads}"
+				   autocomplete='off' />
+		</div>
+		<div class="margin-bottom">
+			<label for="v_server">Server:</label>
+			<input type="text"
+				   name="v_server" class="input"
+				   value="${config.server}"
+				   autocomplete='off' />
+		</div>
+		<div class="margin-bottom">
+			<label for="v_save_articles">
+				<input type="checkbox" name="v_save_articles"
+					   % if config.save_articles:
+						   checked=""
+					   % endif
+					   autocomplete='off' />
+				Save articles
+			</label>
+		</div>
+		<div class="margin-bottom">
+			<label for="v_archive_db_path_var">Archive database path variable:</label>
+			<input type="text" name="v_archive_db_path_var" class="input"
+				   value="${config.archive_db_path_variable}"
+				   autocomplete='off' />
+		</div>
+		<div class="margin-bottom">
+			<label for="v_archive_db_path">Database path:</label>
+			<input type="text" name="v_archive_db_path" class="input"
+				   % if not config.archive_db_path_variable:
+				   value="${config.archive_db_path}"
+				   placeholder="protocol://user:password@host:port/dbname"
+				   % else:
+				   placeholder="$${config.archive_db_path_variable}, not needed"
+				   % endif
+				   autocomplete='off' />
+		</div>
+		<div class="margin-bottom">
+			<label for="v_data_format">Data format:</label>
+			<div>
+				<label for="v_data_format_json">
+					<input id="v_data_format_json" type="radio"
+						   name="v_data_format" value="json"
+						   % if config.data_format == 'json':
+							   checked=""
+						   % endif
+						   autocomplete='off' />
+					JSON
+				</label>
+			</div>
+			<div>
+				<label for="v_data_format_pickle">
+					<input id="v_data_format_pickle" type="radio" name="v_data_format" value="pickle"
+						   % if config.data_format == 'pickle':
+							   checked=""
+						   % endif
+						   autocomplete='off' />
+					Pickle
+				</label>
+			</div>
+		</div>
+		<div class="margin-bottom">
+			<label for="v_password_var">Password variable:</label>
+			<input type="text" name="v_password_var" class="input"
+				   value="${config.password_variable}"
+				   autocomplete='off' />
+		</div>
+		<div class="margin-bottom">
+			<label for="v_password">Password:</label>
+			<input type="password" name="v_password" class="input"
+				   % if not config.password_variable:
+					   value="${config.password}"
+					   placeholder="Password"
+				   % else:
+					   placeholder="$${config.password_variable}, not needed"
+				   % endif
+				   autocomplete='off' />
+		</div>
+		<div class="margin-bottom">
+			<label for="v_enable_pocket">
+				<input type="checkbox" name="v_enable_pocket"
+					   % if config.enable_pocket:
+						   checked=""
+					   % endif
+					   autocomplete='off' />
+				Enable Pocket
+			</label>
+		</div>
+		
+		${SubmitButton('variables')}
+	</form>
+</%block>

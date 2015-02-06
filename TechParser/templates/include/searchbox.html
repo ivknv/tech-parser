@@ -1,15 +1,15 @@
 <div id="searchbox">
-	% if page == 'main':
-		<%
-			submit_url = '/'
-		%>
-	% elif page == 'history':
+	% if page == 'history':
 		<%
 			submit_url = '/history'
 		%>
 	% elif page == 'blacklist':
 		<%
 			submit_url = '/blacklist'
+		%>
+	% else:
+		<%
+			submit_url = '/'
 		%>
 	% endif
 	<form method="get" action="${submit_url}">
@@ -32,6 +32,9 @@
 	% endif
 	% if page != 'blacklist':
 		<a href="/blacklist">Blacklist</a>
+	% endif
+	% if page != 'edit':
+		<a href="/edit">Edit config</a>
 	% endif
 	<a href="/logout/">Log out</a>
 </div>

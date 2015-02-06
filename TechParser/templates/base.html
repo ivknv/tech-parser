@@ -20,8 +20,10 @@
 	</head>
 	<body>
 		<div id="main">
-			<%block name="content">
+			<%block name="searchbox">
 				<%include file="include/searchbox.html" />
+			</%block>
+			<%block name="content">
 				<%include file="include/article.html" />
 				<%include file="include/pagination.html" />
 				<%include file="include/pocket.html" />

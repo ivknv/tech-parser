@@ -325,3 +325,112 @@ pre code {
 	color: red;
 	font-size: 18px;
 }
+
+.textarea {
+	border: 1px solid rgb(170, 178, 189);
+	border-radius: 5px;
+	display: block;
+	font-family: sans-serif;
+	min-height: 180px;
+	max-width: 700px;
+	padding: 4px;
+	width: 100%;
+}
+
+.margin-bottom {
+	margin-bottom: 15px !important;
+}
+
+.margin-bottom:last-child {
+	margin-bottom: inherit;
+}
+
+input[type=checkbox] {
+	vertical-align: bottom;
+}
+
+.input {
+	border: 1px solid #AAB2BD;
+	border-radius: 5px;
+	display: block;
+	font-size: 14px;
+	height: 23px;
+	max-width: 700px;
+	width: 100%;
+	outline: 0;
+	padding-bottom: 1px;
+	padding-left: 4px;
+	padding-right: 4px;
+	padding-top: 1px;
+}
+
+.triangle-spoiler-data {
+	display: none;
+	margin-left: 18px;
+}
+
+.triangle-spoiler {
+	cursor: pointer;
+	display: inline-block;
+	font-size: 18px;
+	font-weight: bold;
+	user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	-o-user-select: none;
+	-webkit-user-select: none;
+}
+
+.delete-icon:hover, .undo-icon:hover {
+	opacity: 1;
+}
+
+.undo-icon {
+	background: url('/static/icons/undo-32.png') no-repeat;
+	background-position: 0px 1px;
+}
+
+.delete-icon {
+	background: url('/static/icons/remove-icon.png') no-repeat;
+	background-position: 0px 0px;
+}
+
+.undo-icon, .delete-icon {
+	background-size: 16px 16px;
+	content: "";
+	cursor: pointer;
+	display: inline-block;
+	height: 16px;
+	width: 16px;
+	opacity: 0.7;
+}
+
+.triangle-spoiler:before {
+	background: url('/static/icons/triangle-down-32.png') no-repeat;
+	background-position: -1px 0px;
+	background-size: 18px 18px;
+	content: "";
+	display: block;
+	float: left;
+	height: 18px;
+	transform: rotate(-90deg);
+	-webkit-transform: rotate(-90deg);
+	-ms-transform: rotate(-90deg);
+	-o-transform: rotate(-90deg);
+	-moz-transform: rotate(-90deg);
+	transition: transform 0.15s;
+	-moz-transition: transform 0.15s;
+	-webkit-transition: transform 0.15s;
+	-o-transition: transform 0.15s;
+	-ms-transition: transform 0.15s;
+	width: 18px;
+}
+
+.triangle-spoiler[data-opened=true]:before {
+	background-position: -1px 3px;
+	transform: rotate(-0deg);
+	-moz-transform: rotate(-0deg);
+	-webkit-transform: rotate(-0deg);
+	-o-transform: rotate(-0deg);
+	-ms-transform: rotate(-0deg);
+}
