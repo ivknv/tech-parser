@@ -65,6 +65,7 @@
 .input-field {
 	border: 1px solid #AAB2BD;
 	border-radius: 1px;
+    box-sizing: border-box;
 	font-size: 14px;
 	height: 23px;
 	max-width: 420px;
@@ -343,6 +344,7 @@ pre code {
 .textarea {
 	border: 1px solid rgb(170, 178, 189);
 	border-radius: 5px;
+    box-sizing: border-box;
     color: inherit;
 	display: block;
 	font-family: sans-serif;
@@ -368,6 +370,7 @@ input[type=checkbox] {
 .input {
 	border: 1px solid #AAB2BD;
 	border-radius: 5px;
+    box-sizing: border-box;
     color: inherit;
 	display: block;
 	font-size: 14px;
