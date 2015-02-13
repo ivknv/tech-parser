@@ -1,35 +1,35 @@
 @font-face {
-	font-family: "OpenSans Light";
-	font-style: normal;
-	font-weight: normal;
-	src: url('/static/fonts/OpenSans-Light.woff') format('woff');
+    font-family: "OpenSans Light";
+    font-style: normal;
+    font-weight: normal;
+    src: url('/static/fonts/OpenSans-Light.woff') format('woff');
 }
 
 @font-face {
-	font-family: "OpenSans Light";
-	font-style: italic;
-	font-weight: normal;
-	src: url('/static/fonts/OpenSans-LightItalic.woff') format('woff');
+    font-family: "OpenSans Light";
+    font-style: italic;
+    font-weight: normal;
+    src: url('/static/fonts/OpenSans-LightItalic.woff') format('woff');
 }
 
 @font-face {
-	font-family: "OpenSans Light";
-	font-style: normal;
-	font-weight: bold;
-	src: url('/static/fonts/OpenSans-Regular.woff') format('woff');
+    font-family: "OpenSans Light";
+    font-style: normal;
+    font-weight: bold;
+    src: url('/static/fonts/OpenSans-Regular.woff') format('woff');
 }
 
 @font-face {
-	font-family: "OpenSans Light";
-	font-style: italic;
-	font-weight: bold;
-	src: url('/static/fonts/OpenSans-Italic.woff') format('woff');
+    font-family: "OpenSans Light";
+    font-style: italic;
+    font-weight: bold;
+    src: url('/static/fonts/OpenSans-Italic.woff') format('woff');
 }
 
 #main {
-	font-family: "OpenSans Light", Arial, Verdana;
-	margin: 0 auto;
-	max-width: 1200px;
+    font-family: "OpenSans Light", Arial, Verdana;
+    margin: 0 auto;
+    max-width: 1200px;
 }
 
 @media screen and (max-width: 1600px) {
@@ -45,414 +45,414 @@
 }
 
 #pagination {
-	font-size: 20px;
-	margin-left: 20px;
-	margin-top: 25px;
+    font-size: 20px;
+    margin-left: 20px;
+    margin-top: 25px;
 }
 
 #pagination a {
-	color: #7A9BAC;
+    color: #7A9BAC;
 }
 
 #pagination .current {
-	color: #476879 !important;
+    color: #476879 !important;
 }
 
 .article > .summary > .open-tab {
-	text-decoration: none !important;
+    text-decoration: none !important;
 }
 
 .input-field {
-	border: 1px solid #AAB2BD;
-	border-radius: 1px;
+    border: 1px solid #AAB2BD;
+    border-radius: 1px;
     box-sizing: border-box;
-	font-size: 14px;
-	height: 23px;
-	max-width: 420px;
-	outline: 0;
-	padding-bottom: 1px;
-	padding-left: 8px;
-	padding-right: 4px;
-	padding-top: 1px;
-	width: 150px;
+    font-size: 14px;
+    height: 23px;
+    max-width: 420px;
+    outline: 0;
+    padding-bottom: 1px;
+    padding-left: 8px;
+    padding-right: 4px;
+    padding-top: 1px;
+    width: 150px;
 }
 
 .input-field:focus {
-	border-color: #3399FF;
+    border-color: #3399FF;
 }
 
 .submit-button {
-	background: #3399FF;
-	border: 2px solid #2288EE;
-	border-radius: 4px;
-	color: #FFF;
-	cursor: pointer;
-	font-size: 14px;
-	height: 26px;
-	margin-left: -1px;
-	outline: 0;
-	padding: 1px 6px;
+    background: #3399FF;
+    border: 2px solid #2288EE;
+    border-radius: 4px;
+    color: #FFF;
+    cursor: pointer;
+    font-size: 14px;
+    height: 26px;
+    margin-left: -1px;
+    outline: 0;
+    padding: 1px 6px;
 }
 
 .submit-button:hover {
-	border-color: #147ADF;
+    border-color: #147ADF;
 }
 
 .submit-button:active {
-	background: #44AAFF
+    background: #44AAFF
 }
 
 a {
-	color: #0044CC;
-	text-decoration: none;
+    color: #0044CC;
+    text-decoration: none;
 }
 
 @media screen and (max-width: 450px) {
-	.input-field {
-		max-width: 92%;
-	}
+    .input-field {
+        max-width: 92%;
+    }
 }
 
 .article > h3 {
-	font-size: 19px;
-	font-weight: bold;
-	margin: 20px;
+    font-size: 19px;
+    font-weight: bold;
+    margin: 20px;
     margin-left: 0px;
-	max-width: 800px;
+    max-width: 800px;
 }
 
 .article > .summary {
-	display: none;
-	font-size: 16px;
-	line-height: 1.4;
-	margin: 20px;
-	margin-left: 36px;
-	max-width: 700px;
+    display: none;
+    font-size: 16px;
+    line-height: 1.4;
+    margin: 20px;
+    margin-left: 36px;
+    max-width: 700px;
 }
 
 a:hover {
-	text-decoration: underline;
+    text-decoration: underline;
 }
 
 .habrahabr {
-	color: #7FA0B0;
+    color: #7FA0B0;
 }
 
 .readwrite {
-	color: rgb(200, 15, 50);
+    color: rgb(200, 15, 50);
 }
 
 .techcrunch {
-	color: #078000;
+    color: #078000;
 }
 
 .venturebeat {
-	color: #EF3B29;
+    color: #EF3B29;
 }
 
 .slashdot {
-	color: #105454;
+    color: #105454;
 }
 
 .engadget {
-	color: #3498DB;
+    color: #3498DB;
 }
 
 .gizmodo {
-	color: #464646;
+    color: #464646;
 }
 
 .techrepublic {
-	color: #78C3F1;
+    color: #78C3F1;
 }
 
 .smashingmagazine {
-	color: #F26A4B;
+    color: #F26A4B;
 }
 
 .androidcentral {
-	color: #9EB446;
+    color: #9EB446;
 }
 
 .theverge {
-	color: #EE8E82;
+    color: #EE8E82;
 }
 
 .topdesignmagazine {
-	color: #A7301E;
+    color: #A7301E;
 }
 
 .flowa {
-	color: #00CC73;
+    color: #00CC73;
 }
 
 .ittoolbox {
-	color: #BE0C3C;
+    color: #BE0C3C;
 }
 
 .dzone {
-	color: #1AA266;
+    color: #1AA266;
 }
 
 .codeproject {
-	color: #FF9900;
+    color: #FF9900;
 }
 
 .hackernews {
-	color: #FF7941;
+    color: #FF7941;
 }
 
 .mashable {
-	color: #3089EE;
+    color: #3089EE;
 }
 
 .maketecheasier {
-	color: #99B2CB;
+    color: #99B2CB;
 }
 
 .digg {
-	color: #000000;
+    color: #000000;
 }
 
 .wired {
-	color: #4F4F4F;
+    color: #4F4F4F;
 }
 
 .medium {
-	color: #222222;
+    color: #222222;
 }
 
 .planetclojure {
-	color: #91D547; 
+    color: #91D547; 
 }
 
 .reddit {
-	color: #A3BBD4;
+    color: #A3BBD4;
 }
 
 .trashbox {
-	color: #1FB6F2;
+    color: #1FB6F2;
 }
 
 .droider {
-	color: #313131;
+    color: #313131;
 }
 
 .redroid {
-	color: #DFC100;
+    color: #DFC100;
 }
 
 .threednews {
-	color: #2376BC;
+    color: #2376BC;
 }
 
 .threednews:after {
-	content: "(3dnews)" !important;
+    content: "(3dnews)" !important;
 }
 
 .ixbt {
-	color: #7971B5;
+    color: #7971B5;
 }
 
 .mobile-review {
-	color: #D83B46;
+    color: #D83B46;
 }
 
 .helpix {
-	color: #FF0000;
+    color: #FF0000;
 }
 
 .recode {
-	color: #CC0713;
+    color: #CC0713;
 }
 
 .zdnet {
-	color: #BE0000;
+    color: #BE0000;
 }
 
 .geektimes {
-	color: #626D8D;
+    color: #626D8D;
 }
 
 .article h3 a[data-spoiler='true'] {
-	outline: 0;
-	cursor: pointer;
+    outline: 0;
+    cursor: pointer;
 }
 
 .article h3 a[data-spoiler='true']:after {
-	content: "(" attr(class) ")";
-	color: #999;
-	font-size: 12px;
-	vertical-align: top;
+    content: "(" attr(class) ")";
+    color: #999;
+    font-size: 12px;
+    vertical-align: top;
 }
 
 .summary img {
-	border-radius: 3px;
-	display: block;
-	height: auto;
-	margin-bottom: 15px;
-	margin-left: 1px;
-	margin-right: 15px;
-	max-width: 100%;
+    border-radius: 3px;
+    display: block;
+    height: auto;
+    margin-bottom: 15px;
+    margin-left: 1px;
+    margin-right: 15px;
+    max-width: 100%;
 }
 
 .like, .dislike {
-	cursor: pointer;
-	display: inline-block;
-	height: 32px;
-	opacity: 0.4;
-	padding: 0px;
-	width: 32px;
+    cursor: pointer;
+    display: inline-block;
+    height: 32px;
+    opacity: 0.4;
+    padding: 0px;
+    width: 32px;
 }
 
 .like:hover {
-	opacity: 0.7;
+    opacity: 0.7;
 }
 
 .dislike:hover {
-	opacity: 0.7;
+    opacity: 0.7;
 }
 
 .liked, .disliked, .liked:hover, .disliked:hover {
-	opacity: 1;
+    opacity: 1;
 }
 
 pre, code {
-	background-color: #F7F7F7;
-	border: 1px solid #DDD;
-	border-radius: 5px;
-	font-family: "Courier New";
-	padding: 5px;
-	white-space: pre-wrap;
-	white-space: -moz-pre-wrap;
-	white-space: -o-pre-wrap;
-	white-space: -pre-wrap;
-	word-wrap: break-word;
+    background-color: #F7F7F7;
+    border: 1px solid #DDD;
+    border-radius: 5px;
+    font-family: "Courier New";
+    padding: 5px;
+    white-space: pre-wrap;
+    white-space: -moz-pre-wrap;
+    white-space: -o-pre-wrap;
+    white-space: -pre-wrap;
+    word-wrap: break-word;
 }
 
 pre code {
-	display: block;
-	border: 0px;
+    display: block;
+    border: 0px;
 }
 
 .error {
-	color: red;
-	font-size: 18px;
-	font-weight: bold;
+    color: red;
+    font-size: 18px;
+    font-weight: bold;
 }
 
 .textarea {
-	border: 1px solid rgb(170, 178, 189);
-	border-radius: 5px;
+    border: 1px solid rgb(170, 178, 189);
+    border-radius: 5px;
     box-sizing: border-box;
     color: inherit;
-	display: block;
-	font-family: sans-serif;
-	min-height: 180px;
-	max-width: 700px;
+    display: block;
+    font-family: sans-serif;
+    min-height: 180px;
+    max-width: 700px;
     outline: 0;
-	padding: 4px;
-	width: 100%;
+    padding: 4px;
+    width: 100%;
 }
 
 .margin-bottom {
-	margin-bottom: 15px !important;
+    margin-bottom: 15px !important;
 }
 
 .margin-bottom:last-child {
-	margin-bottom: inherit;
+    margin-bottom: inherit;
 }
 
 input[type=checkbox] {
-	vertical-align: bottom;
+    vertical-align: bottom;
 }
 
 .input {
-	border: 1px solid #AAB2BD;
-	border-radius: 5px;
+    border: 1px solid #AAB2BD;
+    border-radius: 5px;
     box-sizing: border-box;
     color: inherit;
-	display: block;
-	font-size: 14px;
-	height: 23px;
-	max-width: 700px;
-	width: 100%;
-	outline: 0;
-	padding-bottom: 1px;
-	padding-left: 4px;
-	padding-right: 4px;
-	padding-top: 1px;
+    display: block;
+    font-size: 14px;
+    height: 23px;
+    max-width: 700px;
+    width: 100%;
+    outline: 0;
+    padding-bottom: 1px;
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-top: 1px;
 }
 
 .triangle-spoiler-data {
-	display: none;
-	margin-left: 18px;
+    display: none;
+    margin-left: 18px;
 }
 
 .triangle-spoiler {
-	cursor: pointer;
-	display: inline-block;
-	font-size: 18px;
-	font-weight: bold;
-	user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
-	-o-user-select: none;
-	-webkit-user-select: none;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 18px;
+    font-weight: bold;
+    user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    -webkit-user-select: none;
 }
 
 .delete-icon:hover, .undo-icon:hover {
-	opacity: 1;
+    opacity: 1;
 }
 
 .undo-icon {
-	background: url('/static/icons/undo-32.png') no-repeat;
-	background-position: 0px 1px;
+    background: url('/static/icons/undo-32.png') no-repeat;
+    background-position: 0px 1px;
 }
 
 .delete-icon {
-	background: url('/static/icons/remove-icon.png') no-repeat;
-	background-position: 0px 0px;
+    background: url('/static/icons/remove-icon.png') no-repeat;
+    background-position: 0px 0px;
 }
 
 .undo-icon, .delete-icon {
-	background-size: 16px 16px;
-	content: "";
-	cursor: pointer;
-	display: inline-block;
-	height: 16px;
-	width: 16px;
-	opacity: 0.7;
+    background-size: 16px 16px;
+    content: "";
+    cursor: pointer;
+    display: inline-block;
+    height: 16px;
+    width: 16px;
+    opacity: 0.7;
 }
 
 .triangle-spoiler:before {
-	background: url('/static/icons/triangle-down-32.png') no-repeat;
-	background-position: -1px 0px;
-	background-size: 18px 18px;
-	content: "";
-	display: block;
-	float: left;
-	height: 18px;
-	transform: rotate(-90deg);
-	-webkit-transform: rotate(-90deg);
-	-ms-transform: rotate(-90deg);
-	-o-transform: rotate(-90deg);
-	-moz-transform: rotate(-90deg);
-	transition: transform 0.15s;
-	-moz-transition: transform 0.15s;
-	-webkit-transition: transform 0.15s;
-	-o-transition: transform 0.15s;
-	-ms-transition: transform 0.15s;
-	width: 18px;
+    background: url('/static/icons/triangle-down-32.png') no-repeat;
+    background-position: -1px 0px;
+    background-size: 18px 18px;
+    content: "";
+    display: block;
+    float: left;
+    height: 18px;
+    transform: rotate(-90deg);
+    -webkit-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+    -o-transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+    transition: transform 0.15s;
+    -moz-transition: transform 0.15s;
+    -webkit-transition: transform 0.15s;
+    -o-transition: transform 0.15s;
+    -ms-transition: transform 0.15s;
+    width: 18px;
 }
 
 .triangle-spoiler[data-opened=true]:before {
-	background-position: -1px 3px;
-	transform: rotate(-0deg);
-	-moz-transform: rotate(-0deg);
-	-webkit-transform: rotate(-0deg);
-	-o-transform: rotate(-0deg);
-	-ms-transform: rotate(-0deg);
+    background-position: -1px 3px;
+    transform: rotate(-0deg);
+    -moz-transform: rotate(-0deg);
+    -webkit-transform: rotate(-0deg);
+    -o-transform: rotate(-0deg);
+    -ms-transform: rotate(-0deg);
 }
 
 .error-block {
