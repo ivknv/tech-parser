@@ -1,11 +1,11 @@
 <%inherit file="base.html" />
 <%block name="title">Configuration editor</%block>
 <%block name="content">
-	<%def name="SubmitButton(type)">
+	<%def name="SubmitButton(type, text='Save')">
 		<input type="hidden" name="type" value="${type}" />
-		<button class="submit-button">Save</button>
+		<button type="button" class="submit-button" onclick="AJAXSubmitForm('${type}'); return false;">${text}</button>
 	</%def>
-	<form method="POST" action="/update/">
+	<form method="POST" action="/update/" id="parsers_form">
 		<h2 id="parsers">Parsers</h2>
 		% for k,v in sorted(config.sites_to_parse.items()):
 			<%
@@ -13,7 +13,7 @@
 			%>
 			<div class="parser margin-bottom">
 				<div class="triangle-spoiler">${k}</div>
-				<div class="triangle-spoiler-data">
+				<div class="triangle-spoiler-data" data-name="parser_${Hash}">
 					<div class="margin-bottom">
 						<input type="checkbox" name="parser_${Hash}"
 							   value="on"
@@ -32,7 +32,7 @@
 		${SubmitButton('parsers')}
 	</form>
 	
-	<form method="POST" action="/update/">
+	<form method="POST" action="/update/" id="rss_feeds_form">
 		<h2 id="rss_feeds">RSS Feeds</h2>
 		% for k,v in sorted(config.rss_feeds.items()):
 			<%
@@ -43,7 +43,7 @@
 					   autocomplete="off" />
 				<div class="triangle-spoiler">${k}</div>
 				<div class="delete-icon"></div>
-				<div class="triangle-spoiler-data">
+				<div class="triangle-spoiler-data" data-name="rss_feed_${Hash}">
 					<div class="margin-bottom">
 						<input type="checkbox" name="enabled_${Hash}"
 							   value="1"
@@ -91,7 +91,7 @@
 				   autocomplete="off" />
 			<div class="triangle-spoiler" data-opened="true">New feed</div>
 			<div class="delete-icon"></div>
-			<div class="triangle-spoiler-data" style="display: block;">
+			<div class="triangle-spoiler-data" style="display: block;" data-name="rss_feed_new_feed">
 				<div class="margin-bottom">
 					<input type="checkbox" name="new_feed_enabled" checked=""
 						   value="1"
@@ -130,7 +130,7 @@
 			</div>
 			<div class="margin-bottom"></div>
 			<div class="margin-bottom">
-				<button type="submit" class="submit-button">Save new feed</button>
+				${SubmitButton('rss_feeds', 'Save new feed')}
 			</div>
 		</div>
 		
@@ -141,43 +141,48 @@
 		</div>
 	</form>
 	
-	<form method="POST" action="/update/">
+	<form method="POST" action="/update/" id="filters_form">
 		<h2 id="filters">Filters</h2>
-		<div class="margin-bottom">
+		<div class="margin-bottom" data-name="filters">
 			<textarea name="t_filters" class="textarea" autocomplete='off'>${config.filters}</textarea>
 		</div>
 		
 		${SubmitButton('filters')}
 	</form>
 	
-	<form method="POST" action="/update/">
+	<form method="POST" action="/update/" id="interesting_words_form">
 		<h2 id="interesting_words">Interesting words</h2>
-		<div class="margin-bottom">
+		<div class="margin-bottom" data-name="interesting_words">
 			<textarea name="t_interesting_words" class="textarea" autocomplete='off'>${config.interesting_words}</textarea>
 		</div>
 		
 		${SubmitButton('interesting_words')}
 	</form>
 	
-	<form method="POST" action="/update/">
+	<form method="POST" action="/update/" id="boring_words_form">
 		<h2 id="boring_words">Boring words</h2>
-		<div class="margin-bottom">
+		<div class="margin-bottom" data-name="boring_words">
 			<textarea name="t_boring_words" class="textarea" autocomplete='off'>${config.boring_words}</textarea>
 		</div>
 		
 		${SubmitButton('boring_words')}
 	</form>
 	
-	<form method="POST" action="/update/">
+	<form method="POST" action="/update/" id="variables_form">
 		<h2 id="variables">Variables</h2>
-		<div class="margin-bottom">
+		<div class="margin-bottom" data-name="update_interval">
 			<label for="v_update_interval">Update interval in seconds:</label>
 			<input type="number" min="0" step="10"
 				   name="v_update_interval" class="input"
 				   value="${config.update_interval}"
 				   autocomplete='off' />
 		</div>
-		<div class="margin-bottom">
+		<div class="margin-bottom" data-name="db">
+			% for error in errors.get('db', []):
+			    <div class="error">
+					${error}
+				</div>
+			% endfor
 			<label for="v_db">Database type:</label>
 			<div>
 				<label for="v_db_sqlite">
@@ -201,13 +206,13 @@
 				</label>
 			</div>
 		</div>
-		<div class="margin-bottom">
+		<div class="margin-bottom" data-name="db_path_variable">
 			<label for="v_db_path_var">Database path variable:</label>
 			<input type="text" name="v_db_path_var" class="input"
 				   value="${config.db_path_variable}"
 				   autocomplete='off' />
 		</div>
-		<div class="margin-bottom">
+		<div class="margin-bottom" data-name="db_path">
 			<label for="v_db_path">Database path:</label>
 			<input type="text" name="v_db_path" class="input"
 				   % if not config.db_path_variable:
@@ -218,34 +223,49 @@
 				   % endif
 				   autocomplete='off' />
 		</div>
-		<div class="margin-bottom">
+		<div class="margin-bottom" data-name="host">
 			<label for="v_host">Host:</label>
 			<input type="text" name="v_host" class="input"
 				   value="${config.host}"
 				   autocomplete='off' />
 		</div>
-		<div class="margin-bottom">
+		<div class="margin-bottom" data-name="port">
+			% for error in errors.get('db', []):
+			    <div class="error">
+					${error}
+				</div>
+			% endfor
 			<label for="v_port">Port:</label>
 			<input type="number" min="0" step="1"
 				   name="v_port" class="input"
 				   value="${config.port}"
 				   autocomplete='off' />
 		</div>
-		<div class="margin-bottom">
+		<div class="margin-bottom" data-name="num_threads">
+			% for error in errors.get('num_threads', []):
+			    <div class="error">
+					${error}
+				</div>
+			% endfor
 			<label for="v_num_threads">Number of threads (for parsing articles):</label>
 			<input type="number" min="1" step="1" max="10"
 				   name="v_num_threads" class="input"
 				   value="${config.num_threads}"
 				   autocomplete='off' />
 		</div>
-		<div class="margin-bottom">
+		<div class="margin-bottom" data-name="server">
+			% for error in errors.get('server', []):
+			    <div class="error">
+					${error}
+				</div>
+			% endfor
 			<label for="v_server">Server:</label>
 			<input type="text"
 				   name="v_server" class="input"
 				   value="${config.server}"
 				   autocomplete='off' />
 		</div>
-		<div class="margin-bottom">
+		<div class="margin-bottom" data-name="save_articles">
 			<label for="v_save_articles">
 				<input type="checkbox" name="v_save_articles"
 					   % if config.save_articles:
@@ -255,24 +275,24 @@
 				Save articles
 			</label>
 		</div>
-		<div class="margin-bottom">
+		<div class="margin-bottom" data-name="archive_db_path_variable">
 			<label for="v_archive_db_path_var">Archive database path variable:</label>
 			<input type="text" name="v_archive_db_path_var" class="input"
 				   value="${config.archive_db_path_variable}"
 				   autocomplete='off' />
 		</div>
-		<div class="margin-bottom">
-			<label for="v_archive_db_path">Database path:</label>
+		<div class="margin-bottom" data-name="archive_db_path">
+			<label for="v_archive_db_path">Archive database path:</label>
 			<input type="text" name="v_archive_db_path" class="input"
 				   % if not config.archive_db_path_variable:
-				   value="${config.archive_db_path}"
+				       value="${config.archive_db_path}"
 				   placeholder="protocol://user:password@host:port/dbname"
 				   % else:
-				   placeholder="$${config.archive_db_path_variable}, not needed"
+                       placeholder="$${config.archive_db_path_variable}, not needed"
 				   % endif
 				   autocomplete='off' />
 		</div>
-		<div class="margin-bottom">
+		<div class="margin-bottom" data-name="data_format">
 			<label for="v_data_format">Data format:</label>
 			<div>
 				<label for="v_data_format_json">
@@ -296,13 +316,13 @@
 				</label>
 			</div>
 		</div>
-		<div class="margin-bottom">
+		<div class="margin-bottom" data-name="password_variable">
 			<label for="v_password_var">Password variable:</label>
 			<input type="text" name="v_password_var" class="input"
 				   value="${config.password_variable}"
 				   autocomplete='off' />
 		</div>
-		<div class="margin-bottom">
+		<div class="margin-bottom" data-name="password">
 			<label for="v_password">Password:</label>
 			<input type="password" name="v_password" class="input"
 				   % if not config.password_variable:
@@ -314,7 +334,7 @@
 				   autocomplete='off' />
 		</div>
 		<div class="margin-bottom">
-			<label for="v_enable_pocket">
+			<label for="v_enable_pocket" data-name="enable_pocket">
 				<input type="checkbox" name="v_enable_pocket"
 					   % if config.enable_pocket:
 						   checked=""
