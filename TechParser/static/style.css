@@ -32,6 +32,18 @@
 	max-width: 1200px;
 }
 
+@media screen and (max-width: 1600px) {
+    #main {
+        max-width: 1000px;
+    }
+}
+
+@media screen and (max-width: 1200px) {
+    #main {
+        max-width: 800px;
+    }
+}
+
 #pagination {
 	font-size: 20px;
 	margin-left: 20px;
@@ -104,6 +116,7 @@ a {
 	font-size: 19px;
 	font-weight: bold;
 	margin: 20px;
+    margin-left: 0px;
 	max-width: 800px;
 }
 
@@ -324,15 +337,18 @@ pre code {
 .error {
 	color: red;
 	font-size: 18px;
+	font-weight: bold;
 }
 
 .textarea {
 	border: 1px solid rgb(170, 178, 189);
 	border-radius: 5px;
+    color: inherit;
 	display: block;
 	font-family: sans-serif;
 	min-height: 180px;
 	max-width: 700px;
+    outline: 0;
 	padding: 4px;
 	width: 100%;
 }
@@ -352,6 +368,7 @@ input[type=checkbox] {
 .input {
 	border: 1px solid #AAB2BD;
 	border-radius: 5px;
+    color: inherit;
 	display: block;
 	font-size: 14px;
 	height: 23px;
@@ -433,4 +450,23 @@ input[type=checkbox] {
 	-webkit-transform: rotate(-0deg);
 	-o-transform: rotate(-0deg);
 	-ms-transform: rotate(-0deg);
+}
+
+.error-block {
+    background-color: #F9F2F4;
+    margin: 3px;
+    padding: 7px;
+    border-radius: 6px;
+    border: 2px solid #E8E1E3;
+    max-width: 690px;
+}
+
+[data-name], .triangle-spoiler {
+    transition: color 0.3s;
+}
+
+.error a {
+    color: inherit;
+    font-style: bold;
+    text-decoration: underline;
 }

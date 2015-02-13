@@ -7,6 +7,7 @@ import json
 import datetime
 
 from mako.lookup import TemplateLookup
+import bottle
 from bottle import route, run, static_file, request, redirect, response
 from collections import OrderedDict
 
@@ -28,6 +29,9 @@ liked = []
 disliked = []
 liked_links = []
 disliked_links = []
+errors = {}
+
+CSS_NAME_REGEX = re.compile(r'-?[_a-zA-Z]+[_a-zA-Z0-9-]*$')
 
 def encoded_dict(in_dict):
     out_dict = {}
@@ -78,6 +82,65 @@ def login_required(func):
             return func(*args, **kwargs)
         redirect('/login/?return_to={0}'.format(encode_url(request.path)))
     return newfunc
+
+class Validator(object):
+    def __init__(self):
+        self.errors = {}
+    
+    def add_error(self, location, msg):
+        """Add error to error list"""
+        
+        self.errors.setdefault(location, [])
+        self.errors[location].append(msg)
+    
+    def validate(self, **data):
+        """Validate configuration"""
+        
+        if data['type'] == 'variables':
+            # Validate variables
+            try:
+                update_interval = int(data['update_interval'])
+                if update_interval <= 0:
+                    self.add_error('update_interval', 'update_interval should be bigger than 0')
+            except ValueError:
+                self.add_error('update_interval', 'Update interval should be a number')
+            if data['db'] not in {'sqlite', 'postgresql'}:
+                self.add_error('db', 'Database should be either sqlite or postgresql')
+            try:
+                num_threads = int(data['num_threads'])
+                if num_threads < 1:
+                    self.add_error('num_threads', 'Number of threads should be more than 0')
+                if num_threads > 10:
+                    self.add_error('num_threads', 'Maximum number of threads is 10')
+            except ValueError:
+                self.add_error('num_threads', 'Number of threads should be an integer between 1 and 10')
+            
+            if data['server'] not in bottle.server_names:
+                servers = map(lambda x: '<a href="javascript:void(0)" onclick="$(\'input[name=v_server]\').val($(this).text())">{0}</a>'.format(x), bottle.server_names)
+                self.add_error('server', 'Server must be one of these: {0}'.format(', '.join(servers)))
+            try:
+                port = int(data['port'])
+                if port > 65535 or port < 1:
+                    self.add_error('port', 'Port should be an integer between 1 and 65535')
+            except ValueError:
+                self.add_error('port', 'Port should be an integer')
+        elif data['type'] == 'rss_feeds':
+            feed = data['rss_feed']
+            feed_name = data['rss_feed_name']
+            h = feed['hash']
+            location = 'rss_feed_{0}'.format(h)
+            if not len(feed_name):
+                self.add_error(location, 'Feed name cannot be empty')
+            if not len(feed['short-name']):
+                self.add_error(location, 'Feed short name cannot be empty')
+            if not feed['url'].startswith('http://') and not feed['url'].startswith('https://'):
+                self.add_error(location, 'Invalid URL')
+            if not feed['icon'].startswith('http://') and not feed['icon'].startswith('https://'):
+                 self.add_error(location, 'Invalid icon URL')
+            if not CSS_NAME_REGEX.match(feed['short-name']):
+                self.add_error(location, 'Short name must be a valid CSS name')
+
+        return self.errors
 
 def filter_articles(articles):
     """Filter articles"""
@@ -340,6 +403,8 @@ def logout():
 @route('/edit/')
 @login_required
 def edit_config():
+    global errors
+    
     template = mylookup.get_template('edit.html')
     config = get_conf.Config.from_module(get_conf.config)
     config.interesting_words = json.dumps(config.interesting_words, ensure_ascii=False)
@@ -347,42 +412,78 @@ def edit_config():
     config.filters = json.dumps(config.filters, ensure_ascii=False)
     for parser in config.sites_to_parse.values():
         parser['kwargs'] = json.dumps(parser['kwargs'])
+    dup_errors = errors
+    errors = {}
     
-    return template.render(config=config,
-        page='edit', q='')
+    return template.render(config=config, page='edit', q='',
+                           errors=dup_errors)
+
+def asserte(cond, msg):
+    if not cond:
+        errors[msg[0]] = errors.get(msg[0], []) + [msg[1]]
+
+def try_asserte(value, func, msg):
+    try:
+        return func(value)
+    except:
+        errors[msg[0]] = errors.get(msg[0], []) + [msg[1]]
 
 @route('/update/', method='POST')
 @login_required
 def update_config():
     type_ = request.POST.getunicode('type')
+    validator = Validator()
+    response = {}
     
     if type_ == 'variables':
-        update_interval = request.POST.getunicode('v_update_interval', get_conf.config.update_interval)
-        db = request.POST.getunicode('v_db', get_conf.config.db)
-        db_path_variable = request.POST.getunicode('v_db_path_var')
-        if not db_path_variable:
-            db_path = request.POST.getunicode('v_db_path', get_conf.config.db_path)
-        else:
-            db_path = None
-        host = request.POST.getunicode('v_host', get_conf.config.host)
-        port = request.POST.getunicode('v_port', get_conf.config.port)
-        num_threads = request.POST.getunicode('v_num_threads', get_conf.config.num_threads)
-        server = request.POST.getunicode('v_server', get_conf.config.server)
-        save_articles = request.POST.getunicode('v_save_articles', False) == 'on'
-        archive_db_path_variable = request.POST.getunicode('v_archive_db_path_var')
-        if not archive_db_path_variable:
-            archive_db_path = request.POST.getunicode('v_archive_db_path', get_conf.config.archive_db_path)
-        else:
-            arhcive_db_path = None
-        data_format = request.POST.getunicode('v_data_format', get_conf.config.data_format)
-        password_variable = request.POST.getunicode('v_password_var')
-        if not password_variable:
-            password = request.POST.getunicode('v_password', get_conf.config.password)
-        else:
-            password = None
-        enable_pocket = request.POST.getunicode('v_enable_pocket', False) == 'on'
+        data = {}
+        data['update_interval'] = request.POST.getunicode('v_update_interval', get_conf.config.update_interval)
         
-        redirect_path = '/edit#variables'
+        data['db'] = request.POST.getunicode('v_db', get_conf.config.db)
+        data['db_path_variable'] = request.POST.getunicode('v_db_path_var')
+        data['db_path'] = request.POST.getunicode('v_db_path', get_conf.config.db_path)
+        
+        data['host'] = request.POST.getunicode('v_host', get_conf.config.host)
+        data['port'] = request.POST.getunicode('v_port', get_conf.config.port)
+        
+        data['num_threads'] = request.POST.getunicode('v_num_threads', get_conf.config.num_threads)
+        
+        data['server'] = request.POST.getunicode('v_server', get_conf.config.server)
+        
+        data['save_articles'] = request.POST.getunicode('v_save_articles', False) == 'on'
+        
+        data['archive_db_path_variable'] = request.POST.getunicode('v_archive_db_path_var')
+        data['archive_db_path'] = request.POST.getunicode('v_archive_db_path', get_conf.config.archive_db_path)
+        
+        data['data_format'] = request.POST.getunicode('v_data_format', get_conf.config.data_format)
+        
+        data['password_variable'] = request.POST.getunicode('v_password_var')
+        data['password'] = request.POST.getunicode('v_password', get_conf.config.password)
+        
+        data['enable_pocket'] = request.POST.getunicode('v_enable_pocket', False) == 'on'
+        data['type'] = type_
+        
+        validator.validate(**data)
+        
+        if not validator.errors.get('update_interval'):
+            get_conf.config.update_interval = int(data['update_interval'])
+        if not validator.errors.get('db'):
+            get_conf.config.db = data['db']
+        get_conf.config.db_path_variable = data['db_path_variable']
+        get_conf.config.db_path = data['db_path']
+        get_conf.config.host = data['host']
+        if not validator.errors.get('port'):
+            get_conf.config.port = data['port']
+        if not validator.errors.get('num_threads'):
+            get_conf.config.num_threads = int(data['num_threads'])
+        if not validator.errors.get('server'):
+            get_conf.config.server = data['server']
+        get_conf.config.archive_db_path_variable = data['archive_db_path_variable']
+        get_conf.config.archive_db_path = data['archive_db_path']
+        get_conf.config.data_format = data['data_format']
+        get_conf.config.password_variable = data['password_variable']
+        get_conf.config.password = data['password']
+        get_conf.config.enable_pocket = data['enable_pocket'] 
     elif type_ == 'parsers':
         for parser in get_conf.config.sites_to_parse.values():
             h = parser['hash']
@@ -390,65 +491,105 @@ def update_config():
             
             if enabled:
                 kwargs = request.POST.getunicode('kwargs_{0}'.format(h), parser['kwargs'])
-                parser['kwargs'] = json.loads(kwargs)
+                try:
+                    parser['kwargs'] = json.loads(kwargs)
+                except ValueError:
+                    validator.add_error('parser_{0}'.format(h), 'Parser arguments should be in form of JSON')
                 parser['enabled'] = True
             else:
                 parser['enabled'] = False
-        redirect_path = '/edit#parsers'
     elif type_ == 'rss_feeds':
-        to_delete = []
+        response['deleted'], response['modified'] = [], []
         for feed_name, feed in get_conf.config.rss_feeds.items():
             h = feed['hash']
+            data = {'rss_feed': {'hash': h}, 'type': type_}
             if request.POST.getunicode('is_deleted_{0}'.format(h), '0') == '1':
-                to_delete.append(feed_name)
+                response['deleted'].append((feed_name, h))
                 continue
-            name = request.POST.getunicode('name_{0}'.format(h), feed_name)
-            short_name = request.POST.getunicode('sn_{0}'.format(h), feed['short-name'])
-            url = request.POST.getunicode('url_{0}'.format(h), feed['url'])
-            icon_url = request.POST.getunicode('icon_{0}'.format(h), feed['icon'])
-            title_color = request.POST.getunicode('color_{0}'.format(h), feed['color'])
-            enabled = request.POST.getunicode('enabled_{0}'.format(h), '0') == '1'
+            data['rss_feed_name'] = request.POST.getunicode('name_{0}'.format(h), feed_name)
+            data['rss_feed']['short-name'] = request.POST.getunicode('sn_{0}'.format(h), feed['short-name'])
+            data['rss_feed']['url'] = request.POST.getunicode('url_{0}'.format(h), feed['url'])
+            data['rss_feed']['icon'] = request.POST.getunicode('icon_{0}'.format(h), feed['icon'])
+            data['rss_feed']['color'] = request.POST.getunicode('color_{0}'.format(h), feed['color'])
+            data['rss_feed']['enabled'] = request.POST.getunicode('enabled_{0}'.format(h), '0') == '1'
+            data['rss_feed']['hash'] = hash(data['rss_feed_name'])
             
-            feed['short-name'] = short_name
-            feed['url'] = url
-            feed['icon'] = icon_url
-            feed['color'] = title_color
-            feed['hash'] = hash(name)
-            feed['enabled'] = enabled
-            get_conf.config.rss_feeds[name] = feed
-        for k in to_delete:
-            get_conf.config.rss_feeds.pop(k)
+            validator.validate(**data)
+            
+            if 'rss_feed_{0}'.format(h) not in validator.errors:
+                rss_feed = data['rss_feed']
+                short_name = rss_feed['short-name']
+                name = data['rss_feed_name']
+                url = rss_feed['url']
+                icon = rss_feed['icon']
+                color = rss_feed['color']
+                enabled = rss_feed['enabled']
+                new_hash = rss_feed['hash']
+                if short_name != feed['short-name']:
+                    response['modified'].append(('sn_{0}'.format(h), short_name))
+                if name != feed_name:
+                    response['modified'].append(('name_{0}'.format(h), name))
+                if url != feed['url']:
+                    response['modified'].append(('url_{0}'.format(h), url))
+                if icon != feed['icon']:
+                    response['modified'].append(('icon_{0}'.format(h), icon))
+                if color != feed['color']:
+                    response['modified'].append(('color_{0}'.format(h), color))
+                if enabled != feed['enabled']:
+                    response['modified'].append(('enabled_{0}'.format(h), enabled))
+                if new_hash != h:
+                    response['modified'].append(('hash_{0}'.format(h), new_hash))
+                feed['short-name'] = short_name
+                feed['url'] = url
+                feed['icon'] = icon
+                feed['color'] = color
+                feed['enabled'] = enabled
+                feed['hash'] = new_hash
+                get_conf.config.rss_feeds[data['rss_feed_name']] = feed
+                if data['rss_feed_name'] != feed_name:
+                    get_conf.config.rss_feeds.pop(feed_name)
+        for k in response['deleted']:
+            get_conf.config.rss_feeds.pop(k[0])
         
-        if request.POST.getunicode('new_feed', '1') == '1':
-            new_feed_name = request.POST.getunicode('new_feed_name')
-            new_feed_short_name = request.POST.getunicode('new_feed_sn')
-            new_feed_url = request.POST.getunicode('new_feed_url')
-            new_feed_icon = request.POST.getunicode('new_feed_icon')
-            new_feed_color = request.POST.getunicode('new_feed_color')
-            new_feed_enabled = request.POST.getunicode('new_feed_enabled', '0') == '1'
-            if new_feed_name and new_feed_short_name and new_feed_url and new_feed_icon and new_feed_color:
-                get_conf.config.rss_feeds[new_feed_name] = {'short-name': new_feed_short_name,
-                                                            'url': new_feed_url,
-                                                            'icon': new_feed_icon,
-                                                            'color': new_feed_color,
-                                                            'enabled': new_feed_enabled,
-                                                            'hash': hash(new_feed_name)}
-        
-        redirect_path = '/edit#rss_feeds'
+        if request.POST.getunicode('new_feed', '1') == '0':
+            data = {'rss_feed': {'hash': 'new_feed'}, 'type': 'rss_feeds'}
+            data['rss_feed_name'] = request.POST.getunicode('new_feed_name')
+            if data['rss_feed_name'] in get_conf.config.rss_feeds:
+                validator.add_error('rss_feed_new_feed', 'RSS feed with such name already exists')
+            data['rss_feed']['short-name'] = request.POST.getunicode('new_feed_sn')
+            data['rss_feed']['url'] = request.POST.getunicode('new_feed_url')
+            data['rss_feed']['icon'] = request.POST.getunicode('new_feed_icon')
+            data['rss_feed']['color'] = request.POST.getunicode('new_feed_color')
+            data['rss_feed']['enabled'] = request.POST.getunicode('new_feed_enabled', '0') == '1'
+            validator.validate(**data)
+            data['rss_feed']['hash'] = hash(data['rss_feed_name'])
+            if 'rss_feed_new_feed' not in validator.errors:
+                get_conf.config.rss_feeds[data['rss_feed_name']] = {'short-name': data['rss_feed']['short-name'],
+                                                            'url': data['rss_feed']['url'],
+                                                            'icon': data['rss_feed']['icon'],
+                                                            'color': data['rss_feed']['color'],
+                                                            'enabled': data['rss_feed']['enabled'],
+                                                            'hash': data['rss_feed']['hash']}
+                response['new_feed'] = data['rss_feed']
+                response['new_feed']['name'] = data['rss_feed_name']
     elif type_ == 'interesting_words':
-        iw = json.loads(request.POST.getunicode('t_interesting_words', '[]'), encoding='utf-8')
-        get_conf.config.interesting_words = iw
-        redirect_path = '/edit#interesting_words'
+        try:
+            get_conf.config.interesting_words = json.loads(request.POST.getunicode('t_interesting_words', '[]'), encoding='utf-8')
+        except ValueError:
+            validator.add_error('interesting_words', 'interesting_words should be a JSON object')
     elif type_ == 'boring_words':
-        bw = json.loads(request.POST.getunicode('t_boring_words', '[]'), encoding='utf-8')
-        get_conf.config.boring_words = bw
-        redirect_path = '/edit#boring_words'
+        try:
+            get_conf.config.boring_words = json.loads(request.POST.getunicode('t_boring_words', '[]'), encoding='utf-8')
+        except ValueError:
+            validator.add_error('boring_words', 'boring_words should be a JSON object')
+
     elif type_ == 'filters':
-        filters = json.loads(request.POST.getunicode('t_filters', '{"All": {"not": [], "or": [], "has": []}}'), encoding='utf-8')
-        get_conf.config.filters = filters
-        redirect_path = '/edit#filters'
-    else:
-        redirect_path = '/edit/'
+        try:
+            get_conf.config.filters = json.loads(request.POST.getunicode('t_filters', '{"All": {"not": [], "or": [], "has": []}}'), encoding='utf-8')
+        except ValueError:
+            validator.add_error('filters', 'filters should be a JSON object')
     
     save.write_config(get_conf.config)
-    redirect(redirect_path)
+    response['errors'] = validator.errors
+    
+    return json.dumps(response)
