@@ -10,7 +10,7 @@ def get_articles():
 	
 	g.go("http://it.toolbox.com")
 	
-	css_path = ".tile .tileContent div .floatleft a"
+	css_path = ".tile .tileContent div:first-child .floatleft:nth-child(2) a"
 	
 	posts = parser.get_articles(g, css_path, css_path, "ittoolbox")
 	
