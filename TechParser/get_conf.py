@@ -166,7 +166,6 @@ def auto_fix_config(conf=None):
     setdefault(conf, 'db', 'sqlite')
     setdefault(conf, 'server', 'auto')
     setdefault(conf, 'update_interval', 1800)
-    setdefault(conf, 'filters', {'All': {'has': [], 'or': [], 'not': []}})
     setdefault(conf, 'archive_db_path_variable', '')
     setdefault(conf, 'archive_db_path',
                os.environ.get(conf.archive_db_path_variable, 'default'))

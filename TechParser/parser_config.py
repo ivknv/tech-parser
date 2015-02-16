@@ -220,14 +220,6 @@ rss_feeds = {
 	#}
 }
 
-filters = {
-	"All": {
-		"has": [],
-		"or": [],
-		"not": []
-	}
-}
-
 # Words that you're interested in
 interesting_words = []
 
@@ -273,9 +265,9 @@ archive_db_path_variable = 'ARCHIVE_DATABASE_URL'
 archive_db_path = os.environ.get(archive_db_path_variable, 'default')
 
 # Format to be used when dumping articles.
-# Can be 'pickle' or 'json'.
-# JSON doesn't have problems with compatibility between 2.x and 3.x versions of Python so it's recommended.
-# Pickle is default for compatibility with previous versions of TechParser
+# Can be 'pickle', 'json' or 'db'.
+# It's recommended to set data_format to 'db' (database) because it's a lot faster.
+# Pickle is set by default for compatibility with previous versions of TechParser
 data_format = 'pickle'
 
 # Environment variable to keep your password

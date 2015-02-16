@@ -167,7 +167,7 @@ def add_article(addr):
     path = os.path.join(get_conf.logdir, 'articles_dumped')
     
     try:
-        articles = save.load_from_file(path)
+        articles = save.load_from_somewhere(path)
     except IOError:
         log('WARNING: articles_dumped is missing!')
         return
@@ -181,7 +181,7 @@ def add_article_to_blacklist(addr):
     path = os.path.join(get_conf.logdir, 'articles_dumped')
     
     try:
-        articles = save.load_from_file(path)
+        articles = save.load_from_somewhere(path)
     except IOError:
         log('WARNING: articles_dumped is missing!')
         return
@@ -189,6 +189,6 @@ def add_article_to_blacklist(addr):
     try:
         article = articles[addr]
         add_to_blacklist(article)
-        save.dump_to_file(articles, path)
+        save.dump_somewhere(articles, path)
     except KeyError:
         print('KeyError({0})'.format(addr))

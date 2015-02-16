@@ -20,7 +20,7 @@
 							   % if v['enabled']:
 						           checked=""
 							   % endif
-							   autocomplete='off' />
+							   autocomplete="off" />
 						<label for="parser_${Hash}">Enabled</label>
 					</div>
 					<label for="kwargs_${Hash}">Arguments:</label>
@@ -141,19 +141,10 @@
 		</div>
 	</form>
 	
-	<form method="POST" action="/update/" id="filters_form">
-		<h2 id="filters">Filters</h2>
-		<div class="margin-bottom" data-name="filters">
-			<textarea name="t_filters" class="textarea" autocomplete='off'>${config.filters}</textarea>
-		</div>
-		
-		${SubmitButton('filters')}
-	</form>
-	
 	<form method="POST" action="/update/" id="interesting_words_form">
 		<h2 id="interesting_words">Interesting words</h2>
 		<div class="margin-bottom" data-name="interesting_words">
-			<textarea name="t_interesting_words" class="textarea" autocomplete='off'>${config.interesting_words}</textarea>
+			<textarea name="t_interesting_words" class="textarea" autocomplete="off">${config.interesting_words}</textarea>
 		</div>
 		
 		${SubmitButton('interesting_words')}
@@ -162,7 +153,7 @@
 	<form method="POST" action="/update/" id="boring_words_form">
 		<h2 id="boring_words">Boring words</h2>
 		<div class="margin-bottom" data-name="boring_words">
-			<textarea name="t_boring_words" class="textarea" autocomplete='off'>${config.boring_words}</textarea>
+			<textarea name="t_boring_words" class="textarea" autocomplete="off">${config.boring_words}</textarea>
 		</div>
 		
 		${SubmitButton('boring_words')}
@@ -175,7 +166,7 @@
 			<input type="number" min="0" step="10"
 				   name="v_update_interval" class="input"
 				   value="${config.update_interval}"
-				   autocomplete='off' />
+				   autocomplete="off" />
 		</div>
 		<div class="margin-bottom" data-name="db">
 			% for error in errors.get('db', []):
@@ -191,7 +182,7 @@
 						   % if config.db == 'sqlite':
 						   	checked=""
 						   % endif
-						   autocomplete='off' />
+						   autocomplete="off" />
 					SQLite
 				</label>
 			</div>
@@ -201,7 +192,7 @@
 						   % if config.db == 'postgresql':
 						   	checked=""
 						   % endif
-						   autocomplete='off' />
+						   autocomplete="off" />
 					PostgreSQL
 				</label>
 			</div>
@@ -210,7 +201,7 @@
 			<label for="v_db_path_var">Database path variable:</label>
 			<input type="text" name="v_db_path_var" class="input"
 				   value="${config.db_path_variable}"
-				   autocomplete='off' />
+				   autocomplete="off" />
 		</div>
 		<div class="margin-bottom" data-name="db_path">
 			<label for="v_db_path">Database path:</label>
@@ -221,13 +212,13 @@
 				   % else:
 					   placeholder="$${config.db_path_variable}, not needed"
 				   % endif
-				   autocomplete='off' />
+				   autocomplete="off" />
 		</div>
 		<div class="margin-bottom" data-name="host">
 			<label for="v_host">Host:</label>
 			<input type="text" name="v_host" class="input"
 				   value="${config.host}"
-				   autocomplete='off' />
+				   autocomplete="off" />
 		</div>
 		<div class="margin-bottom" data-name="port">
 			% for error in errors.get('db', []):
@@ -239,7 +230,7 @@
 			<input type="number" min="0" step="1"
 				   name="v_port" class="input"
 				   value="${config.port}"
-				   autocomplete='off' />
+				   autocomplete="off" />
 		</div>
 		<div class="margin-bottom" data-name="num_threads">
 			% for error in errors.get('num_threads', []):
@@ -251,7 +242,7 @@
 			<input type="number" min="1" step="1" max="10"
 				   name="v_num_threads" class="input"
 				   value="${config.num_threads}"
-				   autocomplete='off' />
+				   autocomplete="off" />
 		</div>
 		<div class="margin-bottom" data-name="server">
 			% for error in errors.get('server', []):
@@ -263,7 +254,7 @@
 			<input type="text"
 				   name="v_server" class="input"
 				   value="${config.server}"
-				   autocomplete='off' />
+				   autocomplete="off" />
 		</div>
 		<div class="margin-bottom" data-name="save_articles">
 			<label for="v_save_articles">
@@ -271,7 +262,7 @@
 					   % if config.save_articles:
 						   checked=""
 					   % endif
-					   autocomplete='off' />
+					   autocomplete="off" />
 				Save articles
 			</label>
 		</div>
@@ -279,7 +270,7 @@
 			<label for="v_archive_db_path_var">Archive database path variable:</label>
 			<input type="text" name="v_archive_db_path_var" class="input"
 				   value="${config.archive_db_path_variable}"
-				   autocomplete='off' />
+				   autocomplete="off" />
 		</div>
 		<div class="margin-bottom" data-name="archive_db_path">
 			<label for="v_archive_db_path">Archive database path:</label>
@@ -290,7 +281,7 @@
 				   % else:
                        placeholder="$${config.archive_db_path_variable}, not needed"
 				   % endif
-				   autocomplete='off' />
+				   autocomplete="off" />
 		</div>
 		<div class="margin-bottom" data-name="data_format">
 			<label for="v_data_format">Data format:</label>
@@ -301,7 +292,7 @@
 						   % if config.data_format == 'json':
 							   checked=""
 						   % endif
-						   autocomplete='off' />
+						   autocomplete="off" />
 					JSON
 				</label>
 			</div>
@@ -311,16 +302,26 @@
 						   % if config.data_format == 'pickle':
 							   checked=""
 						   % endif
-						   autocomplete='off' />
+						   autocomplete="off" />
 					Pickle
 				</label>
 			</div>
+            <div>
+                <label for="v_data_format_db">
+                    <input id="v_data_format_db" type="radio" name="v_data_format" value="db"
+                           % if config.data_format == 'db':
+                               checked=""
+                           % endif
+                           autocomplete="off" />
+                    Database
+                </label>
+            </div>
 		</div>
 		<div class="margin-bottom" data-name="password_variable">
 			<label for="v_password_var">Password variable:</label>
 			<input type="text" name="v_password_var" class="input"
 				   value="${config.password_variable}"
-				   autocomplete='off' />
+				   autocomplete="off" />
 		</div>
 		<div class="margin-bottom" data-name="password">
 			<label for="v_password">Password:</label>
@@ -331,7 +332,7 @@
 				   % else:
 					   placeholder="$${config.password_variable}, not needed"
 				   % endif
-				   autocomplete='off' />
+				   autocomplete="off" />
 		</div>
 		<div class="margin-bottom">
 			<label for="v_enable_pocket" data-name="enable_pocket">
@@ -339,7 +340,7 @@
 					   % if config.enable_pocket:
 						   checked=""
 					   % endif
-					   autocomplete='off' />
+					   autocomplete="off" />
 				Enable Pocket
 			</label>
 		</div>
