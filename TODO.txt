@@ -11,3 +11,7 @@ Things that need to be done:
     Store information in parser modules about arguments they receive
     
     Make writting custom parsers easier
+    
+    Use POST requests to add/remove articles from history/blacklist
+    
+    Use CSRF tokens to validate forms
