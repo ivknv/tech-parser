@@ -9,10 +9,6 @@ from lxml import etree
 
 from TechParser.py2x import unicode_
 
-def setup_grab(grab_object):
-    grab_object.setup(hammer_mode=True,
-        hammer_timeouts=((10, 15), (20, 30), (25, 40)))
-
 def absolutize_link(link, site_url):
     if link.startswith("//"):
         link = "http:" + link
@@ -43,8 +39,11 @@ def parse_article_image(article, site_url=''):
         return b''
     except AttributeError:
         try:
-            img = grab.Grab(article).css_one('img:first-child')
+            g = grab.Grab(bytes(article, 'utf-8'))
+            img = g.doc.tree.cssselect('img:first-child')[0]
         except GrabError:
+            return b''
+        except IndexError:
             return b''
         img.set('class', '')
         img.set('id', '')
@@ -56,10 +55,10 @@ def get_articles(grab_object, title_path, link_path, source, site_url="",
         summary_path=''):
     posts = []
         
-    post_links = grab_object.css_list(link_path)
-    post_titles = grab_object.css_list(title_path)
+    post_links = grab_object.doc.tree.cssselect(link_path)
+    post_titles = grab_object.doc.tree.cssselect(title_path)
     if summary_path:
-        summary = grab_object.css_list(summary_path)
+        summary = grab_object.doc.tree.cssselect(summary_path)
         for i in summary:
             for j in i.cssselect('script') + i.cssselect('style'):
                 j.drop_tree()

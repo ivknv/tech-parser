@@ -6,7 +6,6 @@ from TechParser import parser
 
 def get_articles():
 	g = grab.Grab()
-	parser.setup_grab(g)
 	
 	g.go("http://it.toolbox.com")
 	
