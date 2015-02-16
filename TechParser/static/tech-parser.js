@@ -276,7 +276,7 @@ function parsingTime(interval) {
  */
 function simplePlural(str, n) {
 	var str_n = '' + n;
-	if (!endsWith(str_n, '1') || str_n == '11') {
+	if (!str_n.endsWith('1') || str_n == '11') {
 		str += 's';
 	}
 	return str;
