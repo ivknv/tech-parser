@@ -1,11 +1,13 @@
-Current: Store all the articles inside database instead of file
+Things that were already done:
+    Store all the articles inside database instead of file
 
-Use AJAX everywhere
-
-Automatically find RSS feed URL and icon
-
-Write unit tests
-
-Store information in parser modules about arguments they receive
-
-Make writting custom parsers easier
+Things that need to be done:
+    Current: Use AJAX everywhere
+    
+    Automatically find RSS feed URL and icon
+    
+    Write unit tests
+    
+    Store information in parser modules about arguments they receive
+    
+    Make writting custom parsers easier
