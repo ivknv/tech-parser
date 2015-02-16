@@ -48,7 +48,7 @@ def parse_article_image(article, site_url=''):
         img.set('class', '')
         img.set('id', '')
         img.set('align', '')
-        img.set('src', absolutize_link(img.get('src'), site_url))
+        img.set('src', absolutize_link(img.get('src', ''), site_url))
         return tostring(img).strip()
 
 def get_articles(grab_object, title_path, link_path, source, site_url="",
