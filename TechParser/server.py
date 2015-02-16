@@ -319,7 +319,7 @@ def article_list(page_number=1):
         else:
             requested_page = select_articles_from_page(page_number)
             requested_page = list(map(lambda x: escape_link(x), requested_page.values()))
-            num_pages = int(get_var('num_pages'))
+            num_pages = int(get_var('num_pages', 1))
     else:
         try:
             articles = load_articles()
