@@ -124,6 +124,9 @@ class Validator(object):
                     self.add_error('port', 'Port should be an integer between 1 and 65535')
             except ValueError:
                 self.add_error('port', 'Port should be an integer')
+            
+            if data['data_format'] not in {'json', 'pickle', 'db'}:
+                self.add_error('data_format', "data_format should be 'json', 'pickle' or 'db'")
         elif data['type'] == 'rss_feeds':
             feed = data['rss_feed']
             feed_name = data['rss_feed_name']
@@ -142,49 +145,11 @@ class Validator(object):
 
         return self.errors
 
-def filter_articles(articles):
-    """Filter articles"""
-    
-    config = get_conf.config
-    
-    articles_filtered = OrderedDict()
-    
-    for article in articles.values():
-        passing = True
-        
-        words_len = len(config.filters["All"]["or"])
-        title = article["title"].lower()
-        
-        for word in config.filters["All"]["or"]:
-            if word.lower() in title:
-                passing = True
-                break
-            else:
-                words_len -= 1
-            
-            if words_len == 0:
-                passing = False
-                
-        if passing:
-            for word in config.filters["All"]["not"]:
-                if word.lower() in title:
-                    passing = False
-                    break
-        if passing: 
-            for word in config.filters["All"]["has"]:
-                if word.lower() not in title:
-                    passing = False
-                    break
-        if passing:
-            articles_filtered[article['link']] = article
-    
-    return articles_filtered
-
 def load_articles(filename="articles_dumped"):
     """Load articles from ~/.tech-parser/<filename>"""
     
     try:
-        return save.load_from_file(os.path.join(logdir, filename))
+        return save.load_from_somewhere(os.path.join(logdir, filename))
     except (IOError, pickle.PickleError, TypeError):
         return OrderedDict()
 
@@ -339,29 +304,47 @@ def article_list(page_number=1):
     except ValueError:
         page_number = 1
     
-    try:
-        articles = load_articles()
-    except IOError:
-        dump_articles()
-        articles = load_articles()
-    
-    articles = filter_articles(articles)
-    if q:
-        qs = q.lower().split()
-        articles = filter(lambda x: has_words(qs, x), articles.values())
-        articles = map(lambda x: escape_link(x), articles)
+    if get_conf.config.data_format == 'db':
+        if q:
+            articles = select_all_articles()
+            qs = q.lower().split()
+            articles = filter(lambda x: has_words(qs, x), articles.values())
+            articles = map(lambda x: escape_link(x), articles)
+            articles = split_into_pages(articles, 30)
+            num_pages = len(articles)
+            try:
+                requested_page = articles[page_number-1]
+            except IndexError:
+                requested_page = []
+        else:
+            requested_page = select_articles_from_page(page_number)
+            requested_page = list(map(lambda x: escape_link(x), requested_page.values()))
+            num_pages = int(get_var('num_pages'))
     else:
-        articles = map(lambda x: escape_link(x), articles.values())
-    all_articles = articles
-    articles = split_into_pages(articles, 30)
-    try:
-        requested_page = articles[page_number-1]
-        set_liked(requested_page)
-    except IndexError:
-        requested_page = []
+        try:
+            articles = load_articles()
+        except IOError:
+            dump_articles()
+            articles = load_articles()
+    
+        if q:
+            qs = q.lower().split()
+            articles = filter(lambda x: has_words(qs, x), articles.values())
+            articles = map(lambda x: escape_link(x), articles)
+        else:
+            articles = map(lambda x: escape_link(x), articles.values())
+     
+        articles = split_into_pages(articles, 30)
+        num_pages = len(articles)
+        try:
+            requested_page = articles[page_number-1]
+        except IndexError:
+            requested_page = []
+    
+    set_liked(requested_page)
     
     return main_page.render(articles=requested_page,
-        num_pages=len(articles),
+        num_pages=num_pages,
         page_num=page_number,
         q=q, page='main',
         config=get_conf.config,
@@ -409,7 +392,7 @@ def edit_config():
     config = get_conf.Config.from_module(get_conf.config)
     config.interesting_words = json.dumps(config.interesting_words, ensure_ascii=False)
     config.boring_words = json.dumps(config.boring_words, ensure_ascii=False)
-    config.filters = json.dumps(config.filters, ensure_ascii=False)
+    
     for parser in config.sites_to_parse.values():
         parser['kwargs'] = json.dumps(parser['kwargs'])
     dup_errors = errors
@@ -583,12 +566,6 @@ def update_config():
         except ValueError:
             validator.add_error('boring_words', 'boring_words should be a JSON object')
 
-    elif type_ == 'filters':
-        try:
-            get_conf.config.filters = json.loads(request.POST.getunicode('t_filters', '{"All": {"not": [], "or": [], "has": []}}'), encoding='utf-8')
-        except ValueError:
-            validator.add_error('filters', 'filters should be a JSON object')
-    
     save.write_config(get_conf.config)
     response['errors'] = validator.errors
     

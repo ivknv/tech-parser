@@ -216,12 +216,12 @@ def dump_articles(filename="articles_dumped"):
         log("New articles: %d"
             %(len([i for i in ordered.values() if i['link'] not in links_before])))
         
-        log("Dumping data to file: {0}...".format(filename))
+        log("Dumping articles...")
         
         path = os.path.join(os.path.expanduser("~"), ".tech-parser")
         path = os.path.join(path, filename)
         
-        save.dump_to_file(ordered, path)
+        save.dump_somewhere(ordered, path)
     finally:
         set_var('parsing', '0')
         parsing = False

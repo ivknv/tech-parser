@@ -60,6 +60,16 @@ Q_ADD_VAR_SQLITE = Query('sqlite',
 	'INSERT INTO variables(name, value) VALUES(?, ?);')
 Q_ADD_VAR_POSTGRESQL = Query('postgresql',
 	'INSERT INTO variables(name, value) VALUES(%s, %s);')
+Q_ADD_ARTICLE_SQLITE = Query('sqlite',
+    '''INSERT INTO articles(title, link, summary, source,
+        fromrss, icon, color, page_number) VALUES(?, ?, ?, ?, ?, ?, ?, ?)''')
+Q_ADD_ARTICLE_POSTGRESQL = Query('postgresql',
+    '''INSERT INTO articles(title, link, summary, source,
+        fromrss, icon, color, page_number) VALUES(%s, %s, %s, %s, %s, %s, %s, %s)''')
+Q_SELECT_FROM_PAGE_SQLITE = Query('sqlite',
+    'SELECT * FROM articles WHERE page_number=?')
+Q_SELECT_FROM_PAGE_POSTGRESQL = Query('postgresql',
+    'SELECT * FROM articles WHERE page_number=%s')
 
 Q_DELETE_FROM_BLACKLIST = MultiDBQuery(Q_DELETE_FROM_BLACKLIST_SQLITE,
 	Q_DELETE_FROM_BLACKLIST_POSTGRESQL)
@@ -82,3 +92,7 @@ Q_REMOVE_SESSIONID = MultiDBQuery(Q_REMOVE_SESSIONID_SQLITE, Q_REMOVE_SESSIONID_
 Q_GET_VAR = MultiDBQuery(Q_GET_VAR_SQLITE, Q_GET_VAR_POSTGRESQL)
 Q_SET_VAR = MultiDBQuery(Q_SET_VAR_SQLITE, Q_SET_VAR_POSTGRESQL)
 Q_ADD_VAR = MultiDBQuery(Q_ADD_VAR_SQLITE, Q_ADD_VAR_POSTGRESQL)
+Q_ADD_ARTICLE = MultiDBQuery(Q_ADD_ARTICLE_SQLITE, Q_ADD_ARTICLE_POSTGRESQL)
+Q_SELECT_FROM_PAGE = MultiDBQuery(Q_SELECT_FROM_PAGE_SQLITE, Q_SELECT_FROM_PAGE_POSTGRESQL)
+Q_CLEAR_ARTICLES = Query('all', 'DELETE FROM articles')
+Q_SELECT_ALL_ARTICLES = Query('all', 'SELECT * FROM articles')

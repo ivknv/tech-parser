@@ -6,6 +6,7 @@ from TechParser.py2x import pickle
 from collections import OrderedDict
 import json
 import os
+from TechParser.db_functions import save_articles, select_all_articles
 
 if not get_conf.config:
     get_conf.set_config_auto()
@@ -14,8 +15,8 @@ get_conf.auto_fix_config()
 
 def check_format(func):
     def newfunc(*args, **kwargs):
-        msg = "data_format should be either 'json' or 'pickle'"
-        assert get_conf.config.data_format in {'pickle', 'json'}, msg
+        msg = "data_format should be 'json', 'pickle' or 'db'"
+        assert get_conf.config.data_format in {'pickle', 'json', 'db'}, msg
         return func(*args, **kwargs)
     
     return newfunc
@@ -41,16 +42,22 @@ def write_config(config, filename=os.path.join(get_conf.logdir, 'user_parser_con
     with open(filename, 'w') as f:
         f.write(config_to_json(config))
 
-def dump_to_file(data, filename):
+def dump_somewhere(data, filename=None):
     mode = 'w'
-    if get_conf.config.data_format == 'pickle':
-        mode += 'b'
-    with open(filename, mode) as f:
-        f.write(dump_data(data))
+    if get_conf.config.data_format in {'pickle', 'json'}:
+        if get_conf.config.data_format == 'pickle':
+            mode += 'b'
+        with open(filename, mode) as f:
+            f.write(dump_data(data))
+    elif get_conf.config.data_format == 'db':
+        save_articles(data)
 
-def load_from_file(filename):
-	mode = 'r'
-	if get_conf.config.data_format == 'pickle':
-		mode += 'b'
-	with open(filename, mode) as f:
-		return load_data(f.read())
+def load_from_somewhere(filename=None):
+    mode = 'r'
+    if get_conf.config.data_format == 'db':
+        return select_all_articles()
+    else:
+        if get_conf.config.data_format == 'pickle':
+            mode += 'b'
+        with open(filename, mode) as f:
+            return load_data(f.read())
