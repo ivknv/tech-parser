@@ -39,7 +39,7 @@ def parse_article_image(article, site_url=''):
         return b''
     except AttributeError:
         try:
-            g = grab.Grab(bytes(article, 'utf-8'))
+            g = grab.Grab(article.encode('utf-8'))
             img = g.doc.tree.cssselect('img:first-child')[0]
         except GrabError:
             return b''
@@ -66,7 +66,7 @@ def get_articles(grab_object, title_path, link_path, source, site_url="",
         summary = []
     
     while len(summary) < len(post_links):
-        summary.append('')
+        summary.append(u'')
     
     zip_object = zip(post_links, post_titles, summary)
     
