@@ -25,11 +25,6 @@ And [here's](https://github.com/SPython/web-tech-parser) template repository for
 			<li><a href="#adding-rss-feeds">Adding RSS feeds</a></li>
 			<li><a href="#asynchronous-parsing">Asynchronous parsing</a></li>
 			<li><a href="#word-lists">Word lists</a></li>
-			<li><a href="#filters">Filters</a>
-				<ul>
-					<li><a href="#examples">Examples</a></li>
-				</ul>
-			</li>
 			<li><a href="#update-interval">Update interval</a></li>
 			<li><a href="#custom-host-and-port">Custom host and port</a></li>
 		</ul>
@@ -91,6 +86,8 @@ Grab<br/>
 All these modules can be installed with pip or easy_install.
 
 ### How to install ###
+TechParser works on both Python 2.X and 3.X, although I still recommend to use Python 3.X.
+
 You can install TechParser by running<br/>
 ```pip install TechParser```<br/> or<br/>
 ```python setup.py install```<br/>
@@ -112,6 +109,14 @@ To make usage easier I recommend to make an alias like this:<br/>
 After that You will be able to run  ```tech-parser``` instead of ```python -m TechParser```.<br/>
 
 ## Configuring ##
+**Don't forget to check out ```TechParser/parser_config.py``` after upgrading.**
+
+### Changing configuration in browser ###
+New in 1.8.3<br/>
+By default you have ```json_config=True``` in ```~/.tech-parser/user_parser_config.py```.
+That allows you to edit configuration right in your browser (click at ```Edit config``` link).
+Note that when you save your configuration in browser, you update ```~/.tech-parser/user_parser_config.json```, not ```~/.tech-parser/user_parser_config.py```. In order to disable that just set ```json_config=False``` in ```~/.tech-parser/user_parser_config.py``` and restart parser.
+
 ### Enabling/disabling parsers ###
 To enable/disable site parsers edit ```~/.tech-parser/user_parser_config.py```.<br/>
 If you can't find the file, run ```python -m TechParser``` then search again.<br/>
@@ -120,22 +125,24 @@ Find there line with ```sites_to_parse``` and comment those sites, which you don
 For example if you don't want to see articles from Habrahabr (it's in russian only), find this fragment of code:
 
 ```python
-		"Habrahabr": {
-			"link": "habrahabr.ru",
+		"Habrahabr": { # habrahabr.ru
 			"module": habrahabr,
-			"kwargs": {}
+			"kwargs": {},
+			"enabled": True
 		},
 ```
 
 and make it look like this:
 
 ```python
-		#"Habrahabr": {
-		#	"link": "habrahabr.ru",
-		#	"module": habrahabr,
-		#	"kwargs": {}
-		#},
+		"Habrahabr": { # habrahabr.ru
+			"module": habrahabr,
+			"kwargs": {},
+			"enabled": False
+		},
 ```
+
+All you need to do is to set ```enabled``` to ```False```.
 
 ### Setting password ###
 New in 1.8.2<br/>
@@ -203,53 +210,14 @@ boring_words = {'word4', 'word5', 'word6'}
 
 You can also set priority for each word:
 ```python
-interesting_words = {('python', 5.0), ('fortran', 3.0), 'css', 'html', ('google', 1.5)}
-boring_words = {('pascal', 10.0), 'delphi'}
+interesting_words = [['python', 5.0], ['fortran', 3.0], 'css', 'html', ['google', 1.5]]
+boring_words = [['pascal', 10.0], 'delphi']
 ```
 
 Default priority for each word is ```1```
 
-### Filters ###
-Find fragment of code like this:
-```python
-filters = {
-	"All": {
-		"has": [],
-		"or": [],
-		"not": []
-	}
-}
-```
-
-```has```: title has all of these words<br/>
-```or```: title has some of these words<br/>
-```not```: title doesn't have any of these words<br/>
-
-#### Examples ####
-articles, containing words "google" and "android", but not containing "apple":
-```python
-filters = {
-	"All": {
-		"has": ["google", "android"],
-		"or": [],
-		"not": ["apple"]
-	}
-}
-```
-
-Articles, containing words "htc" or "android l":
-```python
-filters = {
-	"All": {
-		"has": [],
-		"or": ["htc", "android l"],
-		"not": []
-	}
-}
-```
-
 ### Update interval ###
-Find the line of code in ```parser_config.py``` like this:
+Find the line of code in ```user_parser_config.py``` like this:
 
 ```python
 update_interval = 1800
