@@ -263,25 +263,6 @@ function onLoad() {
 	});
 }
 
-function parsingTime(interval) {
-	var remains = Math.floor((interval - (new Date().getTime() / 1000) % interval) / 60);
-	return remains + simplePlural(' minute', remains)
-}
-
-/**
- * Adds 's' to string if number doesn't end with 1 or if it's 11
- * @param {String} str The string
- * @param {Number|String} n The number
- * @returns {String}
- */
-function simplePlural(str, n) {
-	var str_n = '' + n;
-	if (!str_n.endsWith('1') || str_n == '11') {
-		str += 's';
-	}
-	return str;
-}
-
 /**
  * Show new feed
  */

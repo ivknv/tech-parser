@@ -71,9 +71,13 @@
 					Hold on for a few minutes.
 				% else:
 					Wait for
-					<script type="text/javascript">
-						document.write('' + parsingTime(${config.update_interval}));
-					</script>
+                    <%
+                        import time
+                        remains = int((config.update_interval - time.time() % config.update_interval) / 60.0)
+                        remains = str(remains)
+                        minutes = 'minutes' if not remains.endswith('1') or remains == '11' else 'minute'
+                    %>
+                    ${remains} ${minutes}
 					or run <code>python -m TechParser update</code> manually
 				% endif
 			</p>
