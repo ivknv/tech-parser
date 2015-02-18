@@ -20,7 +20,6 @@ class Config(object):
         for k,v in self.rss_feeds.items():
             v.setdefault('hash', hash(k))
         
-        self.filters = kwargs.get('filters')
         self.interesting_words = kwargs.get('interesting_words')
         self.boring_words = kwargs.get('boring_words')
         self.update_interval = kwargs.get('update_interval')
@@ -67,7 +66,6 @@ class Config(object):
         for k,v in d['rss_feeds'].items():
             v.setdefault('hash', hash(k))
         
-        d['filters'] = module.filters
         d['interesting_words'] = module.interesting_words
         d['boring_words'] = module.boring_words
         d['update_interval'] = module.update_interval
