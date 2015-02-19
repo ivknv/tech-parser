@@ -101,11 +101,12 @@ def parse_rss(url, source, icon='', color='#000'):
 
 def get_articles_from_rss(url, source, parse_image=True, put_grab=False):
     g = grab.Grab()
+    g.config['connect_timeout'] = 15
     g.go(url)
     
     content_type = g.doc.headers.get_content_type()
     
-    if 'application/rss' not in content_type and 'application/xml' not in content_type and 'application/atom' not in content_type:
+    if 'application/rss' not in content_type and 'application/xml' not in content_type and 'application/atom' not in content_type and not 'text/xml' in content_type:
         elem_list = g.doc.tree.cssselect('link[type="application/xml"], link[type="application/rss"], link[type="application/rss+xml"], link[type="application/atom+xml"], link[type="application/atom"]')
         
         if elem_list:
@@ -132,6 +133,7 @@ def get_articles_from_rss(url, source, parse_image=True, put_grab=False):
     # Reset grab object. Weird things happen (in this case) if you don't do that.
     # And g.reset() doesn't fix that
     g2 = grab.Grab()
+    g.config['connect_timeout'] = 15
     g2.config['icon_path'] = g.config['icon_path']
     g = g2
     
