@@ -2,9 +2,7 @@ Things that were already done:
     Store all the articles inside database instead of file
 
 Things that need to be done:
-    Current: Write unit tests
-    
-    Automatically find RSS feed URL and icon
+    Current: Automatically find RSS feed URL and icon
     
     Store information in parser modules about arguments they receive
     
