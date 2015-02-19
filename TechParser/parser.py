@@ -7,7 +7,7 @@ from lxml.html import fromstring, tostring
 from lxml.etree import Error as LXMLError
 from lxml import etree
 
-from TechParser.py2x import unicode_
+from TechParser.py2x import unicode_, urlparse
 
 def absolutize_link(link, site_url):
     if link.startswith("//"):
@@ -83,7 +83,13 @@ def get_articles(grab_object, title_path, link_path, source, site_url="",
     return posts
 
 def parse_rss(url, source, icon='', color='#000'):
-    entries = get_articles_from_rss(url, source)
+    entries = get_articles_from_rss(url, source, put_grab=True)
+    
+    g = entries[0]
+    entries = entries[1:]
+    if not icon:
+        icon = g.config['icon_path']
+    
     return [{'fromrss': 1,
             'icon': icon,
             'color': color,
@@ -93,9 +99,51 @@ def parse_rss(url, source, icon='', color='#000'):
             'summary': i['summary']}
                 for i in entries]
 
-def get_articles_from_rss(url, source, parse_image=True):
-    parsed_entries = feedparser.parse(url).entries
-    entries = []
+def get_articles_from_rss(url, source, parse_image=True, put_grab=False):
+    g = grab.Grab()
+    g.go(url)
+    
+    content_type = g.doc.headers.get_content_type()
+    
+    if 'application/rss' not in content_type and 'application/xml' not in content_type and 'application/atom' not in content_type:
+        elem_list = g.doc.tree.cssselect('link[type="application/xml"], link[type="application/rss"], link[type="application/rss+xml"], link[type="application/atom+xml"], link[type="application/atom"]')
+        
+        if elem_list:
+            new_url = g.make_url_absolute(elem_list[0].attrib.get('href'))
+            if new_url:
+                url = new_url
+            else:
+                return []
+        else:
+            return []
+    
+        elem_list = g.doc.tree.cssselect('link[rel~="icon"]')
+        if elem_list:
+            new_icon = g.make_url_absolute(elem_list[0].attrib.get('href'))
+            if new_icon:
+                g.config['icon_path'] = new_icon
+            else:
+                g.config['icon_path'] = g.make_url_absolute('/favicon.ico')
+        else:
+            g.config['icon_path'] = g.make_url_absolute('/favicon.ico')
+    else:
+        g.config['icon_path'] = g.make_url_absolute('/favicon.ico')
+    
+    # Reset grab object. Weird things happen (in this case) if you don't do that.
+    # And g.reset() doesn't fix that
+    g2 = grab.Grab()
+    g2.config['icon_path'] = g.config['icon_path']
+    g = g2
+    
+    # Remove useless object
+    del g2
+    
+    g.go(url)
+    
+    parsed_entries = feedparser.parse(g.doc.body).entries
+    
+    entries = [g] if put_grab else []
+    
     for entry in parsed_entries:
         cleaned = clean_text(entry['summary'], parse_image)
         text, image = cleaned
@@ -106,10 +154,12 @@ def get_articles_from_rss(url, source, parse_image=True):
                     text = image + text
                     break
         
-        entries.append({'title': escape_title(entry['title']),
-            'link': entry['link'],
-            'source': source,
-            'summary': text})
+        entry = {'title': escape_title(entry['title']),
+                 'link': entry['link'],
+                 'source': source,
+                 'summary': text}
+        
+        entries.append(entry)
     
     return entries
 
