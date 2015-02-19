@@ -138,7 +138,7 @@ class Validator(object):
                 self.add_error(location, 'Feed short name cannot be empty')
             if not feed['url'].startswith('http://') and not feed['url'].startswith('https://'):
                 self.add_error(location, 'Invalid URL')
-            if not feed['icon'].startswith('http://') and not feed['icon'].startswith('https://'):
+            if feed['icon'] and not feed['icon'].startswith('http://') and not feed['icon'].startswith('https://'):
                  self.add_error(location, 'Invalid icon URL')
             if not CSS_NAME_REGEX.match(feed['short-name']):
                 self.add_error(location, 'Short name must be a valid CSS name')
