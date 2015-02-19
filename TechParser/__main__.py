@@ -93,14 +93,14 @@ def parse_site(queue, articles, progress, total_length):
         
         if site_type == 'r':
             d = config.rss_feeds[site_name]
-            url = d.get('url', 'about:blank')
+            url = d.get('url', '')
             short_name = d.get('short-name', 'unknown')
-            icon = d.get('icon', 'about:blank')
+            icon = d.get('icon', '')
             color = d.get('color', '#000')
             if not len(color):
                 color = '#000'
             if not len(icon):
-                icon = 'about:blank'
+                icon = ''
             
             try:
                 # Get articles
