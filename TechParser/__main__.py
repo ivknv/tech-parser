@@ -65,7 +65,7 @@ def logerr(*args, **kwargs):
     kwargs['f'] = sys.stderr
     log(*args, **kwargs)
 
-def simple_plural(n, s):
+def simple_plural(n, s=""):
     n = str(n)
     if n.endswith("1") and not n.endswith("11"):
         return s
@@ -76,25 +76,23 @@ def show_progress(s, shared_object):
     progress = round(shared_object.value, 2)
     return "\033[0;32m[{0}%]\033[0m ".format(progress)+s
 
-def parse_site(queue, articles, progress):
+def parse_site(queue, articles, progress, total_length):
     """Worker for parsing articles"""
     
     config = get_conf.config
+    num = 50.0 / total_length # Progress change
+    s = "Got {0} article{1} from {2}"
     
     while not queue.empty():
         site = queue.get()
-        s = "Got {0} {1} from {2}"
+        site_name = site[1]
+        site_type = site[0] 
         
-        if site not in config.sites_to_parse:
-            d = config.rss_feeds[site]
-        else:
-            d = config.sites_to_parse[site]
+        update_progress(progress, num)
+        log(show_progress("Parsing articles from {0}".format(site_name), progress))
         
-        update_progress(progress,
-            100.0 / (len(config.sites_to_parse) + len(config.rss_feeds)) / 2.0)
-        log(show_progress("Parsing articles from {0}".format(site), progress))
-        
-        if 'module' not in d:
+        if site_type == 'r':
+            d = config.rss_feeds[site_name]
             url = d.get('url', 'about:blank')
             short_name = d.get('short-name', 'unknown')
             icon = d.get('icon', 'about:blank')
@@ -105,34 +103,54 @@ def parse_site(queue, articles, progress):
                 icon = 'about:blank'
             
             try:
+                # Get articles
                 new_articles = parser.parse_rss(url, short_name, icon, color)
+                
+                # Add articles to queue
+                _put = articles.put # OPTIMISATION
                 for i in new_articles:
-                    articles.put(i)
-                update_progress(progress,
-                    100.0 / (len(config.sites_to_parse) + len(config.rss_feeds)) / 2.0)
-                log(show_progress(s.format(len(new_articles),
-                    simple_plural(len(new_articles), 'article'), site), progress))
+                    _put(i)
+                
+                update_progress(progress, num)
+                
+                len_new = len(new_articles)
+                
+                log(show_progress(s.format(len_new, simple_plural(len_new), site_name), progress))
             except Exception as error:
                 logerr('Failed to parse articles from {0}'.format(site))
                 logerr(traceback.format_exc())
         else:
+            d = config.sites_to_parse[site_name]
             module = d["module"]
             kwargs = d["kwargs"]
             
             try:
-                found = module.get_articles(**kwargs)
-                for i in found:
-                    articles.put(i)
-                update_progress(progress,
-                    100.0 / (len(config.sites_to_parse) + len(config.rss_feeds)) / 2.0)
-                log(show_progress(s.format(len(found),
-                    simple_plural(len(found), 'article'), site), progress))
+                # Get articles
+                new_articles = module.get_articles(**kwargs)
+                
+                # Add articles to queue
+                _put = articles.put # OPTIMISATION
+                for i in new_articles:
+                    _put(i)
+                
+                update_progress(progress, num)
+                
+                len_new = len(new_articles)
+                
+                log(show_progress(s.format(len_new, simple_plural(len_new), site_name), progress))
             except Exception:
                 logerr('Failed to parse articles from {0}'.format(site))
                 logerr(traceback.format_exc())
 
 def update_progress(shared_object, num):
     shared_object.value += num
+
+def getEnabled(d):
+    """Returns items (x) of the dictionary (d) that have x['enabled'] == True"""
+    
+    for k, v in d.items():
+        if v['enabled']:
+            yield (k, v)
 
 def dump_articles(filename="articles_dumped"):
     """Dump articles to ~/.tech-parser/<filename>"""
@@ -155,18 +173,20 @@ def dump_articles(filename="articles_dumped"):
         
         main_queue = m.Queue()
         
-        for k,v in get_conf.config.sites_to_parse.items():
-            if v['enabled']:
-                main_queue.put(k)
+        enabled_parsers = dict(getEnabled(get_conf.config.sites_to_parse))
+        enabled_feeds = dict(getEnabled(get_conf.config.rss_feeds))
+        total_length = len(enabled_parsers.keys()) + len(enabled_feeds.keys())
+        
+        for k in enabled_parsers.keys():
+            main_queue.put(('p', k))
                 
-        for k,v in get_conf.config.rss_feeds.items():
-            if v['enabled']:
-                main_queue.put(k)
+        for k in enabled_feeds.keys():
+            main_queue.put(('r', k))
                 
         pool = multiprocessing.Pool(processes=get_conf.config.num_threads)
         
         for i in range(get_conf.config.num_threads):
-            pool.apply_async(parse_site, (main_queue, articles, progress))
+            pool.apply_async(parse_site, (main_queue, articles, progress, total_length))
         
         pool.close()
         pool.join()
