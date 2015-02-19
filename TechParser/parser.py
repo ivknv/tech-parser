@@ -133,7 +133,7 @@ def get_articles_from_rss(url, source, parse_image=True, put_grab=False):
     # Reset grab object. Weird things happen (in this case) if you don't do that.
     # And g.reset() doesn't fix that
     g2 = grab.Grab()
-    g.config['connect_timeout'] = 15
+    g2.config['connect_timeout'] = 15
     g2.config['icon_path'] = g.config['icon_path']
     g = g2
     
