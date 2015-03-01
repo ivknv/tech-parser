@@ -94,7 +94,12 @@ def get_default_config():
     return __import__('TechParser.parser_config').parser_config
 
 def get_config(fname):
-    return imp.load_source('parser_config', fname)
+    fname = os.path.expanduser(fname)
+    if fname.endswith('.py'):
+        return imp.load_source('parser_config', fname)
+    else:
+        with open(fname) as f:
+            return config_from_json(f.read())
 
 def set_config(parser_config):
     global config
