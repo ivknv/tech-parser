@@ -461,7 +461,8 @@ function AJAXSubmitForm(type) {
                            url: new_feed['url'],
                            icon: new_feed['icon'],
                            color: new_feed['color'],
-                           hash: new_feed['hash']});
+                           hash: new_feed['hash'],
+                           enabled: new_feed['enabled']});
         }
         
         if (data['deleted']) {
