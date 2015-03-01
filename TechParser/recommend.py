@@ -61,8 +61,16 @@ def get_similarity(pairs1, pairs2):
     return 2.0 * len_shrd / len_all_pairs
 
 def get_similarity2(pairs1, pairs2, force=False):
-    if not force and (sum(dict_values(pairs1[1])) < 80 or sum(dict_values(pairs2[1])) < 80):
-        return get_similarity(pairs1[0], pairs2[0])
+    if not force:
+        l1 = sum(dict_values(pairs1[1]))
+        l2 = sum(dict_values(pairs2[1]))
+        try:
+            ratio = l1 / l2
+        except ZeroDivisionError:
+            ratio = 0.0
+        
+        if ratio > 2.0 or ratio < 0.5 or l1 < 80 or l2 < 80:
+            return get_similarity(pairs1[0], pairs2[0])
     
     new_pairs1 = pairs1[0]
     new_pairs2 = pairs2[0]
