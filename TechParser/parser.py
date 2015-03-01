@@ -96,8 +96,30 @@ def parse_rss(url, source, icon='', color='#000'):
             'title': i['title'],
             'link': i['link'],
             'source': source,
-            'summary': i['summary']}
-                for i in entries]
+            'summary': i['summary']} for i in entries]
+
+def parse_icon(grab_object):
+    elem_list = grab_object.doc.tree.cssselect('link[rel~="icon"]')
+    if elem_list:
+        new_icon = grab_object.make_url_absolute(elem_list[0].attrib.get('href'))
+        if new_icon:
+            return new_icon
+    
+    parsed_url = urlparse(grab_object.config['url'])
+            
+    if parsed_url.path in {'/', ''}:
+        return grab_object.make_url_absolute('/favicon.ico')
+    else:
+        domain = '{0}://{1}'.format(parsed_url.scheme, parsed_url.netloc)
+        grab_object.go(domain)
+        elem_list = grab_object.doc.tree.cssselect('link[rel~="icon"]')
+        if elem_list:
+            new_icon = grab_object.make_url_absolute(elem_list[0].attrib.get('href'))
+            if new_icon:
+                return new_icon
+            else:
+                return grab_object.make_url_absolute('/favicon.ico')
+
 
 def get_articles_from_rss(url, source, parse_image=True, put_grab=False):
     g = grab.Grab()
@@ -118,17 +140,7 @@ def get_articles_from_rss(url, source, parse_image=True, put_grab=False):
         else:
             return []
     
-        elem_list = g.doc.tree.cssselect('link[rel~="icon"]')
-        if elem_list:
-            new_icon = g.make_url_absolute(elem_list[0].attrib.get('href'))
-            if new_icon:
-                g.config['icon_path'] = new_icon
-            else:
-                g.config['icon_path'] = g.make_url_absolute('/favicon.ico')
-        else:
-            g.config['icon_path'] = g.make_url_absolute('/favicon.ico')
-    else:
-        g.config['icon_path'] = g.make_url_absolute('/favicon.ico')
+    g.config['icon_path'] = parse_icon(g)
     
     # Reset grab object. Weird things happen (in this case) if you don't do that.
     # And g.reset() doesn't fix that
