@@ -125,7 +125,7 @@ def get_word_pairs(words):
     
     return pairs
 
-def find_similiar(articles):
+def rank_articles(articles):
     interesting_articles = get_interesting_articles()
     blacklist = get_blacklist()
     
