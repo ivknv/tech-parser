@@ -567,7 +567,7 @@ def update_config():
         except ValueError:
             validator.add_error('boring_words', 'boring_words should be a JSON object')
 
-    save.write_config(get_conf.config)
+    save.write_config(get_conf.config, get_conf.config.filename)
     response['errors'] = validator.errors
     
     return json.dumps(response)

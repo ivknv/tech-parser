@@ -38,7 +38,12 @@ def load_data(dumped_data):
 def config_to_json(config):
     return json.dumps(get_conf.Config.from_module(config, hide=True).__dict__, ensure_ascii=False, indent=4, sort_keys=True)
 
-def write_config(config, filename=os.path.join(get_conf.logdir, 'user_parser_config.json')):
+def write_config(config, filename=None):
+    if filename is None:
+        if config.filename:
+            filename = os.path.expanduser(config.filename)
+        else:
+            filename = os.path.join(get_conf.logdir, 'user_parser_config.json')
     with open(filename, 'w') as f:
         f.write(config_to_json(config))
 
