@@ -490,16 +490,17 @@ def update_config():
                 response['deleted'].append((feed_name, h))
                 continue
             data['rss_feed_name'] = request.POST.getunicode('name_{0}'.format(h), feed_name)
+            new_hash = hash(data['rss_feed_name'])
+            data['rss_feed']['hash'] = new_hash
             data['rss_feed']['short-name'] = request.POST.getunicode('sn_{0}'.format(h), feed['short-name'])
             data['rss_feed']['url'] = request.POST.getunicode('url_{0}'.format(h), feed['url'])
             data['rss_feed']['icon'] = request.POST.getunicode('icon_{0}'.format(h), feed['icon'])
             data['rss_feed']['color'] = request.POST.getunicode('color_{0}'.format(h), feed['color'])
             data['rss_feed']['enabled'] = request.POST.getunicode('enabled_{0}'.format(h), '0') == '1'
-            data['rss_feed']['hash'] = hash(data['rss_feed_name'])
             
             validator.validate(**data)
             
-            if 'rss_feed_{0}'.format(h) not in validator.errors:
+            if 'rss_feed_{0}'.format(new_hash) not in validator.errors:
                 rss_feed = data['rss_feed']
                 short_name = rss_feed['short-name']
                 name = data['rss_feed_name']
@@ -507,7 +508,7 @@ def update_config():
                 icon = rss_feed['icon']
                 color = rss_feed['color']
                 enabled = rss_feed['enabled']
-                new_hash = rss_feed['hash']
+                
                 if short_name != feed['short-name']:
                     response['modified'].append(('sn_{0}'.format(h), short_name))
                 if name != feed_name:
