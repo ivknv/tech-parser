@@ -9,7 +9,7 @@ logdir = os.path.join(logdir, ".tech-parser")
 config = None
 
 class Config(object):
-    def __init__(self, hide=False, **kwargs):
+    def __init__(self, hide=False, filename='', **kwargs):
         self.sites_to_parse = kwargs.get('sites_to_parse')
         
         for k,v in self.sites_to_parse.items():
@@ -52,6 +52,8 @@ class Config(object):
         self.json_config = kwargs.get('json_config', False)
         
         auto_fix_config(self)
+        
+        self.filename = filename
     
     @staticmethod
     def from_module(module, hide=False):
@@ -96,10 +98,14 @@ def get_default_config():
 def get_config(fname):
     fname = os.path.expanduser(fname)
     if fname.endswith('.py'):
-        return imp.load_source('parser_config', fname)
+        config = imp.load_source('parser_config', fname)
+        config.filename = fname
+        return config
     else:
         with open(fname) as f:
-            return config_from_json(f.read())
+            config = config_from_json(f.read())
+            config.filename = fname
+            return config
 
 def set_config(parser_config):
     global config
