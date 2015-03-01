@@ -13,16 +13,14 @@ from TechParser.db_functions import *
 if get_conf.config is None:
     get_conf.set_config_auto()
 
-r0 = re.compile(r"<.*?>", re.UNICODE)
-r1 = re.compile(r"(?P<g1>\w+)n['\u2019]t", re.UNICODE)
-r2 = re.compile(r"(?P<g1>\w+)['\u2019]s", re.UNICODE)
-r3 = re.compile(r"(?P<g1>\w+)['\u2019]m", re.UNICODE)
-r4 = re.compile(r"(?P<g1>\w+)['\u2019]re", re.UNICODE)
-r5 = re.compile(r"(?P<g1>\w+)['\u2019]ve", re.UNICODE)
-r6 = re.compile(r"(?P<g1>\w+)['\u2019]d", re.UNICODE)
-r7 = re.compile(r"(?P<g1>\w+)['\u2019]ll", re.UNICODE)
-r8 = re.compile(r"\bgonna\b", re.UNICODE)
-r9 = re.compile(r"\W", re.UNICODE)
+r0 = re.compile(r"<.*?>|\b(A|AN|THE|IS|AM|THERE|THIS|ARE|FOR|THAT|OF|TO|SO|IN|ON|OFF|THOSE|THESE|YOU|HE|SHE|THEY|WE|OUT)\b", re.UNICODE)
+r1 = re.compile(r"(?P<g1>\w+)N['\u2019]T", re.UNICODE)
+r2 = re.compile(r"(?P<g1>\w+)['\u2019](S|M|RE)", re.UNICODE)
+r3 = re.compile(r"(?P<g1>\w+)['\u2019]VE", re.UNICODE)
+r4 = re.compile(r"(?P<g1>\w+)['\u2019]D", re.UNICODE)
+r5 = re.compile(r"(?P<g1>\w+)['\u2019]LL", re.UNICODE)
+r6 = re.compile(r"\bGONNA\b", re.UNICODE)
+r7 = re.compile(r"\w+", re.UNICODE)
 r10 = re.compile(r"&#?\w+;", re.UNICODE)
 
 class Pairs(object):
@@ -168,22 +166,16 @@ def find_similiar(articles):
     
     return [[a, s] for (a, s) in zip(processed, scores)]
 
-def prepare_string(s, exclude=["a", "an", "the", "is", "am", "there", "this",
-        "are", "for", "that", "of", "to", "so", "in", "on", "off", "those",
-        "these", "you", "he", "she", "they", "we", "out"]):
-    s = unescape(s.strip().lower())
+def prepare_string(s):
+    s = unescape(s.upper())
     s = r0.sub("", s)
-    s = r1.sub("\g<g1> not", s)
+    s = r1.sub("\g<g1> NOT", s)
     s = r2.sub("\g<g1>", s)
-    s = r3.sub("\g<g1> am", s)
-    s = r4.sub("\g<g1> are", s)
-    s = r5.sub("\g<g1> have", s)
-    s = r6.sub("\g<g1> would", s)
-    s = r7.sub("\g<g1> will", s)
-    s = r8.sub("going to", s)
-    words = r9.split(s)
-    
-    return [word for word in words if len(word) and word not in exclude]
+    s = r3.sub("\g<g1> HAVE", s)
+    s = r4.sub("\g<g1> WOULD", s)
+    s = r5.sub("\g<g1> WILL", s)
+    s = r6.sub("GOING", s)
+    return r7.findall(s)
 
 def get_pairs(words):
     pairs = Counter()
