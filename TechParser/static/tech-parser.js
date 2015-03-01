@@ -392,6 +392,12 @@ function UpdateHashes(old_hash, new_hash) {
         var old_name = $this.attr('name');
         $this.attr('name', old_name.slice(0, old_name.search('_' + old_hash)) + '_' + new_hash);
     });
+
+    $('[for$=_' + old_hash + ']').each(function() {
+        var $this = $(this);
+        var old_for = $this.attr('for');
+        $this.attr('for', old_for.slice(0, old_for.search('_' + old_hash)) + '_' + new_hash);
+    });
     
     /* Update data-name attribute values */
     $('[data-name$=_' + old_hash + ']').each(function() {
