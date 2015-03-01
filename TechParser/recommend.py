@@ -211,6 +211,5 @@ def add_article_to_blacklist(addr):
     try:
         article = articles[addr]
         add_to_blacklist(article)
-        save.dump_somewhere(articles, path)
     except KeyError:
         print('KeyError({0})'.format(addr))
