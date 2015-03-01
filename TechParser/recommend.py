@@ -3,6 +3,8 @@
 
 import re
 import os
+import copy
+from collections import Counter
 
 from TechParser import get_conf, save
 from TechParser.py2x import *
@@ -22,6 +24,35 @@ r7 = re.compile(r"(?P<g1>\w+)['\u2019]ll", re.UNICODE)
 r8 = re.compile(r"\bgonna\b", re.UNICODE)
 r9 = re.compile(r"\W", re.UNICODE)
 r10 = re.compile(r"&#?\w+;", re.UNICODE)
+
+class Pairs(object):
+    def __init__(self, text):
+        self.pairs = pairs_fromstring(text)
+        self.length = sum(dict_values(self.pairs))
+    
+    def copy(self):
+        new = copy.copy(self)
+        new.pairs = new.pairs.copy()
+        
+        return new
+    
+    def __add__(self, pairs):
+        new_pairs = self.copy()
+        new_pairs.pairs += pairs.pairs
+        new_pairs.length += pairs.length
+        
+        return new_pairs
+    
+    def __repr__(self):
+        return '<Pairs length={0}>'.format(self.length)
+
+class ArticlePairs(object):
+    def __init__(self, title, summary):
+        self.title_pairs = Pairs(title)
+        self.summary_pairs = Pairs(summary)
+        self.all_pairs = self.title_pairs + self.summary_pairs
+        self.length = self.all_pairs.length
+        self.priority = 1.0
 
 def unescape(text):
     try:
@@ -49,35 +80,29 @@ def unescape(text):
     return r10.sub(fixup, text)
 
 def get_similarity(pairs1, pairs2):
-    len_all_pairs = sum(dict_values(pairs1)) + sum(dict_values(pairs2))
+    len_all_pairs = pairs1.length + pairs2.length
     
     if len_all_pairs == 0:
         return 0.0
     
     len_shrd = 0
-    for i in find_shared(dict_keys(pairs1), dict_keys(pairs2)):
-        len_shrd += min(pairs1[i], pairs2[i])
+    for i in find_shared(dict_keys(pairs1.pairs), dict_keys(pairs2.pairs)):
+        len_shrd += min(pairs1.pairs[i], pairs2.pairs[i])
     
     return 2.0 * len_shrd / len_all_pairs
 
 def get_similarity2(pairs1, pairs2, force=False):
     if not force:
-        l1 = sum(dict_values(pairs1[1]))
-        l2 = sum(dict_values(pairs2[1]))
         try:
-            ratio = l1 / l2
+            ratio = pairs1.summary_pairs.length / pairs2.summary_pairs.length
         except ZeroDivisionError:
             ratio = 0.0
         
-        if ratio > 2.0 or ratio < 0.5 or l1 < 80 or l2 < 80:
-            return get_similarity(pairs1[0], pairs2[0])
+        if ratio > 2.0 or ratio < 0.5 or pairs1.summary_pairs.length < 80 or pairs2.summary_pairs.length < 80:
+            return get_similarity(pairs1.title_pairs, pairs2.title_pairs)
     
-    new_pairs1 = pairs1[0]
-    new_pairs2 = pairs2[0]
-    new_pairs1.update(pairs1[1])
-    new_pairs2.update(pairs2[1])
     
-    return get_similarity(new_pairs1, new_pairs2)
+    return get_similarity(pairs1.all_pairs, pairs2.all_pairs)
 
 def pairs_fromstring(s):
     return get_pairs(prepare_string(s))
@@ -96,7 +121,9 @@ def get_word_pairs(words):
             word = i
             priority = 1.0
         
-        pairs.append((pairs_fromstring(word), priority))
+        p = ArticlePairs(word, '')
+        p.priority = priority
+        pairs.append(p)
     
     return pairs
 
@@ -107,39 +134,34 @@ def find_similiar(articles):
     interesting_word_pairs = get_word_pairs(get_conf.config.interesting_words)
     boring_word_pairs = get_word_pairs(get_conf.config.boring_words)
     
-    ignored_links = [i['link'] for i in blacklist]
+    ignored_links = {i['link'] for i in blacklist}
     processed, scores = [], []
-    interesting_links = [i['link']
-        for i in interesting_articles]
+    ignored_links.update({i['link'] for i in interesting_articles})
     
-    interesting_pairs = [article_pairs(i)
-        for i in interesting_articles[:150]]
-    ignored_pairs = [article_pairs(i)
-        for i in blacklist[:150]]
+    interesting_pairs = [ArticlePairs(i['title'], i['summary']) for i in interesting_articles[:150]]
+    ignored_pairs = [ArticlePairs(i['title'], i['summary']) for i in blacklist[:150]]
+    empty_pairs = ArticlePairs('', '')
     
     zipped = list(zip_longest(interesting_pairs, ignored_pairs,
-        interesting_word_pairs, boring_word_pairs, fillvalue=tuple()))
+        interesting_word_pairs, boring_word_pairs, fillvalue=empty_pairs))
     
     for article in articles:
-        if article['link'] in interesting_links or \
-        article['link'] in ignored_links or article in processed:
+        if article['link'] in ignored_links or article in processed:
             continue
         
         score = 0.0
         
-        pairs1 = article_pairs(article)
+        pairs1 = ArticlePairs(article['title'], article['summary'])
         
         for (pairs2, pairs3, pairs4, pairs5) in zipped:
-            if pairs2:
+            if pairs2.length:
                 score += get_similarity2(pairs1, pairs2)
-            if pairs3:
+            if pairs3.length:
                 score -= get_similarity2(pairs1, pairs3)
-            if pairs4:
-                score += get_similarity2(pairs1,
-                    [pairs4[0], set()], True)*pairs4[1]
-            if pairs5:
-                score -= get_similarity2(pairs1,
-                    [pairs5[0], set()], True)*pairs5[1]
+            if pairs4.length:
+                score += get_similarity(pairs1.all_pairs, pairs4.all_pairs) * pairs4.priority
+            if pairs5.length:
+                score -= get_similarity(pairs1.all_pairs, pairs5.all_pairs) * pairs5.priority
         
         processed.append(article)
         scores.append(score)
@@ -164,11 +186,11 @@ def prepare_string(s, exclude=["a", "an", "the", "is", "am", "there", "this",
     return [word for word in words if len(word) and word not in exclude]
 
 def get_pairs(words):
-    pairs = {}
+    pairs = Counter()
     for word in words:
         for i in range(len(word)):
             pair = word[i:i+2]
-            pairs[pair] = pairs.get(pair, 0) + 1
+            pairs[pair] += 1
     return pairs
 
 def add_article(addr):
