@@ -15,6 +15,8 @@ from TechParser import get_conf, recommend, save
 from TechParser.db_functions import *
 from TechParser.py2x import unicode_, unicode__, range, urlencode, pickle, parse_qs
 
+REMOVE_TAGS_REGEX = re.compile('<.*?>')
+
 module_path = os.path.dirname(os.path.realpath(__file__))
 template_dir_path = os.path.join(module_path, "templates")
 static_dir_path = os.path.join(module_path, "static")
@@ -45,7 +47,7 @@ def encoded_dict(in_dict):
     return out_dict
 
 def remove_tags(s):
-    return recommend.r0.sub('', s)
+    return REMOVE_TAGS_REGEX.sub('', s)
 
 def split_into_pages(articles, n=30):
     """Split list into pages"""

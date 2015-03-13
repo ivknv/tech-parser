@@ -1,189 +1,59 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import re
 import os
-import copy
+import json
 from collections import Counter
 
 from TechParser import get_conf, save
 from TechParser.py2x import *
 from TechParser.db_functions import *
+from TechParser.classifier import TextClassifier
 
 if get_conf.config is None:
     get_conf.set_config_auto()
 
-r0 = re.compile(r"<.*?>|\b(A|AN|THE|IS|AM|THERE|THIS|ARE|FOR|THAT|OF|TO|SO|IN|ON|OFF|THOSE|THESE|YOU|HE|SHE|THEY|WE|OUT)\b", re.UNICODE)
-r1 = re.compile(r"(?P<g1>\w+)N['\u2019]T", re.UNICODE)
-r2 = re.compile(r"(?P<g1>\w+)['\u2019](S|M|RE)", re.UNICODE)
-r3 = re.compile(r"(?P<g1>\w+)['\u2019]VE", re.UNICODE)
-r4 = re.compile(r"(?P<g1>\w+)['\u2019]D", re.UNICODE)
-r5 = re.compile(r"(?P<g1>\w+)['\u2019]LL", re.UNICODE)
-r6 = re.compile(r"\bGONNA\b", re.UNICODE)
-r7 = re.compile(r"\w+", re.UNICODE)
-r10 = re.compile(r"&#?\w+;", re.UNICODE)
-
-class Pairs(object):
-    def __init__(self, text):
-        self.pairs = pairs_fromstring(text)
-        self.length = sum(dict_values(self.pairs))
-    
-    def copy(self):
-        new = copy.copy(self)
-        new.pairs = new.pairs.copy()
-        
-        return new
-    
-    def __add__(self, pairs):
-        new_pairs = self.copy()
-        new_pairs.pairs += pairs.pairs
-        new_pairs.length += pairs.length
-        
-        return new_pairs
-    
-    def __repr__(self):
-        return '<Pairs length={0}>'.format(self.length)
-
-class ArticlePairs(object):
-    def __init__(self, title, summary):
-        self.title_pairs = Pairs(title)
-        self.summary_pairs = Pairs(summary)
-        self.all_pairs = self.title_pairs + self.summary_pairs
-        self.length = self.all_pairs.length
-        self.priority = 1.0
-
-def unescape(text):
-    try:
-        text = unicode_(text)
-    except TypeError:
-        pass
-    
-    def fixup(m):
-        text = m.group(0)
-        if text[:2] == "&#":
-            try:
-                if text[:3] == "&#x":
-                    return chr(int(text[3:-1], 16))
-                else:
-                    return chr(int(text[2:-1]))
-            except ValueError:
-                pass
-        else:
-            try:
-                text = chr(htmlentitydefs.name2codepoint[text[1:-1]])
-            except KeyError:
-                pass
-        return text
-    
-    return r10.sub(fixup, text)
-
-def get_similarity(pairs1, pairs2):
-    len_all_pairs = pairs1.length + pairs2.length
-    
-    if len_all_pairs == 0:
-        return 0.0
-    
-    len_shrd = 0
-    for i in find_shared(dict_keys(pairs1.pairs), dict_keys(pairs2.pairs)):
-        len_shrd += min(pairs1.pairs[i], pairs2.pairs[i])
-    
-    return 2.0 * len_shrd / len_all_pairs
-
-def get_similarity2(pairs1, pairs2, force=False):
-    if not force:
-        try:
-            ratio = pairs1.summary_pairs.length / pairs2.summary_pairs.length
-        except ZeroDivisionError:
-            ratio = 0.0
-        
-        if ratio > 2.0 or ratio < 0.5 or pairs1.summary_pairs.length < 80 or pairs2.summary_pairs.length < 80:
-            return get_similarity(pairs1.title_pairs, pairs2.title_pairs)
-    
-    
-    return get_similarity(pairs1.all_pairs, pairs2.all_pairs)
-
-def pairs_fromstring(s):
-    return get_pairs(prepare_string(s))
-
-def article_pairs(a):
-    return pairs_fromstring(a['title']), pairs_fromstring(a['summary'])
-
-def get_word_pairs(words):
-    pairs = []
-    
-    for i in words:
-        if isinstance(i, list) or isinstance(i, tuple):
-            word = i[0]
-            priority = 0.0 + i[1] # A faster way to cast to float
-        else:
-            word = i
-            priority = 1.0
-        
-        p = ArticlePairs(word, '')
-        p.priority = priority
-        pairs.append(p)
-    
-    return pairs
+TextClassifier.load_irregular_words()
 
 def rank_articles(articles):
-    interesting_articles = get_interesting_articles()
-    blacklist = get_blacklist()
-    
-    interesting_word_pairs = get_word_pairs(get_conf.config.interesting_words)
-    boring_word_pairs = get_word_pairs(get_conf.config.boring_words)
-    
-    ignored_links = {i['link'] for i in blacklist}
     processed, scores = [], []
-    ignored_links.update({i['link'] for i in interesting_articles})
     
-    interesting_pairs = [ArticlePairs(i['title'], i['summary']) for i in interesting_articles[:150]]
-    ignored_pairs = [ArticlePairs(i['title'], i['summary']) for i in blacklist[:150]]
-    empty_pairs = ArticlePairs('', '')
+    classifier = loadClassifier()
     
-    zipped = list(zip_longest(interesting_pairs, ignored_pairs,
-        interesting_word_pairs, boring_word_pairs, fillvalue=empty_pairs))
+    for i in get_conf.config.interesting_words:
+        if type(i) in {list, tuple, set}:
+            word, priority = i
+        else:
+            priority = 1.0
+            word = i
+        
+        words = TextClassifier.prepare_words(word)
+        
+        for word in words:
+            classifier.counts['interesting'][word] += priority
+
+    for i in get_conf.config.boring_words:
+        if type(i) in {list, tuple, set}:
+            word, priority = i
+        else:
+            priority = 1.0
+            word = i
+        
+        words = TextClassifier.prepare_words(word)
+        
+        for word in words:
+            classifier.counts['boring'][word] += priority
     
     for article in articles:
-        if article['link'] in ignored_links or article in processed:
+        if article in processed:
             continue
         
-        score = 0.0
-        
-        pairs1 = ArticlePairs(article['title'], article['summary'])
-        
-        for (pairs2, pairs3, pairs4, pairs5) in zipped:
-            if pairs2.length:
-                score += get_similarity2(pairs1, pairs2)
-            if pairs3.length:
-                score -= get_similarity2(pairs1, pairs3)
-            if pairs4.length:
-                score += get_similarity(pairs1.all_pairs, pairs4.all_pairs) * pairs4.priority
-            if pairs5.length:
-                score -= get_similarity(pairs1.all_pairs, pairs5.all_pairs) * pairs5.priority
+        score = classifier.classify_article(article)['interesting']
         
         processed.append(article)
         scores.append(score)
     
     return [[a, s] for (a, s) in zip(processed, scores)]
-
-def prepare_string(s):
-    s = unescape(s.upper())
-    s = r0.sub("", s)
-    s = r1.sub("\g<g1> NOT", s)
-    s = r2.sub("\g<g1>", s)
-    s = r3.sub("\g<g1> HAVE", s)
-    s = r4.sub("\g<g1> WOULD", s)
-    s = r5.sub("\g<g1> WILL", s)
-    s = r6.sub("GOING", s)
-    return r7.findall(s)
-
-def get_pairs(words):
-    pairs = Counter()
-    for word in words:
-        for i in range(len(word)):
-            pair = word[i:i+2]
-            pairs[pair] += 1
-    return pairs
 
 def add_article(addr):
     path = os.path.join(get_conf.logdir, 'articles_dumped')
