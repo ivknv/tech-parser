@@ -4,6 +4,8 @@ Things that were already done:
     Automatically find RSS feed URL and icon
 
 Things that need to be done:
+    Add option to just hide articles
+    
     Store information in parser modules about arguments they receive
     
     Make writting custom parsers easier
