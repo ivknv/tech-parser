@@ -21,7 +21,8 @@ from bottle import default_app
 from Daemo import Daemon, DaemonError
 
 from TechParser import get_conf, recommend, parser, db, server, save, auto_alter
-from TechParser.db_functions import set_var, get_var
+from TechParser.db_functions import set_var, get_var, get_interesting_articles
+from TechParser.db_functions import get_blacklist
 from TechParser.query import Q_SAVE_ARTICLES
 from TechParser.py2x import range, urlencode
 
@@ -200,10 +201,20 @@ def dump_articles(filename="articles_dumped"):
         _append = list_articles.append # OPTIMISATION
         _get = articles.get # OPTIMISATION
         _empty = articles.empty # OPTIMISATION
+        
+        links = {i['link'] for i in get_interesting_articles()}
+        links.update({i['link'] for i in get_blacklist()})
+        
         while not _empty():
-            _append(_get())
+            article = _get()
+            link = article['link']
+            if link not in links:
+                _append(article)
+                links.add(link)
         
         log("Total articles: %d" %(len(list_articles)))
+        log("New articles: %d"
+            %(len([i for i in list_articles if i['link'] not in links_before])))
         
         if get_conf.config.save_articles:
             log("Saving articles to archive...")
@@ -232,9 +243,6 @@ def dump_articles(filename="articles_dumped"):
             log("Shuffling articles...")
             shuffle(list_articles)
             ordered = OrderedDict([(i['link'], i) for i in list_articles])
-        
-        log("New articles: %d"
-            %(len([i for i in ordered.values() if i['link'] not in links_before])))
         
         log("Dumping articles...")
         

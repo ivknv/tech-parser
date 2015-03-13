@@ -3,19 +3,74 @@
 
 from TechParser.query import *
 from TechParser import db, get_conf
+from TechParser.classifier import TextClassifier
 import uuid
+import json
 from Crypto import Random
-from collections import OrderedDict
+from collections import OrderedDict, Counter
+
+def loadClassifier(interesting_articles=None, blacklist=None):
+    classifier_counts = get_var('classifier_counts', '')
+    classifier_sample_counts = get_var('classifier_sample_counts', '')
+    classifier = TextClassifier(['interesting', 'boring'])
+    
+    try:
+        classifier.counts = {k: Counter(v) for k, v in json.loads(classifier_counts).items()}
+        classifier.sample_counts = json.loads(classifier_sample_counts)
+    except ValueError:
+        if interesting_articles is None:
+            interesting_articles = get_interesting_articles()
+        if blacklist is None:
+            blacklist = get_blacklist()
+        
+        for i in interesting_articles:
+            classifier.add_article(i, 'interesting')
+        
+        for i in blacklist:
+            classifier.add_article(i, 'boring')
+            
+        classifier.apply_changes()
+        saveClassifier(classifier)
+    
+    return classifier
+
+def getArticleFromHistoryByLink(link):
+    db.Database.main_database.execute_query(Q_GET_ARTICLE_FROM_HISTORY, [(link,)])
+    return db.Database.main_database.fetchone()
+
+def getArticleFromBlacklistByLink(link):
+    db.Database.main_database.execute_query(Q_GET_ARTICLE_FROM_BLACKLIST, [(link,)])
+    return db.Database.main_database.fetchone()
+
+def saveClassifier(classifier):
+    set_var('classifier_counts', json.dumps(classifier.counts))
+    set_var('classifier_sample_counts', json.dumps(classifier.sample_counts))
 
 def remove_from_blacklist(link):
     """Remove article from blacklist by link"""
-    
-    db.Database.main_database.execute_query(Q_DELETE_FROM_BLACKLIST, [(link,)])
+
+    article = getArticleFromBlacklistByLink(link)
+    if article:
+        article = articles_from_list([article])[0]
+        classifier = loadClassifier()
+        classifier.remove_article(article, 'boring')
+        classifier.apply_changes()
+        saveClassifier(classifier)
+        
+        db.Database.main_database.execute_query(Q_DELETE_FROM_BLACKLIST, [(link,)])
 
 def remove_from_history(link):
     """Remove article from history by link"""
     
-    db.Database.main_database.execute_query(Q_DELETE_FROM_HISTORY, [(link,)])
+    article = getArticleFromHistoryByLink(link)
+    if article:
+        article = articles_from_list([article])[0]
+        classifier = loadClassifier()
+        classifier.remove_article(article, 'interesting')
+        classifier.apply_changes()
+        saveClassifier(classifier)
+        
+        db.Database.main_database.execute_query(Q_DELETE_FROM_HISTORY, [(link,)])
 
 def add_to_blacklist(article):
     """Add article to blacklist"""
@@ -31,7 +86,13 @@ def add_to_blacklist(article):
         icon = article.get('icon', '')
         color = article.get('color', '#000')
         parameters = [(title, link, summary, fromrss, icon, color, source)]
+        
         db.Database.main_database.execute_query(Q_ADD_TO_BLACKLIST, parameters)
+        
+        classifier = loadClassifier()
+        classifier.add_article(article, 'boring')
+        classifier.apply_changes()
+        saveClassifier(classifier)
     except IntegrityError:
         db.Database.main_database.con.rollback()
 
@@ -51,38 +112,38 @@ def add_to_interesting(article):
         parameters = [(title, link, summary, fromrss, icon, color, source)]
         
         db.Database.main_database.execute_query(Q_ADD_TO_HISTORY, parameters)
+        
+        classifier = loadClassifier()
+        classifier.add_article(article, 'interesting')
+        classifier.apply_changes()
+        saveClassifier(classifier)
     except IntegrityError:
         db.Database.main_database.con.rollback()
+
+def articles_from_list(lst, liked=False, disliked=False):
+    return [{'title': x[0],
+            'link': x[1],
+            'summary': x[2],
+            'fromrss': x[3],
+            'icon': x[4],
+            'color': x[5],
+            'source': x[6],
+            'liked': liked,
+            'disliked': disliked} for x in lst]
 
 def get_blacklist():
     """Get list of articles from blacklist"""
     
     db.Database.main_database.execute_query(Q_GET_BLACKLIST)
     
-    return [{'title': x[0],
-            'link': x[1],
-            'summary': x[2],
-            'fromrss': x[3],
-            'icon': x[4],
-            'color': x[5],
-            'source': x[6],
-            'liked': False,
-            'disliked': True} for x in db.Database.main_database.fetchall()]
+    return articles_from_list(db.Database.main_database.fetchall(), disliked=True)
 
 def get_interesting_articles():
     """Get list of articles from history (that were marked as interesting)"""
     
     db.Database.main_database.execute_query(Q_GET_HISTORY)
     
-    return [{'title': x[0],
-            'link': x[1],
-            'summary': x[2],
-            'fromrss': x[3],
-            'icon': x[4],
-            'color': x[5],
-            'source': x[6],
-            'liked': True,
-            'disliked': False} for x in db.Database.main_database.fetchall()]
+    return articles_from_list(db.Database.main_database.fetchall(), liked=True)
 
 def generate_sessionid(num_bytes=16):
     return uuid.UUID(bytes=Random.get_random_bytes(num_bytes))

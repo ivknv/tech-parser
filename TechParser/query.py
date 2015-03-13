@@ -70,6 +70,14 @@ Q_SELECT_FROM_PAGE_SQLITE = Query('sqlite',
     'SELECT * FROM articles WHERE page_number=?')
 Q_SELECT_FROM_PAGE_POSTGRESQL = Query('postgresql',
     'SELECT * FROM articles WHERE page_number=%s')
+Q_GET_ARTICLE_FROM_HISTORY_SQLITE = Query('sqlite',
+    'SELECT title, link, summary, fromrss, icon, color, source FROM interesting_articles WHERE link=?;')
+Q_GET_ARTICLE_FROM_HISTORY_POSTGRESQL = Query('postgresql',
+    'SELECT title, link, summary, fromrss, icon, color, source FROM interesting_articles WHERE link=%s;')
+Q_GET_ARTICLE_FROM_BLACKLIST_SQLITE = Query('sqlite',
+    'SELECT title, link, summary, fromrss, icon, color, source FROM blacklist WHERE link=?;')
+Q_GET_ARTICLE_FROM_BLACKLIST_POSTGRESQL = Query('postgresql',
+    'SELECT title, link, summary, fromrss, icon, color, source FROM blacklist WHERE link=%s;')
 
 Q_DELETE_FROM_BLACKLIST = MultiDBQuery(Q_DELETE_FROM_BLACKLIST_SQLITE,
 	Q_DELETE_FROM_BLACKLIST_POSTGRESQL)
@@ -96,3 +104,7 @@ Q_ADD_ARTICLE = MultiDBQuery(Q_ADD_ARTICLE_SQLITE, Q_ADD_ARTICLE_POSTGRESQL)
 Q_SELECT_FROM_PAGE = MultiDBQuery(Q_SELECT_FROM_PAGE_SQLITE, Q_SELECT_FROM_PAGE_POSTGRESQL)
 Q_CLEAR_ARTICLES = Query('all', 'DELETE FROM articles')
 Q_SELECT_ALL_ARTICLES = Query('all', 'SELECT * FROM articles')
+Q_GET_ARTICLE_FROM_HISTORY = MultiDBQuery(Q_GET_ARTICLE_FROM_HISTORY_SQLITE,
+    Q_GET_ARTICLE_FROM_HISTORY_POSTGRESQL)
+Q_GET_ARTICLE_FROM_BLACKLIST = MultiDBQuery(Q_GET_ARTICLE_FROM_BLACKLIST_SQLITE,
+    Q_GET_ARTICLE_FROM_BLACKLIST_POSTGRESQL)
