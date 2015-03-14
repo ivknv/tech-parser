@@ -22,4 +22,5 @@ setup(name="TechParser",
 		"templates/login.html", "templates/include/*",
 		"static/tech-parser.js", "static/jquery.touchSwipe.min.js",
 		"static/fonts/*", "static/style.css",
-		"static/jquery-2.1.1.min.js", "static/icons/*"]})
+		"static/jquery-2.1.1.min.js", "static/icons/*",
+        "irregular_words.csv"]})
