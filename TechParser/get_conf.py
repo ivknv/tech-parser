@@ -146,9 +146,8 @@ def set_config_auto():
     
     if hasattr(config, 'json_config') and config.json_config:
         try:
-            with open(os.path.join(logdir, 'user_parser_config.json'), 'r') as f:
-                set_config(config_from_json(f.read()))
-        except IOError:
+            set_config_from_logdir('user_parser_config.json')
+        except ValueError:
             pass
 
 def setdefault(obj, attr, value=None):
