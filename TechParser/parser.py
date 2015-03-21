@@ -83,10 +83,11 @@ def get_articles(grab_object, title_path, link_path, source, site_url="",
     return posts
 
 def parse_rss(url, source, icon='', color='#000'):
-    entries = get_articles_from_rss(url, source, put_grab=True)
+    result = get_articles_from_rss(url, source, put_grab=True)
+    entries = result[1]
     
-    g = entries[0]
-    entries = entries[1:]
+    g = result[0]
+    
     if not icon:
         icon = g.config['icon_path']
     
@@ -156,7 +157,7 @@ def get_articles_from_rss(url, source, parse_image=True, put_grab=False):
     
     parsed_entries = feedparser.parse(g.doc.body).entries
     
-    entries = [g] if put_grab else []
+    entries = []
     
     for entry in parsed_entries:
         cleaned = clean_text(entry['summary'], parse_image)
@@ -175,7 +176,7 @@ def get_articles_from_rss(url, source, parse_image=True, put_grab=False):
         
         entries.append(entry)
     
-    return entries
+    return (g, entries) if put_grab else entries
 
 def remove_bad_tags(s):
     elmt = fromstring(s)
