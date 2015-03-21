@@ -17,9 +17,6 @@ function toggleText(element) {
     
 	if ($summary.css('display') != 'block') {
 		$summary.fadeIn('fast');
-		$summary.find('img').each(function() {
-			$(this).attr('src', $(this).attr('data-src'));
-		});
 	} else {
 		$summary.fadeOut('fast');
 	}
@@ -254,12 +251,6 @@ function onLoad() {
 		
 		$('#main').swipe({swipeLeft: swipefunc, swipeRight: swipefunc,
 			treshold: 0});
-		
-		var $imgs = $('.article .summary img');
-		$imgs.each(function() {
-			$(this).attr('data-src', $(this).attr('src'));
-			$(this).removeAttr('src');
-		});
 	});
 }
 
