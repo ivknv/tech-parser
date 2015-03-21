@@ -25,7 +25,7 @@ class TextClassifier(object):
         (re.compile(r'<.*?>'), ' '),
         (re.compile(r'\d+'), '')]
     unicode_chr_regex = re.compile(r'&#?\w+;')
-    tokenize_regex = re.compile(r'\w+\'\w{1,2}|\w+')
+    tokenize_regex = re.compile(r'\w+\'\w{1,2}|\w+[#\+]*')
     
     def __init__(self, categories):
         self._counts_change, self.counts, self.sample_counts, self._sample_counts_change = {}, {}, {}, {}
