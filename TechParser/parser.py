@@ -100,7 +100,7 @@ def parse_rss(url, source, icon='', color='#000'):
             'summary': i['summary']} for i in entries]
 
 def parse_icon(grab_object):
-    elem_list = grab_object.doc.tree.cssselect('link[rel~="icon"]')
+    elem_list = grab_object.doc.tree.cssselect('link[rel~="icon"], link[rel~="ICON"]')
     if elem_list:
         new_icon = grab_object.make_url_absolute(elem_list[0].attrib.get('href'))
         if new_icon:
@@ -109,17 +109,26 @@ def parse_icon(grab_object):
     parsed_url = urlparse(grab_object.config['url'])
             
     if parsed_url.path in {'/', ''}:
-        return grab_object.make_url_absolute('/favicon.ico')
-    else:
-        domain = '{0}://{1}'.format(parsed_url.scheme, parsed_url.netloc)
-        grab_object.go(domain)
-        elem_list = grab_object.doc.tree.cssselect('link[rel~="icon"]')
+        elem_list = grab_object.doc.tree.cssselect('link[rel~="icon"], link[rel~="ICON"]')
         if elem_list:
             new_icon = grab_object.make_url_absolute(elem_list[0].attrib.get('href'))
             if new_icon:
                 return new_icon
             else:
                 return grab_object.make_url_absolute('/favicon.ico')
+
+        return grab_object.make_url_absolute('/favicon.ico')
+    else:
+        domain = '{0}://{1}'.format(parsed_url.scheme, parsed_url.netloc)
+        grab_object.go(domain)
+        elem_list = grab_object.doc.tree.cssselect('link[rel~="icon"], link[rel~="ICON"]')
+        if elem_list:
+            new_icon = grab_object.make_url_absolute(elem_list[0].attrib.get('href'))
+            if new_icon:
+                return new_icon
+            else:
+                return grab_object.make_url_absolute('/favicon.ico')
+        return grab_object.make_url_absolute('/favicon.ico')
 
 
 def get_articles_from_rss(url, source, parse_image=True, put_grab=False):
@@ -137,9 +146,51 @@ def get_articles_from_rss(url, source, parse_image=True, put_grab=False):
             if new_url:
                 url = new_url
             else:
-                return []
+                entries = []
+                
+                parsed_entries = feedparser.parse(g.doc.body).entries
+                g.config['icon_path'] = parse_icon(g)
+                
+                for entry in parsed_entries:
+                    cleaned = clean_text(entry['summary'], parse_image)
+                    text, image = cleaned
+                    if parse_image and not len(image):
+                        for link in entry['links']:
+                            if link.get('type', '').startswith('image/'):
+                                image = '<img src="{0}" />'.format(link['href'])
+                                text = image + text
+                                break
+                    
+                    entry = {'title': escape_title(entry['title']),
+                             'link': entry['link'],
+                             'source': source,
+                             'summary': text}
+                    
+                    entries.append(entry)
+                return (g, entries) if put_grab else entries
         else:
-            return []
+            entries = []
+            
+            parsed_entries = feedparser.parse(g.doc.body).entries
+            g.config['icon_path'] = parse_icon(g)
+            
+            for entry in parsed_entries:
+                cleaned = clean_text(entry['summary'], parse_image)
+                text, image = cleaned
+                if parse_image and not len(image):
+                    for link in entry['links']:
+                        if link.get('type', '').startswith('image/'):
+                            image = '<img src="{0}" />'.format(link['href'])
+                            text = image + text
+                            break
+                
+                entry = {'title': escape_title(entry['title']),
+                         'link': entry['link'],
+                         'source': source,
+                         'summary': text}
+                
+                entries.append(entry)
+            return (g, entries) if put_grab else entries
     
     g.config['icon_path'] = parse_icon(g)
     
