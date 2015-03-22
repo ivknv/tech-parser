@@ -27,6 +27,13 @@ def escape_title(s):
     
     return s
 
+def createGrab():
+    g = grab.Grab()
+    g.config['connect_timeout'] = 15
+    g.config['timeout'] = 30
+    
+    return g
+
 def parse_article_image(article, site_url=''):
     try:
         img = article.cssselect('img:first-child')[0]
@@ -99,7 +106,7 @@ def parse_rss(url, source, icon='', color='#000'):
             'source': source,
             'summary': i['summary']} for i in entries]
 
-def parse_icon(grab_object):
+def parse_icon(grab_object, default=None):
     elem_list = grab_object.doc.tree.cssselect('link[rel~="icon"], link[rel~="ICON"]')
     if elem_list:
         new_icon = grab_object.make_url_absolute(elem_list[0].attrib.get('href'))
@@ -109,32 +116,54 @@ def parse_icon(grab_object):
     parsed_url = urlparse(grab_object.config['url'])
             
     if parsed_url.path in {'/', ''}:
+        if default is None:
+            default = grab_object.make_url_absolute('/favicon.ico')
         elem_list = grab_object.doc.tree.cssselect('link[rel~="icon"], link[rel~="ICON"]')
         if elem_list:
             new_icon = grab_object.make_url_absolute(elem_list[0].attrib.get('href'))
             if new_icon:
                 return new_icon
             else:
-                return grab_object.make_url_absolute('/favicon.ico')
+                return default
 
-        return grab_object.make_url_absolute('/favicon.ico')
+        return default
     else:
         domain = '{0}://{1}'.format(parsed_url.scheme, parsed_url.netloc)
         grab_object.go(domain)
+        if default is None:
+            default = grab_object.make_url_absolute('/favicon.ico')
         elem_list = grab_object.doc.tree.cssselect('link[rel~="icon"], link[rel~="ICON"]')
         if elem_list:
             new_icon = grab_object.make_url_absolute(elem_list[0].attrib.get('href'))
             if new_icon:
                 return new_icon
             else:
-                return grab_object.make_url_absolute('/favicon.ico')
-        return grab_object.make_url_absolute('/favicon.ico')
+                return default
+        return default
 
+def findFeedLink(grab_object):
+    elements = grab_object.doc.tree.cssselect('a[href]')
+    for element in elements:
+        words = set(element.text_content().strip().lower().split())
+        if words.intersection({'atom', 'rss', 'feed', 'subscribe'}):
+            return grab_object.make_url_absolute(element.attrib.get('href', 'about:blank'))
+    return 'about:blank'
+
+def makeLinksAbsolute(g):
+    g.doc.tree.rewrite_links(lambda x: g.make_url_absolute(x))
+    for i in g.doc.tree.cssselect('img'):
+        i.attrib['src'] = i.attrib.get('src')
+
+def makeImageLinksAbsolute(entry, g):
+    summary_element = fromstring(entry['summary'])
+    for i in summary_element.cssselect('img'):
+        i.attrib['src'] = g.make_url_absolute(i.attrib.get('src'))
+    entry['summary'] = tostring(summary_element).decode()
 
 def get_articles_from_rss(url, source, parse_image=True, put_grab=False):
-    g = grab.Grab()
-    g.config['connect_timeout'] = 15
+    g = createGrab()
     g.go(url)
+    makeLinksAbsolute(g)
     
     content_type = g.doc.headers.get_content_type()
     
@@ -149,15 +178,15 @@ def get_articles_from_rss(url, source, parse_image=True, put_grab=False):
                 entries = []
                 
                 parsed_entries = feedparser.parse(g.doc.body).entries
-                g.config['icon_path'] = parse_icon(g)
                 
                 for entry in parsed_entries:
+                    makeImageLinksAbsolute(entry, g)
                     cleaned = clean_text(entry['summary'], parse_image)
                     text, image = cleaned
                     if parse_image and not len(image):
                         for link in entry['links']:
                             if link.get('type', '').startswith('image/'):
-                                image = '<img src="{0}" />'.format(link['href'])
+                                image = '<img src="{0}" />'.format(g.make_url_absolute(link['href']))
                                 text = image + text
                                 break
                     
@@ -167,20 +196,24 @@ def get_articles_from_rss(url, source, parse_image=True, put_grab=False):
                              'summary': text}
                     
                     entries.append(entry)
+                
+                g.config['icon_path'] = parse_icon(g)
+                
                 return (g, entries) if put_grab else entries
         else:
             entries = []
             
             parsed_entries = feedparser.parse(g.doc.body).entries
-            g.config['icon_path'] = parse_icon(g)
+            link = findFeedLink(g)
             
             for entry in parsed_entries:
+                makeImageLinksAbsolute(entry, g)
                 cleaned = clean_text(entry['summary'], parse_image)
                 text, image = cleaned
                 if parse_image and not len(image):
                     for link in entry['links']:
                         if link.get('type', '').startswith('image/'):
-                            image = '<img src="{0}" />'.format(link['href'])
+                            image = '<img src="{0}" />'.format(g.make_url_absolute(link['href']))
                             text = image + text
                             break
                 
@@ -190,14 +223,41 @@ def get_articles_from_rss(url, source, parse_image=True, put_grab=False):
                          'summary': text}
                 
                 entries.append(entry)
+            g.config['icon_path'] = parse_icon(g, default='')
+            
+            if not entries and link != 'about:blank':
+                g.go(link)
+                makeLinksAbsolute(g)
+                
+                parsed_entries = feedparser.parse(g.doc.body).entries
+                
+                for entry in parsed_entries:
+                    makeImageLinksAbsolute(entry, g)
+                    cleaned = clean_text(entry['summary'], parse_image)
+                    text, image = cleaned
+                    if parse_image and not len(image):
+                        for link in entry['links']:
+                            if link.get('type', '').startswith('image/'):
+                                image = '<img src="{0}" />'.format(g.make_url_absolute(link['href']))
+                                text = image + text
+                                break
+                    
+                    entry = {'title': escape_title(entry['title']),
+                             'link': entry['link'],
+                             'source': source,
+                             'summary': text}
+                    
+                    entries.append(entry)
+                if not g.config['icon_path']:
+                    g.config['icon_path'] = parse_icon(g)
+                
             return (g, entries) if put_grab else entries
     
     g.config['icon_path'] = parse_icon(g)
     
     # Reset grab object. Weird things happen (in this case) if you don't do that.
     # And g.reset() doesn't fix that
-    g2 = grab.Grab()
-    g2.config['connect_timeout'] = 15
+    g2 = createGrab()
     g2.config['icon_path'] = g.config['icon_path']
     g = g2
     
@@ -205,18 +265,20 @@ def get_articles_from_rss(url, source, parse_image=True, put_grab=False):
     del g2
     
     g.go(url)
+    makeLinksAbsolute(g)
     
     parsed_entries = feedparser.parse(g.doc.body).entries
     
     entries = []
     
     for entry in parsed_entries:
+        makeImageLinksAbsolute(entry, g)
         cleaned = clean_text(entry['summary'], parse_image)
         text, image = cleaned
         if parse_image and not len(image):
             for link in entry['links']:
                 if link.get('type', '').startswith('image/'):
-                    image = '<img src="{0}" />'.format(link['href'])
+                    image = '<img src="{0}" />'.format(g.make_url_absolute(link['href']))
                     text = image + text
                     break
         
