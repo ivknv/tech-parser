@@ -22,10 +22,10 @@ class TextClassifier(object):
         (re.compile(r'\b(?P<g1>\w+)\'(s|m|d|ve|re)\b'), '\g<g1>'),
         (re.compile(r'\b(?P<g1>\w+)n\'t\b'), '\g<g1>'),
         (re.compile(r'\b(' + r'|'.join(ENGLISH_STOPWORDS) + r')\b'), ''),
-        (re.compile(r'<.*?>'), ' '),
         (re.compile(r'\d+'), '')]
     unicode_chr_regex = re.compile(r'&#?\w+;')
     tokenize_regex = re.compile(r'\w+\'\w{1,2}|\w+[#\+]*')
+    remove_tags_regex = re.compile(r'<.*?>')
     
     def __init__(self, categories):
         self._counts_change, self.counts, self.sample_counts, self._sample_counts_change = {}, {}, {}, {}
@@ -79,6 +79,10 @@ class TextClassifier(object):
         return new
     
     @staticmethod
+    def remove_tags(text, replacement=' '):
+        return TextClassifier.remove_tags_regex.sub(replacement, text)
+    
+    @staticmethod
     def tokenize(text):
         return TextClassifier.tokenize_regex.findall(text)
     
@@ -94,7 +98,7 @@ class TextClassifier(object):
     @staticmethod
     def prepare_words(text):
         text = TextClassifier.apply_regexes(TextClassifier.unescape(text.lower()))
-        text = TextClassifier.tokenize(text)
+        text = TextClassifier.tokenize(TextClassifier.remove_tags(text))
         return TextClassifier.replace_irregular_words(text)
     
     @staticmethod

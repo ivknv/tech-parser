@@ -344,6 +344,18 @@
 				Enable Pocket
 			</label>
 		</div>
+
+        <div class="margin-bottom">
+            <label for="v_perfect_word_count" data-name="perfect_word_count">
+                Perfect word count:
+            </label>
+            <input type="text" name="v_perfect_word_count"
+                class="input"
+                % if config.perfect_word_count:
+                    value="${str(config.perfect_word_count)[1:-1]}"
+                % endif
+                autocomplete="off" />
+        </div>
 		
 		${SubmitButton('variables')}
 	</form>

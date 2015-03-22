@@ -451,9 +451,6 @@ function AJAXSubmitForm(type) {
     /* Find corresponding form */
     var $form = $('#' + type + '_form');
     
-    /* Clear all the error messages */
-    $form.find('.error-block').remove();
-    
     /* Send AJAX request */
 	$.post('/update/', $form.serialize(), function(data) {
         /* Update fields and they attributes that were changed (including hashes) */
@@ -481,6 +478,9 @@ function AJAXSubmitForm(type) {
                 $form.find('[data-name=rss_feed_' + v[1] + ']').parent().remove();
             });
         }
+
+        /* Clear all the error messages */
+        $form.find('.error-block').remove();
         
         /* Show errors */
         ShowErrors(data.errors);
