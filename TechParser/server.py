@@ -34,6 +34,7 @@ disliked_links = []
 errors = {}
 
 CSS_NAME_REGEX = re.compile(r'-?[_a-zA-Z]+[_a-zA-Z0-9-]*$')
+COMMA_SEPARATE_REGEX = re.compile(r'[ ]*,[ ]*')
 
 def encoded_dict(in_dict):
     out_dict = {}
@@ -48,6 +49,9 @@ def encoded_dict(in_dict):
 
 def remove_tags(s):
     return REMOVE_TAGS_REGEX.sub('', s)
+
+def splitByCommas(text):
+    return [i for i in COMMA_SEPARATE_REGEX.split(text) if i]
 
 def split_into_pages(articles, n=30):
     """Split list into pages"""
@@ -129,6 +133,10 @@ class Validator(object):
             
             if data['data_format'] not in {'json', 'pickle', 'db'}:
                 self.add_error('data_format', "data_format should be 'json', 'pickle' or 'db'")
+            
+            for i in data['perfect_word_count']:
+                if i < 1:
+                    self.add_error('perfect_word_count', 'Each number in perfect_word_count should be greater than 0')
         elif data['type'] == 'rss_feeds':
             feed = data['rss_feed']
             feed_name = data['rss_feed_name']
@@ -447,6 +455,21 @@ def update_config():
         
         data['enable_pocket'] = request.POST.getunicode('v_enable_pocket', False) == 'on'
         data['type'] = type_
+        perfect_word_count = request.POST.getunicode('v_perfect_word_count')
+        
+        if perfect_word_count:
+            try:
+                perfect_word_count = tuple(int(i) for i in splitByCommas(perfect_word_count))
+            except ValueError:
+                validator.add_error('perfect_word_count', 'Each number in perfect_word_count should be an integer')
+                perfect_word_count = tuple()
+        else:
+            if perfect_word_count is None:
+                perfect_word_count = get_conf.config.perfect_word_count
+            else:
+                perfect_word_count = tuple()
+        
+        data['perfect_word_count'] = perfect_word_count
         
         validator.validate(**data)
         
@@ -469,6 +492,9 @@ def update_config():
         get_conf.config.password_variable = data['password_variable']
         get_conf.config.password = data['password']
         get_conf.config.enable_pocket = data['enable_pocket'] 
+        get_conf.config.perfect_word_count = data['perfect_word_count']
+        if not validator.errors.get('perfect_word_count'):
+            get_conf.config.perfect_word_count = perfect_word_count
     elif type_ == 'parsers':
         for parser in get_conf.config.sites_to_parse.values():
             h = parser['hash']

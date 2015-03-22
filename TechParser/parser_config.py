@@ -283,3 +283,7 @@ enable_pocket = False
 
 # If json_config is set to True it will allow you to edit configuration in your browser
 json_config = True
+
+# Range of target word counts.
+# The closer word count of article to one of these numbers, the higher score it has
+perfect_word_count = (25, 50, 100, 150, 300, 600, 1200)

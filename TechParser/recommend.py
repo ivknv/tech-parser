@@ -15,6 +15,20 @@ if get_conf.config is None:
 
 TextClassifier.load_irregular_words()
 
+def findNearestNumber(n, numbers):
+    nearest = numbers[0]
+    min_distance = abs(n - nearest)
+    for i in numbers[1:]:
+        d = abs(n - i)
+        if d < min_distance:
+            min_distance, nearest = d, i
+    
+    return nearest
+
+def rankByWordCount(num_words):
+    n = findNearestNumber(num_words, get_conf.config.perfect_word_count)
+    return 1.0 - abs(num_words - n) / (num_words + n)
+
 def rank_articles(articles):
     processed, scores = [], []
     
@@ -48,7 +62,17 @@ def rank_articles(articles):
         if article in processed:
             continue
         
-        score = classifier.classify_article(article)['interesting']
+        article_text = article['title'] + ' ' + article['summary']
+        article_text = classifier.unescape(article_text)
+        article_text = classifier.remove_tags(article_text).lower()
+        words = classifier.tokenize(article_text)
+        words = Counter(classifier.tokenize(classifier.apply_regexes(article_text)))
+        del article_text
+        
+        score = classifier.classify_features(words)['interesting']
+        if get_conf.config.perfect_word_count:
+            num_words = len(words)
+            score = (score + rankByWordCount(num_words)) / 2
         
         processed.append(article)
         scores.append(score)

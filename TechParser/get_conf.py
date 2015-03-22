@@ -50,6 +50,7 @@ class Config(object):
                 pass
         self.enable_pocket = kwargs.get('enable_pocket')
         self.json_config = kwargs.get('json_config', False)
+        self.perfect_word_count = kwargs.get('perfect_word_count')
         
         auto_fix_config(self)
         
@@ -89,6 +90,7 @@ class Config(object):
             d['password'] = module.password
         d['enable_pocket'] = module.enable_pocket
         d['json_config'] = module.json_config
+        d['perfect_word_count'] = module.perfect_word_count
         
         return Config(**d)
 
@@ -184,3 +186,4 @@ def auto_fix_config(conf=None):
     setdefault(conf, 'password', os.environ.get(conf.password_variable, ''))
     setdefault(conf, 'enable_pocket', False)
     setdefault(conf, 'json_config', False)
+    setdefault(conf, 'perfect_word_count', (25, 50, 100, 150, 300, 600, 1200))
