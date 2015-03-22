@@ -160,6 +160,31 @@ def makeImageLinksAbsolute(entry, g):
         i.attrib['src'] = g.make_url_absolute(i.attrib.get('src'))
     entry['summary'] = tostring(summary_element).decode()
 
+def extractEntries(grab_object, source, parse_image=True):
+    entries = []
+    
+    parsed_entries = feedparser.parse(grab_object.doc.body).entries
+    
+    for entry in parsed_entries:
+        makeImageLinksAbsolute(entry, grab_object)
+        cleaned = clean_text(entry['summary'], parse_image)
+        text, image = cleaned
+        if parse_image and not len(image):
+            for link in entry['links']:
+                if link.get('type', '').startswith('image/'):
+                    image = '<img src="{0}" />'.format(grab_object.make_url_absolute(link['href']))
+                    text = image + text
+                    break
+        
+        entry = {'title': escape_title(entry['title']),
+                 'link': entry['link'],
+                 'source': source,
+                 'summary': text}
+        
+        entries.append(entry)
+    
+    return entries
+
 def get_articles_from_rss(url, source, parse_image=True, put_grab=False):
     g = createGrab()
     g.go(url)
@@ -175,79 +200,24 @@ def get_articles_from_rss(url, source, parse_image=True, put_grab=False):
             if new_url:
                 url = new_url
             else:
-                entries = []
-                
-                parsed_entries = feedparser.parse(g.doc.body).entries
-                
-                for entry in parsed_entries:
-                    makeImageLinksAbsolute(entry, g)
-                    cleaned = clean_text(entry['summary'], parse_image)
-                    text, image = cleaned
-                    if parse_image and not len(image):
-                        for link in entry['links']:
-                            if link.get('type', '').startswith('image/'):
-                                image = '<img src="{0}" />'.format(g.make_url_absolute(link['href']))
-                                text = image + text
-                                break
-                    
-                    entry = {'title': escape_title(entry['title']),
-                             'link': entry['link'],
-                             'source': source,
-                             'summary': text}
-                    
-                    entries.append(entry)
+                entries = extractEntries(g, source, parse_image)
                 
                 g.config['icon_path'] = parse_icon(g)
                 
                 return (g, entries) if put_grab else entries
         else:
-            entries = []
-            
-            parsed_entries = feedparser.parse(g.doc.body).entries
+            entries = extractEntries(g, source, parse_image)
+
             link = findFeedLink(g)
             
-            for entry in parsed_entries:
-                makeImageLinksAbsolute(entry, g)
-                cleaned = clean_text(entry['summary'], parse_image)
-                text, image = cleaned
-                if parse_image and not len(image):
-                    for link in entry['links']:
-                        if link.get('type', '').startswith('image/'):
-                            image = '<img src="{0}" />'.format(g.make_url_absolute(link['href']))
-                            text = image + text
-                            break
-                
-                entry = {'title': escape_title(entry['title']),
-                         'link': entry['link'],
-                         'source': source,
-                         'summary': text}
-                
-                entries.append(entry)
             g.config['icon_path'] = parse_icon(g, default='')
             
             if not entries and link != 'about:blank':
                 g.go(link)
                 makeLinksAbsolute(g)
                 
-                parsed_entries = feedparser.parse(g.doc.body).entries
+                entries = extractEntries(g, source, parse_image)
                 
-                for entry in parsed_entries:
-                    makeImageLinksAbsolute(entry, g)
-                    cleaned = clean_text(entry['summary'], parse_image)
-                    text, image = cleaned
-                    if parse_image and not len(image):
-                        for link in entry['links']:
-                            if link.get('type', '').startswith('image/'):
-                                image = '<img src="{0}" />'.format(g.make_url_absolute(link['href']))
-                                text = image + text
-                                break
-                    
-                    entry = {'title': escape_title(entry['title']),
-                             'link': entry['link'],
-                             'source': source,
-                             'summary': text}
-                    
-                    entries.append(entry)
                 if not g.config['icon_path']:
                     g.config['icon_path'] = parse_icon(g)
                 
@@ -269,25 +239,7 @@ def get_articles_from_rss(url, source, parse_image=True, put_grab=False):
     
     parsed_entries = feedparser.parse(g.doc.body).entries
     
-    entries = []
-    
-    for entry in parsed_entries:
-        makeImageLinksAbsolute(entry, g)
-        cleaned = clean_text(entry['summary'], parse_image)
-        text, image = cleaned
-        if parse_image and not len(image):
-            for link in entry['links']:
-                if link.get('type', '').startswith('image/'):
-                    image = '<img src="{0}" />'.format(g.make_url_absolute(link['href']))
-                    text = image + text
-                    break
-        
-        entry = {'title': escape_title(entry['title']),
-                 'link': entry['link'],
-                 'source': source,
-                 'summary': text}
-        
-        entries.append(entry)
+    entries = extractEntries(g, source, parse_image)
     
     return (g, entries) if put_grab else entries
 
