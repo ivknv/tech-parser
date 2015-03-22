@@ -251,6 +251,10 @@ function onLoad() {
 		
 		$('#main').swipe({swipeLeft: swipefunc, swipeRight: swipefunc,
 			treshold: 0});
+        
+        $('.article > h3 > a > img').error(function() {
+           $(this).unbind('error').attr('src', '/static/icons/article.ico');
+        });
 	});
 }
 
