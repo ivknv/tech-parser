@@ -23,6 +23,19 @@ function toggleText(element) {
 }
 
 /**
+ * Check wheteher it's mobile or a desktop browser
+ * @returns {Boolean}
+ */
+function isMobile() {
+    try {
+        document.createEvent("TouchEvent");
+        return true;
+    } catch(e) {
+        return false;
+    }
+}
+
+/**
  * Adds article to history or blacklist depending on arguments via AJAX request
  * @param {String} where Can be 'history' or 'blacklist'. Is a destination the article needs to be added to
  * @param {jQuery} $element Article element
@@ -217,40 +230,42 @@ function onLoad() {
 		$('.triangle-spoiler').click(ToggleSpoilerWrapper);
 		
 		$('.delete-icon').click(SpoilerIconOnClick);
-		
-        /* Swipe gestures to change page */
-		var swipefunc = function(e, d, distance) {
-			if (distance < 150) {
-				return;
-			}
-			var curHref = window.location.href;
-			var vars = curHref.match(/\?.+/);
-			curHref = curHref.replace(/\?.*/g, '');
-			
-			var pgnum = curHref.match(/\d+$/);
-			if (pgnum === null) {
-				pgnum = "1";
-			} else {
-				curHref = curHref.slice(0, curHref.length-(pgnum.length+1));
-			}
-			if (d == 'left')
-				var newPgnum = parseInt(pgnum) + 1;
-			else
-				var newPgnum = parseInt(pgnum) - 1;
-			
-			var newUrl = curHref;
-			if (curHref[curHref.length-1] != '/') {
-				newUrl += '/';
-			}
-			newUrl += newPgnum;
-			if (vars !== null) {
-				newUrl += vars;
-			}
-			window.location.href = newUrl;
-		};
-		
-		$('#main').swipe({swipeLeft: swipefunc, swipeRight: swipefunc,
-			treshold: 0});
+        
+        if (isMobile()) {
+            /* Swipe gestures to change page */
+            var swipefunc = function(e, d, distance, duration, fingerCount) {
+                if (fingerCount == 0 || distance < 150) {
+                    return;
+                }
+                var curHref = window.location.href;
+                var vars = curHref.match(/\?.+/);
+                curHref = curHref.replace(/\?.*/g, '');
+                
+                var pgnum = curHref.match(/\d+$/);
+                if (pgnum === null) {
+                    pgnum = "1";
+                } else {
+                    curHref = curHref.slice(0, curHref.length-(pgnum.length+1));
+                }
+                if (d == 'left')
+                    var newPgnum = parseInt(pgnum) + 1;
+                else
+                    var newPgnum = parseInt(pgnum) - 1;
+                
+                var newUrl = curHref;
+                if (curHref[curHref.length-1] != '/') {
+                    newUrl += '/';
+                }
+                newUrl += newPgnum;
+                if (vars !== null) {
+                    newUrl += vars;
+                }
+                window.location.href = newUrl;
+            };
+            
+            $('body').swipe({swipeLeft: swipefunc, swipeRight: swipefunc,
+                treshold: 0});
+        }
         
         $('.article > h3 > a > img').error(function() {
            $(this).unbind('error').attr('src', '/static/icons/article.ico');
