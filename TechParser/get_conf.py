@@ -164,6 +164,8 @@ def set_config_auto():
             set_config_from_logdir('user_parser_config.json')
         except ValueError:
             pass
+        except IOError:
+            pass
 
 def setdefault(obj, attr, value=None):
     try:
