@@ -27,7 +27,11 @@ class Config(object):
         self.db_path_variable = kwargs.get('db_path_variable', 'DATABASE_URL')
         if not hide or not self.db_path_variable:
             try:
-                self.db_path = kwargs['db_path']
+                db_path = db_path = os.environ.get(self.db_path_variable)
+                if db_path:
+                    self.db_path = db_path
+                else:
+                    self.db_path = kwargs['db_path']
             except KeyError:
                 pass
         self.host = kwargs.get('host')
@@ -38,21 +42,29 @@ class Config(object):
         self.archive_db_path_variable = kwargs.get('archive_db_path_variable', 'ARCHIVE_DATABASE_URL')
         if not hide or not self.archive_db_path_variable:
             try:
-                self.archive_db_path = kwargs['archive_db_path']
+                archive_db_path = os.environ.get(self.archive_db_path_variable)
+                if archive_db_path:
+                    self.archive_db_path = archive_db_path
+                else:
+                    self.archive_db_path = kwargs['archive_db_path']
             except KeyError:
                 pass
         self.data_format = kwargs.get('data_format')
         self.password_variable = kwargs.get('password_variable', 'TechParser_PASSWORD')
         if not hide or not self.password_variable:
             try:
-                self.password = kwargs['password']
+                password = os.environ.get(self.password_variable)
+                if password:
+                    self.password = password
+                else:
+                    self.password = kwargs['password']
             except KeyError:
                 pass
         self.enable_pocket = kwargs.get('enable_pocket')
         self.json_config = kwargs.get('json_config', False)
         self.perfect_word_count = kwargs.get('perfect_word_count')
         
-        auto_fix_config(self)
+        auto_fix_config(self, hide=hide)
         
         self.filename = filename
     
@@ -75,7 +87,7 @@ class Config(object):
         d['db'] = module.db
         d['db_path_variable'] = module.db_path_variable
         if not hide or not d['db_path_variable']:
-            d['db_path'] = module.db_path
+            d['db_path'] = os.environ.get(d['db_path_variable'], module.db_path)
         d['host'] = module.host
         d['port'] = module.port
         d['num_threads'] = module.num_threads
@@ -83,14 +95,15 @@ class Config(object):
         d['save_articles'] = module.save_articles
         d['archive_db_path_variable'] = module.archive_db_path_variable
         if not hide or not d['archive_db_path_variable']:
-            d['archive_db_path'] = module.archive_db_path
+            d['archive_db_path'] = os.environ.get(d['archive_db_path_variable'], module.archive_db_path)
         d['data_format'] = module.data_format
         d['password_variable'] = module.password_variable
         if not hide or not d['password_variable']:
-            d['password'] = module.password
+            d['password'] = os.environ.get(d['password_variable'], module.password)
         d['enable_pocket'] = module.enable_pocket
         d['json_config'] = module.json_config
         d['perfect_word_count'] = module.perfect_word_count
+        d['hide'] = hide
         
         return Config(**d)
 
@@ -158,7 +171,7 @@ def setdefault(obj, attr, value=None):
     except AttributeError:
         setattr(obj, attr, value)
 
-def auto_fix_config(conf=None):
+def auto_fix_config(conf=None, hide=False):
     if conf is None:
         conf = config
     setdefault(conf, 'sites_to_parse', {})
@@ -177,13 +190,16 @@ def auto_fix_config(conf=None):
     setdefault(conf, 'server', 'auto')
     setdefault(conf, 'update_interval', 1800)
     setdefault(conf, 'archive_db_path_variable', '')
-    setdefault(conf, 'archive_db_path',
-               os.environ.get(conf.archive_db_path_variable, 'default'))
+    if not hide:
+        setdefault(conf, 'archive_db_path',
+                   os.environ.get(conf.archive_db_path_variable, 'default'))
     setdefault(conf, 'db_path_variable', '')
-    setdefault(conf, 'db_path', os.environ.get(conf.db_path_variable, ''))
+    if not hide:
+        setdefault(conf, 'db_path', os.environ.get(conf.db_path_variable, ''))
     setdefault(conf, 'data_format', 'pickle')
     setdefault(conf, 'password_variable', '')
-    setdefault(conf, 'password', os.environ.get(conf.password_variable, ''))
+    if not hide:
+        setdefault(conf, 'password', os.environ.get(conf.password_variable, ''))
     setdefault(conf, 'enable_pocket', False)
     setdefault(conf, 'json_config', False)
     setdefault(conf, 'perfect_word_count', (25, 50, 100, 150, 300, 600, 1200))
