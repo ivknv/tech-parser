@@ -227,9 +227,12 @@ def dump_articles(filename="articles_dumped"):
                 source = article["source"]
                 
                 try:
-                    archiveDB.execute_query(Q_SAVE_ARTICLES, [(title, link, source)])
+                    archiveDB.execute_query(Q_SAVE_ARTICLES, [(title, link, source)], commit=False)
                 except IntegrityError:
-                    archiveDB.con.rollback()
+                    if archiveDB.query_count > 0:
+                        archiveDB.commit()
+                    archiveDB.rollback()
+            archiveDB.commit()
                 
         num = len(recommend.get_interesting_articles())
         num += len(recommend.get_blacklist())

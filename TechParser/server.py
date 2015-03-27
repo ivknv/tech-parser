@@ -29,14 +29,16 @@ mylookup = TemplateLookup(directories=template_dir_path,
 
 liked = []
 disliked = []
-liked_links = []
-disliked_links = []
+liked_links = set()
+disliked_links = set()
 errors = {}
+cache = {'templates': {}, 'pages': {}, 'history': {}, 'blacklist': {}}
 
 CSS_NAME_REGEX = re.compile(r'-?[_a-zA-Z]+[_a-zA-Z0-9-]*$')
 COMMA_SEPARATE_REGEX = re.compile(r'[ ]*,[ ]*')
 
 def encoded_dict(in_dict):
+    # TODO remove this function
     out_dict = {}
     for k, v in in_dict.items():
         if isinstance(v, unicode__):
@@ -56,6 +58,8 @@ def splitByCommas(text):
 def split_into_pages(articles, n=30):
     """Split list into pages"""
     
+    # TODO return only selected page
+    
     pages = []
     i = 0
     
@@ -66,6 +70,7 @@ def split_into_pages(articles, n=30):
         if i == 0:
             pages.append([j])
         else:
+            # TODO cache pages[-1]
             pages[-1].append(j)
         
         i += 1
@@ -80,6 +85,7 @@ def logged_in():
     return check_session_existance(get_sid()) or password
 
 def encode_url(url):
+    # TODO encode only url
     return urlencode(encoded_dict({'': url}))[1:]
 
 def login_required(func):
@@ -174,15 +180,17 @@ def update_liked_disliked():
 
     config = get_conf.config
     
+    # TODO Update instead of replace
+    # TODO split this function into two different
+    
     liked = recommend.get_interesting_articles()
     disliked = recommend.get_blacklist()
-    liked_links = [i['link'] for i in liked]
-    disliked_links = [i['link'] for i in disliked]
+    liked_links = {i['link'] for i in liked}
+    disliked_links = {i['link'] for i in disliked}
 
 @route('/histadd/<addr:path>')
 @login_required
 def add_to_history(addr):
-    
     recommend.add_article(addr)
     
     update_liked_disliked()
@@ -212,9 +220,11 @@ def rm_from_history(addr):
 @route('/history/<page_number>')
 @login_required
 def show_history(page_number=1):
+    # TODO cache template
     history_page = mylookup.get_template('history.html')
     q = unicode_(request.GET.getunicode('q', ''))
     
+    # TODO cache data
     articles = recommend.get_interesting_articles()
     
     try:
@@ -228,6 +238,7 @@ def show_history(page_number=1):
     
     articles = map(lambda x: escape_link(x), articles)
     
+    # TODO reduce memory usage
     all_articles = articles
     articles = split_into_pages(articles, 30)
     try:
@@ -245,9 +256,11 @@ def show_history(page_number=1):
 @route('/blacklist/<page_number>')
 @login_required
 def show_blacklist(page_number=1):
+    # TODO cache template
     blacklist_page = mylookup.get_template('blacklist.html')
     q = unicode_(request.GET.getunicode('q', ''))
     
+    # TODO cache data
     articles = recommend.get_blacklist()
     
     try:
@@ -261,6 +274,7 @@ def show_blacklist(page_number=1):
     
     articles = map(lambda x: escape_link(x), articles)
     
+    # TODO reduce memory usage
     all_articles = articles
     articles = split_into_pages(articles, 30)
     try:
@@ -277,6 +291,8 @@ def show_blacklist(page_number=1):
 def has_words(qs, article):
     """Check if article contains words"""
     
+    # TODO use sets
+    
     title = remove_tags(unicode_(article['title']).lower())
     summary = remove_tags(unicode_(article['summary']).lower())
     
@@ -288,6 +304,8 @@ def has_words(qs, article):
 def escape_link(article):
     """Escape HTML tags, etc."""
     
+    # TODO reduce memory usage
+    
     new_article = {}
     new_article.update(article)
     new_article['original_link'] = new_article['link']
@@ -297,6 +315,7 @@ def escape_link(article):
 
 def set_liked(articles):
     for article in articles:
+        # TODO optimize
         article['liked'] = article['original_link'] in liked_links
         article['disliked'] = article['original_link'] in disliked_links
 
@@ -306,6 +325,7 @@ def set_liked(articles):
 def article_list(page_number=1):
     """Show list of articles | Search for articles"""
     
+    # TODO cache template
     main_page = mylookup.get_template("articles.html")
     q = unicode_(request.GET.getunicode('q', ''))
     
@@ -318,6 +338,7 @@ def article_list(page_number=1):
         if q:
             articles = select_all_articles()
             qs = q.lower().split()
+            # TODO reduce memory usage
             articles = filter(lambda x: has_words(qs, x), articles.values())
             articles = map(lambda x: escape_link(x), articles)
             articles = split_into_pages(articles, 30)
@@ -331,6 +352,7 @@ def article_list(page_number=1):
             requested_page = list(map(lambda x: escape_link(x), requested_page.values()))
             num_pages = int(get_var('num_pages', 1))
     else:
+        # TODO reduce memory usage
         try:
             articles = load_articles()
         except IOError:
@@ -378,6 +400,7 @@ def login():
                 expires=expiration_date)
             redirect(ret)
         else:
+            # TODO cache template
             template = mylookup.get_template('login.html')
             return template.render(return_path=encode_url(ret),
                 error=password is not None)
@@ -411,10 +434,12 @@ def edit_config():
     return template.render(config=config, page='edit', q='',
                            errors=dup_errors)
 
+# TODO remove this function
 def asserte(cond, msg):
     if not cond:
         errors[msg[0]] = errors.get(msg[0], []) + [msg[1]]
 
+# TODO remove this function
 def try_asserte(value, func, msg):
     try:
         return func(value)
