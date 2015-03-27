@@ -136,6 +136,8 @@ def get_blacklist():
     
     db.Database.main_database.execute_query(Q_GET_BLACKLIST)
     
+    # TODO return generator
+    # TODO reduce memory usage
     return articles_from_list(db.Database.main_database.fetchall(), disliked=True)
 
 def get_interesting_articles():
@@ -143,6 +145,8 @@ def get_interesting_articles():
     
     db.Database.main_database.execute_query(Q_GET_HISTORY)
     
+    # TODO return generator
+    # TODO reduce memory usage
     return articles_from_list(db.Database.main_database.fetchall(), liked=True)
 
 def generate_sessionid(num_bytes=16):
@@ -209,6 +213,8 @@ def select_articles_from_page(page_number):
     mainDB.execute_query(Q_SELECT_FROM_PAGE, [(page_number,)])
     articles = OrderedDict()
     
+    # TODO return generator
+    # TODO reduce memory usage
     for i in mainDB.fetchall():
         link = i[2]
         articles[link] = {'title': i[1],
@@ -227,6 +233,8 @@ def select_all_articles():
     
     mainDB.execute_query(Q_SELECT_ALL_ARTICLES, [tuple()])
     articles = OrderedDict()
+    # TODO return generator
+    # TODO reduce memory usage
     for i in mainDB.fetchall():
         link = i[2]
         articles[link] = {'title': i[1],
@@ -265,8 +273,11 @@ def save_articles(articles):
         parameters = [(title, link, summary, source, fromrss, icon, color, page_number)]
         
         try:
-            mainDB.execute_query(Q_ADD_ARTICLE, parameters)
+            mainDB.execute_query(Q_ADD_ARTICLE, parameters, commit=False)
         except IntegrityError:
-            mainDB.con.rollback()
+            if mainDB.query_count > 0:
+                mainDB.commit()
+            mainDB.rollback()
+    mainDB.commit()
     
     set_var('num_pages', str(num_pages))
