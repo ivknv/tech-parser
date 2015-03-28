@@ -9,12 +9,12 @@ try:
 except ImportError:
     pass
 
-def SERIAL(database):
+def ID(database):
     if database.db not in {'sqlite', 'postgresql'}:
         raise UnsupportedDBError()
     if database.db == 'sqlite':
         return 'INTGER PRIMARY KEY AUTOINCREMENT'
-    return 'SERIAL'
+    return 'SERIAL PRIMARY KEY'
 
 def DATETIME(database):
     if database.db not in {'sqlite', 'postgresql'}:
@@ -37,7 +37,7 @@ def alter_main_database(verbose=False):
     elif main_db.db == 'postgresql':
         DBError = psycopg2.ProgrammingError
     TABLES = ({'name': 'interesting_articles',
-        'columns': ({'name': 'id', 'type': SERIAL(main_db)},
+        'columns': ({'name': 'id', 'type': ID(main_db)},
             {'name': 'title', 'type': 'TEXT'},
             {'name': 'link', 'type': 'TEXT UNIQUE'},
             {'name': 'summary', 'type': 'TEXT'},
@@ -46,7 +46,7 @@ def alter_main_database(verbose=False):
             {'name': 'icon', 'type': 'TEXT'},
             {'name': 'color', 'type': 'TEXT'})},
         {'name': 'blacklist',
-        'columns': ({'name': 'id', 'type': SERIAL(main_db)},
+        'columns': ({'name': 'id', 'type': ID(main_db)},
             {'name': 'title', 'type': 'TEXT'},
             {'name': 'link', 'type': 'TEXT UNIQUE'},
             {'name': 'summary', 'type': 'TEXT'},
@@ -55,16 +55,16 @@ def alter_main_database(verbose=False):
             {'name': 'icon', 'type': 'TEXT'},
             {'name': 'color', 'type': 'TEXT'})},
         {'name': 'sessions',
-        'columns': ({'name': 'id', 'type': SERIAL(main_db)},
+        'columns': ({'name': 'id', 'type': ID(main_db)},
             {'name': 'sid', 'type': 'TEXT UNIQUE'},
             {'name': 'expires', 'type': DATETIME(main_db),
                 'default': __expiration_date(main_db)})},
         {'name': 'variables',
-        'columns': ({'name': 'id', 'type': SERIAL(main_db)},
+        'columns': ({'name': 'id', 'type': ID(main_db)},
             {'name': 'name', 'type': 'TEXT UNIQUE'},
             {'name': 'value', 'type': 'TEXT'})},
         {'name': 'blacklist',
-         'columns': ({'name': 'id', 'type': SERIAL(main_db)},
+         'columns': ({'name': 'id', 'type': ID(main_db)},
                      {'name': 'title', 'type': 'TEXT'},
                      {'name': 'link', 'type': 'TEXT UNIQUE'},
                      {'name': 'summary', 'type': 'TEXT'},
@@ -103,7 +103,7 @@ def alter_archive_database(verbose=False):
     elif archive_db.db == 'postgresql':
         DBError = psycopg2.ProgrammingError
     TABLES = ({'name': 'articles',
-        'columns': ({'name': 'id', 'type': SERIAL(archive_db)},
+        'columns': ({'name': 'id', 'type': ID(archive_db)},
             {'name': 'title', 'type': 'TEXT'},
             {'name': 'link', 'type': 'TEXT UNIQUE'},
             {'name': 'source', 'type': 'TEXT'})},)
