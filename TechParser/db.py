@@ -207,6 +207,14 @@ def select(what, from_where, condition='', order_by='', limit='', offset='', db=
         offset = ' OFFSET {0}'.format(offset)
     return Query(db, s.format(what, from_where, order_by, offset, limit, condition))
 
+def create_index(name, table_name, columns='', check_existance=True, unique=False):
+    s = 'CREATE {0}INDEX {{0}}{1} ON {{1}};'.format('UNIQUE ' if unique else '',
+                                                     ' IF NOT EXISTS' if check_existance else '')
+    if columns:
+        columns = '({0})'.format(', '.join(columns))
+    
+    return s.format(name, table_name + columns)
+
 def create_table(name, columns, check_existance=True, db='sqlite'):
     s = 'CREATE TABLE {0}{{0}}({{1}});'.format('IF NOT EXISTS ' if check_existance else '')
     s2 = ''
@@ -271,7 +279,7 @@ class MultiDBExpression(object):
         self.expressions = {k: v.format(PARAM=PARAMETER_SIGNS.get(k, '')) for k, v in expressions.items()}
 
 class ColumnType(object):
-    representations = {'sqlite': {'SERIAL': 'INTEGER PRIMARY KEY AUTOINCREMENT'},
+    representations = {'sqlite': {'SERIAL': 'INTEGER AUTOINCREMENT'},
                        'postgresql': {'DATETIME': 'TIMESTAMP'}}
     last_type = None
     
@@ -341,12 +349,16 @@ class Table(object):
     @classmethod
     def update(cls, columns, condition='', otherwise=''):
         return getMultiDBQuery(update, cls.name, columns, condition, otherwise)
+    
+    @classmethod
+    def create_index(cls, name, columns='', check_existance=True, unique=False):
+        return create_index(name, cls.name, columns, check_existance, unique)
 
 class Sessions(Table):
     name = 'sessions'
     order = ('id', 'sid', 'expires')
     class columns(object):
-        id = Column('id', 'serial')
+        id = Column('id', 'serial primary key')
         sid = Column('sid', 'text', unique=True)
         expires = Column('expires', 'datetime',
             default=MultiDBExpression(sqlite="(datetime('now', '+1 years'))",
@@ -356,7 +368,7 @@ class History(Table):
     name = 'interesting_articles'
     order = ('id', 'title', 'link', 'summary', 'source', 'fromrss', 'icon', 'color')
     class columns(object):
-        id = Column('id', 'serial')
+        id = Column('id', 'serial primary key')
         title = Column('title', 'text')
         link = Column('link', unique=True)
         summary = Column('summary')
@@ -375,7 +387,7 @@ class Variables(Table):
     name = 'variables'
     order = ('id', 'name', 'value')
     class columns(object):
-        id = Column('id', 'serial')
+        id = Column('id', 'serial primary key')
         name = Column('name', 'text', unique=True)
         value = Column('value')
 
@@ -389,7 +401,7 @@ class Archive(Table):
     name = 'articles'
     order = ('id', 'title', 'link', 'source')
     class columns(object):
-        id = Column('id', 'serial')
+        id = Column('id', 'serial primary key')
         title = Column('title', 'text')
         link = Column('link', unique=True)
         source = Column('source')
