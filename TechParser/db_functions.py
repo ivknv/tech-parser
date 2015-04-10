@@ -120,34 +120,45 @@ def add_to_interesting(article):
     except IntegrityError:
         db.Database.main_database.con.rollback()
 
-def articles_from_list(lst, liked=False, disliked=False):
-    return [{'title': x[0],
-            'link': x[1],
-            'summary': x[2],
-            'fromrss': x[3],
-            'icon': x[4],
-            'color': x[5],
-            'source': x[6],
+def article_from_list(lst, liked=False, disliked=False):
+    return {'title': lst[0],
+            'link': lst[1],
+            'summary': lst[2],
+            'fromrss': lst[3],
+            'icon': lst[4],
+            'color': lst[5],
+            'source': lst[6],
             'liked': liked,
-            'disliked': disliked} for x in lst]
+            'disliked': disliked}
+
+def articles_from_list(lst, liked=False, disliked=False):
+    return [article_from_list(x) for x in lst]
 
 def get_blacklist():
     """Get list of articles from blacklist"""
     
     db.Database.main_database.execute_query(Q_GET_BLACKLIST)
     
-    # TODO return generator
-    # TODO reduce memory usage
-    return articles_from_list(db.Database.main_database.fetchall(), disliked=True)
+    value = db.Database.main_database.fetchone()
+    try:
+        while value:
+            yield article_from_list(value, disliked=True)
+            value = db.Database.main_database.fetchone()
+    except:
+        pass
 
 def get_interesting_articles():
     """Get list of articles from history (that were marked as interesting)"""
     
     db.Database.main_database.execute_query(Q_GET_HISTORY)
     
-    # TODO return generator
-    # TODO reduce memory usage
-    return articles_from_list(db.Database.main_database.fetchall(), liked=True)
+    value = db.Database.main_database.fetchone()
+    try:
+        while value:
+            yield article_from_list(value, liked=True)
+            value = db.Database.main_database.fetchone()
+    except:
+        pass
 
 def generate_sessionid(num_bytes=16):
     return uuid.UUID(bytes=Random.get_random_bytes(num_bytes))
@@ -211,43 +222,38 @@ def select_articles_from_page(page_number):
     mainDB = db.Database.main_database
     
     mainDB.execute_query(Q_SELECT_FROM_PAGE, [(page_number,)])
-    articles = OrderedDict()
     
-    # TODO return generator
-    # TODO reduce memory usage
     for i in mainDB.fetchall():
-        link = i[2]
-        articles[link] = {'title': i[1],
-                          'link': link,
-                          'summary': i[3],
-                          'source': i[4],
-                          'fromrss': i[5],
-                          'icon': i[6],
-                          'color': i[7],
-                          'page_number': page_number}
-    
-    return articles
+        yield {'title': i[1],
+               'link': i[2],
+               'summary': i[3],
+               'source': i[4],
+               'fromrss': i[5],
+               'icon': i[6],
+               'color': i[7],
+               'page_number': page_number}
 
 def select_all_articles():
     mainDB = db.Database.main_database
     
     mainDB.execute_query(Q_SELECT_ALL_ARTICLES, [tuple()])
-    articles = OrderedDict()
-    # TODO return generator
-    # TODO reduce memory usage
-    for i in mainDB.fetchall():
-        link = i[2]
-        articles[link] = {'title': i[1],
-                          'link': link,
-                          'summary': i[3],
-                          'source': i[4],
-                          'fromrss': i[5],
-                          'icon': i[6],
-                          'color': i[7],
-                          'page_number': i[8]}
     
-    return articles
-
+    value = mainDB.fetchone()
+    
+    try:
+        while value:
+            yield {'title': value[1],
+                   'link': value[2],
+                   'summary': value[3],
+                   'source': value[4],
+                   'fromrss': value[5],
+                   'icon': value[6],
+                   'color': value[7],
+                   'page_number': value[8]}
+            value = mainDB.fetchone()
+    except:
+        pass
+    
 def clear_pages():
     mainDB = db.Database.main_database
     mainDB.execute_query(Q_CLEAR_ARTICLES, [tuple()])

@@ -88,10 +88,9 @@ def add_article(addr):
         log('WARNING: articles_dumped is missing!')
         return
     
-    try:
-        add_to_interesting(articles[addr])
-    except KeyError:
-        print('KeyError({0})'.format(addr))
+    for article in articles:
+        if article['link'] == addr:
+            add_to_interesting(article)
 
 def add_article_to_blacklist(addr):
     path = os.path.join(get_conf.logdir, 'articles_dumped')
@@ -102,8 +101,6 @@ def add_article_to_blacklist(addr):
         log('WARNING: articles_dumped is missing!')
         return
     
-    try:
-        article = articles[addr]
-        add_to_blacklist(article)
-    except KeyError:
-        print('KeyError({0})'.format(addr))
+    for article in articles:
+        if article['link'] == addr:
+            add_to_blacklist(article)

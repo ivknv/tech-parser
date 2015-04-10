@@ -5,6 +5,9 @@ import os
 import re
 import json
 import datetime
+import math
+from base64 import binascii
+hexlify = binascii.hexlify
 
 from mako.lookup import TemplateLookup
 import bottle
@@ -27,27 +30,18 @@ mylookup = TemplateLookup(directories=template_dir_path,
                           default_filters=["decode.utf8"],
                           input_encoding="utf-8", output_encoding="utf-8")
 
-liked = []
-disliked = []
 liked_links = set()
 disliked_links = set()
 errors = {}
-cache = {'templates': {}, 'pages': {}, 'history': {}, 'blacklist': {}}
+cache = {'templates': {}, 'pages': {}, 'history': {}, 'blacklist': {}, 'cached_main': {}}
 
 CSS_NAME_REGEX = re.compile(r'-?[_a-zA-Z]+[_a-zA-Z0-9-]*$')
 COMMA_SEPARATE_REGEX = re.compile(r'[ ]*,[ ]*')
 
-def encoded_dict(in_dict):
-    # TODO remove this function
-    out_dict = {}
-    for k, v in in_dict.items():
-        if isinstance(v, unicode__):
-            v = v.encode('utf8')
-        elif isinstance(v, str):
-            # Must be encoded in UTF-8
-            v.decode('utf8')
-        out_dict[k] = v
-    return out_dict
+def encode_string(s):
+    if isinstance(s, unicode__):
+        return s.encode('utf8')
+    return s.decode('utf8')
 
 def remove_tags(s):
     return REMOVE_TAGS_REGEX.sub('', s)
@@ -77,6 +71,19 @@ def split_into_pages(articles, n=30):
     
     return pages
 
+def get_page(lst, n=30, page_num=1):
+    i = 0
+    j = 1
+    for k in lst:
+        if i >= n:
+            i = 0
+            j += 1
+            if j > page_num:
+                break
+        if j == page_num:
+            yield k
+        i += 1
+
 def get_sid():
     return request.get_cookie('sid', '')
 
@@ -85,8 +92,7 @@ def logged_in():
     return check_session_existance(get_sid()) or password
 
 def encode_url(url):
-    # TODO encode only url
-    return urlencode(encoded_dict({'': url}))[1:]
+    return urlencode({'': encode_string(url)})[1:]
 
 def login_required(func):
     def newfunc(*args, **kwargs):
@@ -175,62 +181,67 @@ def serve_static(filename):
     
     return static_file(filename, root=static_dir_path)
 
-def update_liked_disliked():
-    global liked, disliked, liked_links, disliked_links
-
-    config = get_conf.config
-    
-    # TODO Update instead of replace
-    # TODO split this function into two different
-    
-    liked = recommend.get_interesting_articles()
-    disliked = recommend.get_blacklist()
-    liked_links = {i['link'] for i in liked}
-    disliked_links = {i['link'] for i in disliked}
-
 @route('/histadd/<addr:path>')
 @login_required
 def add_to_history(addr):
     recommend.add_article(addr)
-    
-    update_liked_disliked()
+    liked_links.add(addr)
+    remove_cache()
     
 @route('/blacklistadd/<addr:path>')
 @login_required
 def add_to_blacklist(addr):
     recommend.add_article_to_blacklist(addr)
-    
-    update_liked_disliked()
+    disliked_links.add(addr)
+    remove_cache()
 
 @route('/blacklistrm/<addr:path>')
 @login_required
 def rm_from_blacklist(addr):
     recommend.remove_from_blacklist(addr)
-    
-    update_liked_disliked()
+    disliked_links.remove(addr)
+    remove_cache()
 
 @route('/histrm/<addr:path>')
 @login_required
 def rm_from_history(addr):
     recommend.remove_from_history(addr)
-    
-    update_liked_disliked()
+    liked_links.remove(addr)
+    remove_cache()
+
+def remove_cache(name=None):
+    path = os.path.join(module_path, 'cache')
+    try:
+        contents = os.listdir(path)
+    except IOError:
+        return
+    if name:
+        contents = filter(lambda x: x.startswith('cached_' + name), contents)
+    for i in contents:
+        os.remove(os.path.join(path, i))
 
 @route('/history')
 @route('/history/<page_number>')
 @login_required
 def show_history(page_number=1):
-    # TODO cache template
-    history_page = mylookup.get_template('history.html')
-    q = unicode_(request.GET.getunicode('q', ''))
-    
-    # TODO cache data
-    articles = recommend.get_interesting_articles()
-    
     try:
         page_number = int(page_number)
     except ValueError:
         page_number = 1
+    
+    q = unicode_(request.GET.getunicode('q', ''))
+    
+    html = get_cache('cached_history_{0}_{1}'.format(page_number, hexlify(q.encode()).decode()))
+    if html:
+        return html
+    
+    history_page = cache['templates'].get('history.html')
+    if not history_page:
+        history_page = mylookup.get_template('history.html')
+        cache['templates']['history.html'] = history_page
+    
+    # TODO cache data
+    articles = recommend.get_interesting_articles()
     
     if q:
         qs = q.lower().split()
@@ -238,35 +249,44 @@ def show_history(page_number=1):
     
     articles = map(lambda x: escape_link(x), articles)
     
-    # TODO reduce memory usage
-    all_articles = articles
-    articles = split_into_pages(articles, 30)
+    requested_page = list(get_page(articles, 30, page_num=page_number))
+    num_pages = page_number
     try:
-        requested_page = articles[page_number-1]
-    except IndexError:
-        requested_page = []
+        next(articles)
+        num_pages += 1
+    except StopIteration:
+        pass
     
-    return history_page.render(articles=requested_page,
-        num_pages=len(articles),
-        page_num=page_number,
-        q=q, page='history',
-        config=get_conf.config)
+    html = history_page.render(articles=requested_page,
+                               num_pages=num_pages,
+                               page_num=page_number,
+                               q=q, page='history',
+                               config=get_conf.config).decode()
+    cache_data('cached_history_{0}_{1}'.format(page_number, hexlify(q.encode()).decode()), html)
+    return html
 
 @route('/blacklist')
 @route('/blacklist/<page_number>')
 @login_required
 def show_blacklist(page_number=1):
-    # TODO cache template
-    blacklist_page = mylookup.get_template('blacklist.html')
-    q = unicode_(request.GET.getunicode('q', ''))
-    
-    # TODO cache data
-    articles = recommend.get_blacklist()
-    
     try:
         page_number = int(page_number)
     except ValueError:
         page_number = 1
+
+    q = unicode_(request.GET.getunicode('q', ''))
+    
+    html = get_cache('cached_blacklist_{0}_{1}'.format(page_number, hexlify(q.encode()).decode()))
+    if html:
+        return html
+    
+    blacklist_page = cache['templates'].get('blacklist.html')
+    if not blacklist_page:
+        blacklist_page = mylookup.get_template('blacklist.html')
+        cache['templates']['blacklist.html'] = blacklist_page
+    
+    # TODO cache data
+    articles = recommend.get_blacklist()
     
     if q:
         qs = q.lower().split()
@@ -274,50 +294,60 @@ def show_blacklist(page_number=1):
     
     articles = map(lambda x: escape_link(x), articles)
     
-    # TODO reduce memory usage
-    all_articles = articles
-    articles = split_into_pages(articles, 30)
+    requested_page = list(get_page(articles, 30, page_num=page_number))
+    num_pages = page_number
     try:
-        requested_page = articles[page_number-1]
-    except IndexError:
-        requested_page = []
+        next(articles)
+        num_pages += 1
+    except StopIteration:
+        pass
     
-    return blacklist_page.render(articles=requested_page,
-        num_pages=len(articles),
-        page_num=page_number,
-        q=q, page='blacklist',
-        config=get_conf.config)
+    html = blacklist_page.render(articles=requested_page,
+                                 num_pages=num_pages,
+                                 page_num=page_number,
+                                 q=q, page='blacklist',
+                                 config=get_conf.config).decode()
+    cache_data('cached_blacklist_{0}_{1}'.format(page_number, hexlify(q.encode()).decode()), html)
+    return html
 
 def has_words(qs, article):
     """Check if article contains words"""
     
-    # TODO use sets
-    
-    title = remove_tags(unicode_(article['title']).lower())
-    summary = remove_tags(unicode_(article['summary']).lower())
+    text = remove_tags(unicode_(article['title'])).lower() \
+    + remove_tags(unicode_(article['summary'])).lower()
     
     for i in qs:
-        if i not in title and i not in summary:
+        if i not in text:
             return False
     return True
 
 def escape_link(article):
     """Escape HTML tags, etc."""
     
-    # TODO reduce memory usage
+    article['original_link'] = article['link']
+    article['link'] = encode_url(article['link'])
     
-    new_article = {}
-    new_article.update(article)
-    new_article['original_link'] = new_article['link']
-    
-    new_article['link'] = encode_url(new_article['link'])
-    return new_article
+    return article
 
 def set_liked(articles):
     for article in articles:
-        # TODO optimize
-        article['liked'] = article['original_link'] in liked_links
-        article['disliked'] = article['original_link'] in disliked_links
+        link = article['original_link']
+        article['liked'] = link in liked_links
+        article['disliked'] = link in disliked_links
+
+def cache_data(name, value):
+    path = os.path.join(module_path, 'cache')
+    if not os.path.exists(path):
+        os.makedirs(path)
+    with open(os.path.join(path, name), 'w') as f:
+        f.write(value)
+
+def get_cache(name, default=None):
+    try:
+        with open(os.path.join(module_path, 'cache', name)) as f:
+            return f.read()
+    except IOError:
+        return default
 
 @route("/")
 @route("/<page_number>")
@@ -325,31 +355,45 @@ def set_liked(articles):
 def article_list(page_number=1):
     """Show list of articles | Search for articles"""
     
-    # TODO cache template
-    main_page = mylookup.get_template("articles.html")
-    q = unicode_(request.GET.getunicode('q', ''))
-    
     try:
         page_number = int(page_number)
     except ValueError:
         page_number = 1
+
+    q = unicode_(request.GET.getunicode('q', ''))
+    html = get_cache('cached_main_{0}_{1}'.format(page_number, hexlify(q.encode()).decode()))
+    if html:
+        return html
+
+    main_page = cache['templates'].get('articles.html')
+    if not main_page:
+        main_page = mylookup.get_template("articles.html")
+        cache['templates']['articles.html'] = main_page
     
     if get_conf.config.data_format == 'db':
         if q:
             articles = select_all_articles()
             qs = q.lower().split()
-            # TODO reduce memory usage
-            articles = filter(lambda x: has_words(qs, x), articles.values())
-            articles = map(lambda x: escape_link(x), articles)
-            articles = split_into_pages(articles, 30)
-            num_pages = len(articles)
-            try:
-                requested_page = articles[page_number-1]
-            except IndexError:
-                requested_page = []
+            requested_page = []
+            j = 0
+            k = page_number * 30
+            n = 0
+            append = requested_page.append
+            
+            for article in articles:
+                if has_words(qs, article):
+                    j += 1
+                    if j > k:
+                        n += 1
+                        if n == 31:
+                            break
+                        else:
+                            append(escape_link(article))
+            
+            num_pages = page_number - 1 + math.ceil(n / 30.0)
         else:
             requested_page = select_articles_from_page(page_number)
-            requested_page = list(map(lambda x: escape_link(x), requested_page.values()))
+            requested_page = list(map(lambda x: escape_link(x), requested_page))
             num_pages = int(get_var('num_pages', 1))
     else:
         # TODO reduce memory usage
@@ -375,12 +419,15 @@ def article_list(page_number=1):
     
     set_liked(requested_page)
     
-    return main_page.render(articles=requested_page,
-        num_pages=num_pages,
-        page_num=page_number,
-        q=q, page='main',
-        config=get_conf.config,
-        is_parsing=get_var('parsing', '0') == '1')
+    html = main_page.render(articles=requested_page,
+                            num_pages=num_pages,
+                            page_num=page_number,
+                            q=q, page='main',
+                            config=get_conf.config,
+                            is_parsing=get_var('parsing', '0') == '1').decode()
+    
+    cache_data('cached_main_{0}_{1}'.format(page_number, hexlify(q.encode()).decode()), html)
+    return html
 
 @route('/login')
 @route('/login/')
@@ -433,18 +480,6 @@ def edit_config():
     
     return template.render(config=config, page='edit', q='',
                            errors=dup_errors)
-
-# TODO remove this function
-def asserte(cond, msg):
-    if not cond:
-        errors[msg[0]] = errors.get(msg[0], []) + [msg[1]]
-
-# TODO remove this function
-def try_asserte(value, func, msg):
-    try:
-        return func(value)
-    except:
-        errors[msg[0]] = errors.get(msg[0], []) + [msg[1]]
 
 @route('/update/', method='POST')
 @login_required

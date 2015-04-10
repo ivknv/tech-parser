@@ -153,6 +153,12 @@ def getEnabled(d):
         if v['enabled']:
             yield (k, v)
 
+def generator_length(g):
+    length = 0
+    for i in g:
+        length += 1
+    return length
+
 def dump_articles(filename="articles_dumped"):
     """Dump articles to ~/.tech-parser/<filename>"""
     
@@ -193,7 +199,11 @@ def dump_articles(filename="articles_dumped"):
         pool.join()
                             
         try:
-            links_before = set(server.load_articles().keys())
+            data = server.load_articles()
+            if isinstance(data, OrderedDict):
+                links_before = set(server.load_articles().keys())
+            else:
+                links_before = {i['link'] for i in server.load_articles()}
         except ValueError:
             links_before = set()
             
@@ -234,8 +244,8 @@ def dump_articles(filename="articles_dumped"):
                     archiveDB.rollback()
             archiveDB.commit()
                 
-        num = len(recommend.get_interesting_articles())
-        num += len(recommend.get_blacklist())
+        num = generator_length(recommend.get_interesting_articles())
+        num += generator_length(recommend.get_blacklist())
             
         if num >= 20:
             log("Ranking articles...")
@@ -253,6 +263,7 @@ def dump_articles(filename="articles_dumped"):
         path = os.path.join(path, filename)
         
         save.dump_somewhere(ordered, path)
+        server.remove_cache()
     finally:
         set_var('parsing', '0')
         parsing = False
@@ -376,10 +387,8 @@ Available commands: start|stop|restart|update|run HOST:PORT""")
         db.initialize_archive_db()
         auto_alter.alter_archive_database(False)
     
-    server.liked = recommend.get_interesting_articles()
-    server.disliked = recommend.get_blacklist()
-    server.liked_links = [i['link'] for i in server.liked]
-    server.disliked_links = [i['link'] for i in server.disliked]
+    server.liked_links = {i['link'] for i in recommend.get_interesting_articles()}
+    server.disliked_links = {i['link'] for i in recommend.get_blacklist()}
     
     if args.action:
         if args.action[0] == "run":

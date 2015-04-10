@@ -248,7 +248,7 @@ def delete(table, condition='', db='sqlite'):
     s = 'DELETE FROM {0}{1};'
     
     if condition:
-        condition = ' WHERE {0}'.format(condition, PARAM=PARAMETER_SIGNS.get(db, ''))
+        condition = ' WHERE {0}'.format(condition.format(PARAM=PARAMETER_SIGNS.get(db, '')))
     
     return Query(db, s.format(table, condition))
 
