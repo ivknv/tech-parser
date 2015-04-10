@@ -336,11 +336,12 @@ def set_liked(articles):
         article['disliked'] = link in disliked_links
 
 def cache_data(name, value):
-    path = os.path.join(module_path, 'cache')
-    if not os.path.exists(path):
-        os.makedirs(path)
-    with open(os.path.join(path, name), 'w') as f:
-        f.write(value)
+    if get_conf.config.enable_caching:
+        path = os.path.join(module_path, 'cache')
+        if not os.path.exists(path):
+            os.makedirs(path)
+        with open(os.path.join(path, name), 'w') as f:
+            f.write(value)
 
 def get_cache(name, default=None):
     try:
@@ -530,6 +531,7 @@ def update_config():
                 perfect_word_count = tuple()
         
         data['perfect_word_count'] = perfect_word_count
+        data['enable_caching'] = request.POST.getunicode('v_enable_caching', False) == 'on'
         
         validator.validate(**data)
         
@@ -555,6 +557,7 @@ def update_config():
         get_conf.config.perfect_word_count = data['perfect_word_count']
         if not validator.errors.get('perfect_word_count'):
             get_conf.config.perfect_word_count = perfect_word_count
+        get_conf.config.enable_caching = data['enable_caching']
     elif type_ == 'parsers':
         for parser in get_conf.config.sites_to_parse.values():
             h = parser['hash']

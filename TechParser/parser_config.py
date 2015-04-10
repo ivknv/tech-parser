@@ -287,3 +287,6 @@ json_config = True
 # Range of target word counts.
 # The closer word count of article to one of these numbers, the higher score it has
 perfect_word_count = (25, 50, 100, 150, 300, 600, 1200)
+
+# Enable page caching
+enable_caching = True
