@@ -109,7 +109,7 @@ To make usage easier I recommend to make an alias like this:<br/>
 After that You will be able to run  ```tech-parser``` instead of ```python -m TechParser```.<br/>
 
 ## Configuring ##
-**Don't forget to check out ```TechParser/parser_config.py``` after upgrading.**
+**Don't forget to check out ```TechParser/parser_config.py``` after updating.**
 
 ### Changing configuration in browser ###
 New in 1.8.3<br/>
