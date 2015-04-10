@@ -356,6 +356,17 @@
                 % endif
                 autocomplete="off" />
         </div>
+
+        <div class="margin-bottom">
+            <label for="v_enable_caching" data-name="enable_caching">
+                <input type="checkbox" name="v_enable_caching"
+                       % if config.enable_caching:
+                           checked=""
+                       % endif
+                       autocomplete="off" />
+                Enable caching
+            </label>
+        </div>
 		
 		${SubmitButton('variables')}
 	</form>
