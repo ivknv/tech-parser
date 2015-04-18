@@ -214,7 +214,7 @@ def remove_cache(name=None):
     path = os.path.join(module_path, 'cache')
     try:
         contents = os.listdir(path)
-    except IOError:
+    except OSError:
         return
     if name:
         contents = filter(lambda x: x.startswith('cached_' + name), contents)
