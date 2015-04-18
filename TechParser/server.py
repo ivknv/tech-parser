@@ -6,6 +6,7 @@ import re
 import json
 import datetime
 import math
+import codecs
 from base64 import binascii
 hexlify = binascii.hexlify
 
@@ -231,7 +232,7 @@ def show_history(page_number=1):
     
     q = unicode_(request.GET.getunicode('q', ''))
     
-    html = get_cache('cached_history_{0}_{1}'.format(page_number, hexlify(q.encode()).decode()))
+    html = get_cache('cached_history_{0}_{1}'.format(page_number, hexlify(q.encode('utf8')).decode('utf8')))
     if html:
         return html
     
@@ -245,9 +246,9 @@ def show_history(page_number=1):
     
     if q:
         qs = q.lower().split()
-        articles = filter(lambda x: has_words(qs, x), articles)
+        articles = iter(filter(lambda x: has_words(qs, x), articles))
     
-    articles = map(lambda x: escape_link(x), articles)
+    articles = iter(map(lambda x: escape_link(x), articles))
     
     requested_page = list(get_page(articles, 30, page_num=page_number))
     num_pages = page_number
@@ -261,8 +262,8 @@ def show_history(page_number=1):
                                num_pages=num_pages,
                                page_num=page_number,
                                q=q, page='history',
-                               config=get_conf.config).decode()
-    cache_data('cached_history_{0}_{1}'.format(page_number, hexlify(q.encode()).decode()), html)
+                               config=get_conf.config).decode('utf8')
+    cache_data('cached_history_{0}_{1}'.format(page_number, hexlify(q.encode('utf8')).decode('utf8')), html)
     return html
 
 @route('/blacklist')
@@ -276,7 +277,7 @@ def show_blacklist(page_number=1):
 
     q = unicode_(request.GET.getunicode('q', ''))
     
-    html = get_cache('cached_blacklist_{0}_{1}'.format(page_number, hexlify(q.encode()).decode()))
+    html = get_cache('cached_blacklist_{0}_{1}'.format(page_number, hexlify(q.encode('utf8')).decode('utf8')))
     if html:
         return html
     
@@ -290,9 +291,9 @@ def show_blacklist(page_number=1):
     
     if q:
         qs = q.lower().split()
-        articles = filter(lambda x: has_words(qs, x), articles)
+        articles = iter(filter(lambda x: has_words(qs, x), articles))
     
-    articles = map(lambda x: escape_link(x), articles)
+    articles = iter(map(lambda x: escape_link(x), articles))
     
     requested_page = list(get_page(articles, 30, page_num=page_number))
     num_pages = page_number
@@ -306,8 +307,8 @@ def show_blacklist(page_number=1):
                                  num_pages=num_pages,
                                  page_num=page_number,
                                  q=q, page='blacklist',
-                                 config=get_conf.config).decode()
-    cache_data('cached_blacklist_{0}_{1}'.format(page_number, hexlify(q.encode()).decode()), html)
+                                 config=get_conf.config).decode('utf8')
+    cache_data('cached_blacklist_{0}_{1}'.format(page_number, hexlify(q.encode('utf8')).decode('utf8')), html)
     return html
 
 def has_words(qs, article):
@@ -340,12 +341,12 @@ def cache_data(name, value):
         path = os.path.join(module_path, 'cache')
         if not os.path.exists(path):
             os.makedirs(path)
-        with open(os.path.join(path, name), 'w') as f:
+        with codecs.open(os.path.join(path, name), 'w', encoding='utf8') as f:
             f.write(value)
 
 def get_cache(name, default=None):
     try:
-        with open(os.path.join(module_path, 'cache', name)) as f:
+        with codecs.open(os.path.join(module_path, 'cache', name), encoding='utf8') as f:
             return f.read()
     except IOError:
         return default
@@ -362,7 +363,7 @@ def article_list(page_number=1):
         page_number = 1
 
     q = unicode_(request.GET.getunicode('q', ''))
-    html = get_cache('cached_main_{0}_{1}'.format(page_number, hexlify(q.encode()).decode()))
+    html = get_cache('cached_main_{0}_{1}'.format(page_number, hexlify(q.encode('utf8')).decode('utf8')))
     if html:
         return html
 
@@ -406,10 +407,10 @@ def article_list(page_number=1):
     
         if q:
             qs = q.lower().split()
-            articles = filter(lambda x: has_words(qs, x), articles.values())
-            articles = map(lambda x: escape_link(x), articles)
+            articles = iter(filter(lambda x: has_words(qs, x), articles.values()))
+            articles = iter(map(lambda x: escape_link(x), articles))
         else:
-            articles = map(lambda x: escape_link(x), articles.values())
+            articles = iter(map(lambda x: escape_link(x), articles.values()))
      
         articles = split_into_pages(articles, 30)
         num_pages = len(articles)
@@ -425,9 +426,9 @@ def article_list(page_number=1):
                             page_num=page_number,
                             q=q, page='main',
                             config=get_conf.config,
-                            is_parsing=get_var('parsing', '0') == '1').decode()
+                            is_parsing=get_var('parsing', '0') == '1').decode('utf8')
     
-    cache_data('cached_main_{0}_{1}'.format(page_number, hexlify(q.encode()).decode()), html)
+    cache_data('cached_main_{0}_{1}'.format(page_number, hexlify(q.encode('utf8')).decode('utf8')), html)
     return html
 
 @route('/login')
