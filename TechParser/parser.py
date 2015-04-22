@@ -152,12 +152,12 @@ def findFeedLink(grab_object):
 def makeLinksAbsolute(g):
     g.doc.tree.rewrite_links(lambda x: g.make_url_absolute(x))
     for i in g.doc.tree.cssselect('img'):
-        i.attrib['src'] = i.attrib.get('src')
+        i.attrib['src'] = i.attrib.get('src', 'about:blank')
 
 def makeImageLinksAbsolute(entry, g):
     summary_element = fromstring(entry['summary'])
     for i in summary_element.cssselect('img'):
-        i.attrib['src'] = g.make_url_absolute(i.attrib.get('src'))
+        i.attrib['src'] = g.make_url_absolute(i.attrib.get('src', 'about:blank'))
     entry['summary'] = tostring(summary_element).decode()
 
 def extractEntries(grab_object, source, parse_image=True):
