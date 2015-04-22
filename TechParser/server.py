@@ -378,7 +378,7 @@ def article_list(page_number=1):
             qs = q.lower().split()
             requested_page = []
             j = 0
-            k = page_number * 30
+            k = (page_number - 1) * 30
             n = 0
             append = requested_page.append
             
