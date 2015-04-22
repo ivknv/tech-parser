@@ -35,11 +35,11 @@ def loadClassifier(interesting_articles=None, blacklist=None):
     return classifier
 
 def getArticleFromHistoryByLink(link):
-    db.Database.main_database.execute_query(Q_GET_ARTICLE_FROM_HISTORY, [(link,)])
+    db.Database.main_database.execute_query(Q_GET_ARTICLE_FROM_HISTORY, [(link,)], commit=False)
     return db.Database.main_database.fetchone()
 
 def getArticleFromBlacklistByLink(link):
-    db.Database.main_database.execute_query(Q_GET_ARTICLE_FROM_BLACKLIST, [(link,)])
+    db.Database.main_database.execute_query(Q_GET_ARTICLE_FROM_BLACKLIST, [(link,)], commit=False)
     return db.Database.main_database.fetchone()
 
 def saveClassifier(classifier):
@@ -137,7 +137,7 @@ def articles_from_list(lst, liked=False, disliked=False):
 def get_blacklist():
     """Get list of articles from blacklist"""
     
-    db.Database.main_database.execute_query(Q_GET_BLACKLIST)
+    db.Database.main_database.execute_query(Q_GET_BLACKLIST, commit=False)
     
     value = db.Database.main_database.fetchone()
     try:
@@ -150,7 +150,7 @@ def get_blacklist():
 def get_interesting_articles():
     """Get list of articles from history (that were marked as interesting)"""
     
-    db.Database.main_database.execute_query(Q_GET_HISTORY)
+    db.Database.main_database.execute_query(Q_GET_HISTORY, commit=False)
     
     value = db.Database.main_database.fetchone()
     try:
@@ -176,7 +176,7 @@ def check_password(password):
 
 def check_session_existance(sid):
     remove_old_sessions()
-    db.Database.main_database.execute_query(Q_CHECK_SESSIONID, [(sid,)])
+    db.Database.main_database.execute_query(Q_CHECK_SESSIONID, [(sid,)], commit=False)
     return not not db.Database.main_database.fetchone() # Convert result to boolean
 
 def remove_old_sessions():
@@ -186,7 +186,7 @@ def remove_session(sid):
     db.Database.main_database.execute_query(Q_REMOVE_SESSIONID, [(sid,)])
 
 def get_var(name, default=None):
-    db.Database.main_database.execute_query(Q_GET_VAR, [(name,)])
+    db.Database.main_database.execute_query(Q_GET_VAR, [(name,)], commit=False)
     try:
         return db.Database.main_database.fetchone()[0]
     except TypeError:
@@ -221,7 +221,7 @@ def paginate_articles(articles, per_page=30):
 def select_articles_from_page(page_number):
     mainDB = db.Database.main_database
     
-    mainDB.execute_query(Q_SELECT_FROM_PAGE, [(page_number,)])
+    mainDB.execute_query(Q_SELECT_FROM_PAGE, [(page_number,)], commit=False)
     
     for i in mainDB.fetchall():
         yield {'title': i[1],
@@ -236,7 +236,7 @@ def select_articles_from_page(page_number):
 def select_all_articles():
     mainDB = db.Database.main_database
     
-    mainDB.execute_query(Q_SELECT_ALL_ARTICLES, [tuple()])
+    mainDB.execute_query(Q_SELECT_ALL_ARTICLES, [tuple()], commit=False)
     
     value = mainDB.fetchone()
     
