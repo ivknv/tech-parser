@@ -98,6 +98,9 @@ And then open [localhost:8080](http://localhost:8080) in your browser.<br/>
 ```python -m TechParser stop``` to stop server<br/>
 ```python -m TechParser update``` to manually update list of articles.<br/>
 ```python -m TechParser run HOST:PORT``` run server without starting daemon.<br/>
+```python -m TechParser lock``` to not allow updating articles.<br/>
+```python -m TechParser unlock``` to allow updating articles (run this if you can't update articles).<br/>
+```python -m TechParser locked?``` to check if updating articles is allowed.<br/>
 ```python -m TechParser -h``` show help.<br/>
 ```python -m TechParser <action> --config <path to configuration file>``` set path to configuration file.<br/>
 
