@@ -23,4 +23,4 @@ setup(name="TechParser",
 		"static/tech-parser.js", "static/jquery.touchSwipe.min.js",
 		"static/fonts/*", "static/style.css",
 		"static/jquery-2.1.1.min.js", "static/icons/*",
-        "irregular_words.csv"]})
+        "irregular_words.csv", "english_stopwords.txt"]})

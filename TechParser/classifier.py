@@ -11,10 +11,12 @@ from collections import Counter
 from TechParser.py2x import unicode_, chr, htmlentitydefs
 from TechParser import get_conf
 
-import nltk.corpus
 import nltk.stem
 
-ENGLISH_STOPWORDS = nltk.corpus.stopwords.words('english')
+ENGLISH_STOPWORDS = []
+with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'english_stopwords.txt')) as f:
+    for word in f:
+        ENGLISH_STOPWORDS.append(word.strip())
 
 class TextClassifier(object):
     replacements = {}
