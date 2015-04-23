@@ -3,6 +3,8 @@
 
 from TechParser import parser
 
+SHORT_NAME = 'habrahabr'
+
 def get_articles(hubs=[]):
 	
 	if not hubs:
@@ -12,7 +14,7 @@ def get_articles(hubs=[]):
 		posts = []
 		url = 'http://habrahabr.ru/rss/hub/'
 		for hub in hubs:
-			for post in parser.get_articles_from_rss(url + hub, 'habrahabr'):
+			for post in parser.get_articles_from_rss(url + hub, SHORT_NAME):
 				if post not in posts:
 					posts.append(post)
 		

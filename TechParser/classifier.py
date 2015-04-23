@@ -9,6 +9,7 @@ import re
 from collections import Counter
 
 from TechParser.py2x import unicode_, chr, htmlentitydefs
+from TechParser import get_conf
 
 import nltk.corpus
 import nltk.stem
@@ -41,6 +42,31 @@ class TextClassifier(object):
             text = regular_expression.sub(replacement, text)
         
         return text
+    
+    def addWordsFromConfiguration(self):
+        for i in get_conf.config.interesting_words:
+            if type(i) in {list, tuple, set}:
+                word, priority = i
+            else:
+                priority = 1.0
+                word = i
+            
+            words = self.prepare_words(word)
+        
+            for word in words:
+                self.counts['interesting'][word] += priority
+        
+        for i in get_conf.config.boring_words:
+            if type(i) in {list, tuple, set}:
+                word, priority = i
+            else:
+                priority = 1.0
+                word = i
+            
+            words = self.prepare_words(word)
+            
+            for word in words:
+                self.counts['boring'][word] += priority
     
     @staticmethod
     def unescape(text):

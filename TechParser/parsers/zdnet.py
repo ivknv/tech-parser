@@ -3,6 +3,8 @@
 
 from TechParser import parser
 
+SHORT_NAME = 'zdnet'
+
 def get_articles(categories=['all']):
 	urls = {'news': 'http://www.zdnet.com/news/rss.xml',
 		'downloads': 'http://downloads.zdnet.com/recent/?mode=rss',
@@ -15,7 +17,7 @@ def get_articles(categories=['all']):
 	
 	for categorie in categories:
 		url = urls[categorie]
-		for article in parser.get_articles_from_rss(url, 'zdnet'):
+		for article in parser.get_articles_from_rss(url, SHORT_NAME):
 			if not article in articles:
 				articles.append(article)
 	

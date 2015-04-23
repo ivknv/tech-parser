@@ -3,5 +3,7 @@
 
 from TechParser import parser
 
+SHORT_NAME = 'digg'
+
 def get_articles():
-	return parser.get_articles_from_rss('http://digg.com/rss/top.rss', 'digg')
+	return parser.get_articles_from_rss('http://digg.com/rss/top.rss', SHORT_NAME)

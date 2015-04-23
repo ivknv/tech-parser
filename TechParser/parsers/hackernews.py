@@ -3,6 +3,8 @@
 
 from TechParser import parser
 
+SHORT_NAME = 'hackernews'
+
 def get_articles():
 	return parser.get_articles_from_rss('https://news.ycombinator.com/rss',
-		'hackernews')
+		SHORT_NAME)
