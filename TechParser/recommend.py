@@ -29,39 +29,20 @@ def rankByWordCount(num_words):
     n = findNearestNumber(num_words, get_conf.config.perfect_word_count)
     return 1.0 - abs(num_words - n) / (num_words + n)
 
-def rank_articles(articles):
-    processed, scores = [], []
-    
-    classifier = loadClassifier()
-    
-    for i in get_conf.config.interesting_words:
-        if type(i) in {list, tuple, set}:
-            word, priority = i
-        else:
-            priority = 1.0
-            word = i
-        
-        words = TextClassifier.prepare_words(word)
-        
-        for word in words:
-            classifier.counts['interesting'][word] += priority
+def rankBySourcePriority(score, source):
+    d = 1.0 - score
+    try:
+        return 1.0 - d / get_conf.getSourceData(source, (None, {}))[1].get('priority', 1.0)
+    except ZeroDivisionError:
+        return 0.0
 
-    for i in get_conf.config.boring_words:
-        if type(i) in {list, tuple, set}:
-            word, priority = i
-        else:
-            priority = 1.0
-            word = i
-        
-        words = TextClassifier.prepare_words(word)
-        
-        for word in words:
-            classifier.counts['boring'][word] += priority
+def rank_articles(articles, classifier=None, word_bias=False):
+    if classifier is None:
+        classifier = loadClassifier()
+    if not word_bias:
+        classifier.addWordsFromConfiguration()
     
     for article in articles:
-        if article in processed:
-            continue
-        
         article_text = article['title'] + ' ' + article['summary']
         article_text = classifier.unescape(article_text)
         article_text = classifier.remove_tags(article_text).lower()
@@ -72,13 +53,12 @@ def rank_articles(articles):
         score = classifier.classify_features(words)['interesting']
         if get_conf.config.perfect_word_count:
             num_words = len(words)
-            score = (score + rankByWordCount(num_words)) / 2
+            score = (score + rankByWordCount(num_words)) / 2.0
         
-        processed.append(article)
-        scores.append(score)
-    
-    return [[a, s] for (a, s) in zip(processed, scores)]
-
+        score = rankBySourcePriority(score, article['source'])
+        
+        yield (article, score)
+        
 def add_article(addr):
     path = os.path.join(get_conf.logdir, 'articles_dumped')
     

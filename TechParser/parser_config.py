@@ -7,206 +7,240 @@ sites_to_parse = {
 	"Habrahabr": { # habrahabr.ru
 		"module": habrahabr,
 		"kwargs": {"hubs": []},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"VentureBeat": { # venturebeat.com
 		"module": venturebeat,
 		"kwargs": {},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"Engadget": { # engadget.com
 		"module": engadget,
 		"kwargs": {},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"Slashdot": { # slashdot.org
 		"module": slashdot,
 		"kwargs": {},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"Gizmodo": { # gizmodo.com
 		"module": gizmodo,
 		"kwargs": {},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"TechCrunch": { # techcrunch.com
 		"module": techcrunch,
 		"kwargs": {},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"Read/Write Web": { # readwrite.com
 		"module": readwrite,
 		"kwargs": {},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"Tech Republic": { # techrepublic.com
 		"module": techrepublic,
 		"kwargs": {},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"Smashing Magazine": { # www.smashingmagazine.com
 		"module": smashingmagazine,
 		"kwargs": {},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"Android Central": { # www.androidcentral.com
 		"module": androidcentral,
 		"kwargs": {},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"The Verge": { # www.theverge.com
 		"module": verge,
 		"kwargs": {},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"Top Design Magazine": { # www.topdesignmag.com
 		"module": topdesignmag,
 		"kwargs": {},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"Flowa": { # flowa.fi
 		"module": flowa,
 		"kwargs": {},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"IT Toolbox": { # it.toolbox.com
 		"module": ittoolbox,
 		"kwargs": {},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"DZone": { # www.dzone.com
 		"module": dzone,
 		"kwargs": {},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"Code Project": { # www.codeproject.com
 		"module": codeproject,
 		"kwargs": {'categories': ['all']}, # 'web', 'android', 'c#', 'c++' and 'ios'
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"Hacker News": { # news.ycombinator.com
 		"module": hackernews,
 		"kwargs": {},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"Mashable": { # mashable.com
 		"module": mashable,
 		"kwargs": {},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"Make Tech Easier": { # www.maketecheasier.com
 		"module": maketecheasier,
 		"kwargs": {},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"Digg": { # digg.com
 		"module": digg,
 		"kwargs": {},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"Wired": { # www.wired.com
 		"module": wired,
 		"kwargs": {},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"Medium": { # medium.com
 		"module": medium,
 		"kwargs": {"collections": []},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"Planet Clojure": { # planet.clojure.in
 		"module": planetclojure,
 		"kwargs": {},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"Reddit": { # www.reddit.com
 		"module": reddit,
 		"kwargs": {"reddits": ["tech"]},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"Trashbox": { # trashbox.ru
 		"module": trashbox,
 		# all, articles, news, main_page, games, programs, themes, questions
 		"kwargs": {'categories': ['all']},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"Droider": { # droider.ru
 		"module": droider,
 		"kwargs": {},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"Redroid": { # redroid.ru
 		"module": redroid,
 		"kwargs": {},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"3DNews": { # www.3dnews.ru
 		"module": threednews,
 		"kwargs": {},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 		
 	"IXBT": { # www.ixbt.ru
 		"module": ixbt,
 		"kwargs": {},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"Mobile Review": { # mobile-review.com
 		"module": mobilereview,
 		"kwargs": {},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"Helpix": { # helpix.ru
 		"module": helpix,
 		"kwargs": {},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"Re/code": { # recode.net
 		"module": recode,
 		"kwargs": {},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 	
 	"ZDNet": { # www.zdnet.com
 		"module": zdnet,
 		"kwargs": {'categories': ['all']}, # 'news', 'reviews' and 'downloads',
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	},
 		
 	"Geektimes": { # geektimes.ru
 		"module": geektimes,
 		"kwargs": {'hubs': []},
-		"enabled": True
+		"enabled": True,
+        "priority": 1.0
 	}
 }
 

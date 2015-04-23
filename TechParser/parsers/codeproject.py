@@ -3,6 +3,8 @@
 
 from TechParser import parser
 
+SHORT_NAME = 'codeproject'
+
 def get_articles(categories=['all']):
 	articles = []
 	cids = {'all': '1', 'android': '22', 'ios': '25', 'c++': '2',
@@ -16,7 +18,7 @@ def get_articles(categories=['all']):
 		for i in ids]
 	
 	for url in urls:
-		parsed = parser.get_articles_from_rss(url, 'codeproject')
+		parsed = parser.get_articles_from_rss(url, SHORT_NAME)
 		for article in parsed:
 			if not article in articles:
 				articles.append(article)

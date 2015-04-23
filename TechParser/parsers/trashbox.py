@@ -3,6 +3,8 @@
 
 from TechParser import parser
 
+SHORT_NAME = 'trashbox'
+
 def get_articles(categories=['all']):
 	urls = {'articles': 'b_text', 'news': 'b_news', 'all': '1',
 		'games': 'games', 'programs': 'progs', 'themes': 'themes',
@@ -18,7 +20,7 @@ def get_articles(categories=['all']):
 	
 	for url in selected_urls:
 		url_ = 'http://trashbox.ru/feed_topics/{0}'.format(url)
-		for article in parser.get_articles_from_rss(url_, 'trashbox'):
+		for article in parser.get_articles_from_rss(url_, SHORT_NAME):
 			if article not in articles:
 				append(article)
 

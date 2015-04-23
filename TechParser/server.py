@@ -165,6 +165,12 @@ class Validator(object):
                  self.add_error(location, 'Invalid icon URL')
             if not CSS_NAME_REGEX.match(feed['short-name']):
                 self.add_error(location, 'Short name must be a valid CSS name')
+            try:
+                priority = float(feed['priority'])
+                if priority < 0:
+                    self.add_error(location, 'Priority cannot be less than 0')
+            except ValueError:
+                sekf.add_error(location, 'Priority must be a floating point number')
 
         return self.errors
 
@@ -563,16 +569,23 @@ def update_config():
         for parser in get_conf.config.sites_to_parse.values():
             h = parser['hash']
             enabled = request.POST.getunicode('parser_{0}'.format(h)) in {'on', True}
+            kwargs = request.POST.getunicode('kwargs_{0}'.format(h), parser['kwargs'])
+            priority = request.POST.getunicode('priority_{0}'.format(h), parser.get('priority', '1.0'))
+            try:
+                priority = float(priority)
+                if priority < 0:
+                    validator.add_error('parser_{0}'.format(h), 'Priority cannot be less than 0')
+                else:
+                    parser['priority'] = priority
+            except ValueError:
+                validator.add_error('parser_{0}'.format(h), 'Priority must be a floating point number')
             
-            if enabled:
-                kwargs = request.POST.getunicode('kwargs_{0}'.format(h), parser['kwargs'])
-                try:
-                    parser['kwargs'] = json.loads(kwargs)
-                except ValueError:
-                    validator.add_error('parser_{0}'.format(h), 'Parser arguments should be in form of JSON')
-                parser['enabled'] = True
-            else:
-                parser['enabled'] = False
+            try:
+                parser['kwargs'] = json.loads(kwargs)
+            except (ValueError, TypeError):
+                validator.add_error('parser_{0}'.format(h), 'Parser arguments should be in form of JSON')
+            
+            parser['enabled'] = enabled
     elif type_ == 'rss_feeds':
         response['deleted'], response['modified'] = [], []
         for feed_name, feed in get_conf.config.rss_feeds.items():
@@ -589,6 +602,7 @@ def update_config():
             data['rss_feed']['icon'] = request.POST.getunicode('icon_{0}'.format(h), feed['icon'])
             data['rss_feed']['color'] = request.POST.getunicode('color_{0}'.format(h), feed['color'])
             data['rss_feed']['enabled'] = request.POST.getunicode('enabled_{0}'.format(h), '0') == '1'
+            data['rss_feed']['priority'] = request.POST.getunicode('priority_{0}'.format(h), '1.0')
             
             validator.validate(**data)
             
@@ -600,6 +614,7 @@ def update_config():
                 icon = rss_feed['icon']
                 color = rss_feed['color']
                 enabled = rss_feed['enabled']
+                priority = rss_feed['priority']
                 
                 if short_name != feed['short-name']:
                     response['modified'].append(('sn_{0}'.format(h), short_name))
@@ -613,6 +628,8 @@ def update_config():
                     response['modified'].append(('color_{0}'.format(h), color))
                 if enabled != feed['enabled']:
                     response['modified'].append(('enabled_{0}'.format(h), enabled))
+                if priority != feed['priority']:
+                    response['modified'].append(('priority_{0}'.format(h), priority))
                 if new_hash != h:
                     response['modified'].append(('hash_{0}'.format(h), new_hash))
                 feed['short-name'] = short_name
@@ -620,6 +637,7 @@ def update_config():
                 feed['icon'] = icon
                 feed['color'] = color
                 feed['enabled'] = enabled
+                feed['priority'] = float(priority)
                 feed['hash'] = new_hash
                 get_conf.config.rss_feeds[data['rss_feed_name']] = feed
                 if data['rss_feed_name'] != feed_name:
@@ -637,6 +655,7 @@ def update_config():
             data['rss_feed']['icon'] = request.POST.getunicode('new_feed_icon')
             data['rss_feed']['color'] = request.POST.getunicode('new_feed_color')
             data['rss_feed']['enabled'] = request.POST.getunicode('new_feed_enabled', '0') == '1'
+            data['rss_feed']['priority'] = request.POST.getunicode('new_feed_priority', '1.0')
             validator.validate(**data)
             data['rss_feed']['hash'] = hash(data['rss_feed_name'])
             if 'rss_feed_new_feed' not in validator.errors:
@@ -645,18 +664,19 @@ def update_config():
                                                             'icon': data['rss_feed']['icon'],
                                                             'color': data['rss_feed']['color'],
                                                             'enabled': data['rss_feed']['enabled'],
+                                                            'priority': float(data['rss_feed']['priority']),
                                                             'hash': data['rss_feed']['hash']}
                 response['new_feed'] = data['rss_feed']
                 response['new_feed']['name'] = data['rss_feed_name']
     elif type_ == 'interesting_words':
         try:
             get_conf.config.interesting_words = json.loads(request.POST.getunicode('t_interesting_words', '[]'), encoding='utf-8')
-        except ValueError:
+        except (ValueError, TypeError):
             validator.add_error('interesting_words', 'interesting_words should be a JSON object')
     elif type_ == 'boring_words':
         try:
             get_conf.config.boring_words = json.loads(request.POST.getunicode('t_boring_words', '[]'), encoding='utf-8')
-        except ValueError:
+        except (ValueError, TypeError):
             validator.add_error('boring_words', 'boring_words should be a JSON object')
 
     save.write_config(get_conf.config, get_conf.config.filename)

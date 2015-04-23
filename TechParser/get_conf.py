@@ -14,11 +14,13 @@ class Config(object):
         
         for k,v in self.sites_to_parse.items():
             v.setdefault('hash', hash(k))
+            v.setdefault('priority', 1.0)
         
         self.rss_feeds = kwargs.get('rss_feeds')
         
         for k,v in self.rss_feeds.items():
             v.setdefault('hash', hash(k))
+            v.setdefault('priority', 1.0)
         
         self.interesting_words = kwargs.get('interesting_words')
         self.boring_words = kwargs.get('boring_words')
@@ -75,12 +77,14 @@ class Config(object):
         d['sites_to_parse'] = {k: {'module': v['module'].__name__,
             'kwargs': v['kwargs'],
             'hash': hash(k),
-            'enabled': v['enabled']}
+            'enabled': v['enabled'],
+            'priority': v.get('priority', 1.0)}
             for k,v in module.sites_to_parse.items()}
         d['rss_feeds'] = module.rss_feeds
         
         for k,v in d['rss_feeds'].items():
             v.setdefault('hash', hash(k))
+            v.setdefault('priority', 1.0)
         
         d['interesting_words'] = module.interesting_words
         d['boring_words'] = module.boring_words
@@ -150,7 +154,8 @@ def set_user_config():
 def config_from_json(json_str):
     conf = Config(**json.loads(json_str))
     conf.sites_to_parse = {k: {'module': __import__(v['module'], fromlist=['']),
-                               'kwargs': v['kwargs'], 'enabled': v['enabled']}
+                               'kwargs': v['kwargs'], 'enabled': v['enabled'],
+                               'priority': v.get('priority', 1.0)}
                            for k,v in conf.sites_to_parse.items()}
     
     return conf
@@ -174,6 +179,17 @@ def setdefault(obj, attr, value=None):
         getattr(obj, attr)
     except AttributeError:
         setattr(obj, attr, value)
+
+def getSourceData(source, default=None):
+    for k, v in config.sites_to_parse.items():
+        if v['module'].SHORT_NAME == source:
+            return (k, v)
+    
+    for k, v in config.rss_feeds.items():
+        if v['short-name'] == source:
+            return (k, v)
+    
+    return default
 
 def auto_fix_config(conf=None, hide=False):
     if conf is None:

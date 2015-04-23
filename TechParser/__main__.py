@@ -249,8 +249,7 @@ def dump_articles(filename="articles_dumped"):
             
         if num >= 20:
             log("Ranking articles...")
-            list_articles = recommend.rank_articles(list_articles)
-            list_articles.sort(key=itemgetter(1), reverse=True)
+            list_articles = sorted(recommend.rank_articles(list_articles), key=itemgetter(1), reverse=True)
             ordered = OrderedDict([(i[0]['link'], i[0]) for i in list_articles])
         else:
             log("Shuffling articles...")

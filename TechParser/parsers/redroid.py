@@ -3,5 +3,7 @@
 
 from TechParser import parser
 
+SHORT_NAME = 'redroid'
+
 def get_articles():
-	return parser.get_articles_from_rss('http://redroid.ru/rss', 'redroid')
+	return parser.get_articles_from_rss('http://redroid.ru/rss', SHORT_NAME)

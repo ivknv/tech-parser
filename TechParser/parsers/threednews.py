@@ -3,6 +3,8 @@
 
 from TechParser import parser
 
+SHORT_NAME = 'threednews'
+
 def get_articles():
 	articles = []
 	
@@ -10,7 +12,7 @@ def get_articles():
 		'http://www.3dnews.ru/software-news/rss']
 	
 	for url in urls:
-		for article in parser.get_articles_from_rss(url, 'threednews'):
+		for article in parser.get_articles_from_rss(url, SHORT_NAME):
 			if not article in articles:
 				articles.append(article)
 	

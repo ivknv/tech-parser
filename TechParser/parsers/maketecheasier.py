@@ -3,6 +3,8 @@
 
 from TechParser import parser
 
+SHORT_NAME = 'maketecheasier'
+
 def get_articles():	
 	return parser.get_articles_from_rss("http://www.maketecheasier.com/feed",
-		'maketecheasier')
+		SHORT_NAME)

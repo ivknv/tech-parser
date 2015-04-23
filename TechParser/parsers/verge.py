@@ -3,9 +3,11 @@
 
 from TechParser import parser
 
+SHORT_NAME = 'theverge'
+
 def get_articles():
 	articles = parser.parse_rss('http://www.theverge.com/rss/frontpage',
-		'theverge')
+		SHORT_NAME)
 	for article in articles:
 		article['fromrss'] = 0
 	

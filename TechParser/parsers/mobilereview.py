@@ -3,12 +3,14 @@
 
 from TechParser import parser
 
+SHORT_NAME = 'mobile-review'
+
 def get_articles():
 	articles = []
 	urls = ['http://mobile-review.com.feedsportal.com/c/33244/f/556830/index.rss',
 			'http://mobile-review.com.feedsportal.com/c/33244/f/557686/index.rss',
 			'http://mobile-review.com.feedsportal.com/c/33244/f/557683/index.rss']
 	for url in urls:
-		articles += parser.get_articles_from_rss(url, 'mobile-review')
+		articles += parser.get_articles_from_rss(url, SHORT_NAME)
 	
 	return articles
