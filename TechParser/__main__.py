@@ -344,7 +344,7 @@ def run_server(host, port):
 if __name__ == "__main__":
     arg_parser = argparse.ArgumentParser(description="""\
 Article parser.
-Available commands: start|stop|restart|update|run HOST:PORT""")
+Available commands: start|stop|restart|update|run HOST:PORT|lock|unlock|locked?""")
     
     arg_parser.add_argument("action", nargs="+",
         action="store", default=[], help="Action to run")
@@ -391,7 +391,13 @@ Available commands: start|stop|restart|update|run HOST:PORT""")
     server.disliked_links = {i['link'] for i in recommend.get_blacklist()}
     
     if args.action:
-        if args.action[0] == "run":
+        if args.action[0] == 'lock':
+            set_var('parsing', '1')
+        elif args.action[0] == 'unlock':
+            set_var('parsing', '0')
+        elif args.action[0] == 'locked?':
+            print({'0': 'False', '1': 'True'}.get(get_var('parsing', '0'), 'False'))
+        elif args.action[0] == "run":
             if len(args.action) == 1:
                 addr = get_conf.config.host + ":" + get_conf.config.port
             else:
