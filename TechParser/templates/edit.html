@@ -388,6 +388,17 @@
                 Enable caching
             </label>
         </div>
+        
+        <div class="margin-bottom">
+            <label for="v_ngrams" data-name="ngrams">
+                N-grams:
+            </label>
+            <input type="text" name="v_ngrams"
+                class="input"
+                type="number" min="1" step="1"
+                value="${config.ngrams}"
+                autocomplete="off" />
+        </div>
 		
 		${SubmitButton('variables')}
 	</form>

@@ -66,6 +66,7 @@ class Config(object):
         self.json_config = kwargs.get('json_config', False)
         self.perfect_word_count = kwargs.get('perfect_word_count')
         self.enable_caching = kwargs.get('enable_caching', True)
+        self.ngrams = kwargs.get('ngrams', 1)
         
         auto_fix_config(self, hide=hide)
         
@@ -109,6 +110,7 @@ class Config(object):
         d['json_config'] = module.json_config
         d['perfect_word_count'] = module.perfect_word_count
         d['enable_caching'] = module.enable_caching
+        d['ngrams'] = module.ngrams
         d['hide'] = hide
         
         return Config(**d)
@@ -224,3 +226,4 @@ def auto_fix_config(conf=None, hide=False):
     setdefault(conf, 'json_config', False)
     setdefault(conf, 'perfect_word_count', (25, 50, 100, 150, 300, 600, 1200))
     setdefault(conf, 'enable_caching', True)
+    setdefault(conf, 'ngrams', 1)
