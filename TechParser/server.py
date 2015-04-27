@@ -493,7 +493,8 @@ def edit_config():
     errors = {}
     
     return template.render(config=config, page='edit', q='',
-                           errors=dup_errors)
+                           errors=dup_errors,
+                           num_pages=1)
 
 @route('/update/', method='POST')
 @login_required

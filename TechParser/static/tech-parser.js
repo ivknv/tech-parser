@@ -188,7 +188,7 @@ function SpoilerIconOnClick() {
 /**
  * Does things that should be done after loading page such as adding handlers for various elements
  */
-function onLoad() {
+function onLoad(page_count) {
 	$(document).ready(function() {
         /* This part of code a bit complicated
            It tries to properly extend search field and remove search button if necessary */
@@ -226,46 +226,57 @@ function onLoad() {
 			$(this).animate({width: valueBefore}, 400);
 			setTimeout(function() {$('#searchbox button').fadeIn('fast')}, 400);
 		});
+
+        function swipefunc(e, d, distance, duration, fingerCount) {
+            if (fingerCount == 0 || distance < 150) {
+                return;
+            }
+            var curHref = window.location.href;
+            var vars = curHref.match(/\?.+/);
+            curHref = curHref.replace(/\?.*/g, '');
+            
+            var pgnum = curHref.match(/\d+$/);
+            if (pgnum === null) {
+                pgnum = "1";
+            } else {
+                curHref = curHref.slice(0, curHref.length-(pgnum.length+1));
+            }
+            if (d == 'left') {
+                var newPgnum = parseInt(pgnum);
+                if (newPgnum < page_count)
+                    newPgnum += 1;
+                else
+                    return;
+            }
+            else {
+                var newPgnum = parseInt(pgnum);
+                if (newPgnum > 1)
+                    newPgnum -= 1;
+                else
+                    return;
+            }
+            
+            var newUrl = curHref;
+            if (curHref[curHref.length-1] != '/') {
+                newUrl += '/';
+            }
+            newUrl += newPgnum;
+            if (vars !== null) {
+                newUrl += vars;
+            }
+            window.location.href = newUrl;
+        }
+        
+        if (isMobile()) {
+            /* Swipe gestures to change page */
+                
+            $('body').swipe({swipeLeft: swipefunc, swipeRight: swipefunc,
+                treshold: 0});
+        }
 		
 		$('.triangle-spoiler').click(ToggleSpoilerWrapper);
 		
 		$('.delete-icon').click(SpoilerIconOnClick);
-        
-        if (isMobile()) {
-            /* Swipe gestures to change page */
-            var swipefunc = function(e, d, distance, duration, fingerCount) {
-                if (fingerCount == 0 || distance < 150) {
-                    return;
-                }
-                var curHref = window.location.href;
-                var vars = curHref.match(/\?.+/);
-                curHref = curHref.replace(/\?.*/g, '');
-                
-                var pgnum = curHref.match(/\d+$/);
-                if (pgnum === null) {
-                    pgnum = "1";
-                } else {
-                    curHref = curHref.slice(0, curHref.length-(pgnum.length+1));
-                }
-                if (d == 'left')
-                    var newPgnum = parseInt(pgnum) + 1;
-                else
-                    var newPgnum = parseInt(pgnum) - 1;
-                
-                var newUrl = curHref;
-                if (curHref[curHref.length-1] != '/') {
-                    newUrl += '/';
-                }
-                newUrl += newPgnum;
-                if (vars !== null) {
-                    newUrl += vars;
-                }
-                window.location.href = newUrl;
-            };
-            
-            $('body').swipe({swipeLeft: swipefunc, swipeRight: swipefunc,
-                treshold: 0});
-        }
         
         $('.article > h3 > a > img').error(function() {
            $(this).unbind('error').attr('src', '/static/icons/article.ico');
