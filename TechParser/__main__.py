@@ -22,7 +22,7 @@ from Daemo import Daemon, DaemonError
 
 from TechParser import get_conf, recommend, parser, db, server, save, auto_alter
 from TechParser.db_functions import set_var, get_var, get_interesting_articles
-from TechParser.db_functions import get_blacklist
+from TechParser.db_functions import get_blacklist, trainClassifier, saveClassifier
 from TechParser.query import Q_SAVE_ARTICLES
 from TechParser.py2x import range, urlencode
 
@@ -340,10 +340,10 @@ def run_server(host, port):
     
     server.run(host=host, port=port, server=config.server)
 
-if __name__ == "__main__":
+def main(arguments):
     arg_parser = argparse.ArgumentParser(description="""\
 Article parser.
-Available commands: start|stop|restart|update|run HOST:PORT|lock|unlock|locked?""")
+Available commands: start|stop|restart|update|run HOST:PORT|lock|unlock|locked?|rerank""")
     
     arg_parser.add_argument("action", nargs="+",
         action="store", default=[], help="Action to run")
@@ -355,7 +355,7 @@ Available commands: start|stop|restart|update|run HOST:PORT|lock|unlock|locked?"
     arg_parser.add_argument("--db", choices=['sqlite', 'postgresql'],
         help="Database to use: sqlite or postgresql")
     
-    args = arg_parser.parse_args()
+    args = arg_parser.parse_args(arguments)
     
     if args.config:
         get_conf.set_config_from_fname(args.config)
@@ -386,16 +386,17 @@ Available commands: start|stop|restart|update|run HOST:PORT|lock|unlock|locked?"
         db.initialize_archive_db()
         auto_alter.alter_archive_database(False)
     
-    server.liked_links = {i['link'] for i in recommend.get_interesting_articles()}
-    server.disliked_links = {i['link'] for i in recommend.get_blacklist()}
-    
     if args.action:
         if args.action[0] == 'lock':
             set_var('parsing', '1')
         elif args.action[0] == 'unlock':
             set_var('parsing', '0')
         elif args.action[0] == 'locked?':
-            print({'0': 'False', '1': 'True'}.get(get_var('parsing', '0'), 'False'))
+            log({'0': 'False', '1': 'True'}.get(get_var('parsing', '0'), 'False'))
+        elif args.action[0] == 'rerank':
+            log('Ranking articles...')
+            classifier = trainClassifier()
+            saveClassifier(classifier)
         elif args.action[0] == "run":
             if len(args.action) == 1:
                 addr = get_conf.config.host + ":" + get_conf.config.port
@@ -421,6 +422,8 @@ Available commands: start|stop|restart|update|run HOST:PORT|lock|unlock|locked?"
                 logerr("Invalid port")
                 sys.exit(1)
             else:
+                server.liked_links = {i['link'] for i in recommend.get_interesting_articles()}
+                server.disliked_links = {i['link'] for i in recommend.get_blacklist()}
                 run_server(host, port)
         elif args.action[0] == "update":
             atexit.register(lambda: set_var('parsing', '0') if parsing else None)
@@ -429,6 +432,8 @@ Available commands: start|stop|restart|update|run HOST:PORT|lock|unlock|locked?"
             signal.signal(signal.SIGABRT, lmbd)
             dump_articles()
         elif args.action[0] == "start":
+            server.liked_links = {i['link'] for i in recommend.get_interesting_articles()}
+            server.disliked_links = {i['link'] for i in recommend.get_blacklist()}
             atexit.register(lambda: set_var('parsing', '0') if parsing else None)
             lmbd = lambda _,__: sys.exit(0)
             signal.signal(signal.SIGABRT, lmbd)
@@ -447,5 +452,8 @@ Available commands: start|stop|restart|update|run HOST:PORT|lock|unlock|locked?"
             except DaemonError as e:
                 logerr('Failed to stop server: {0}'.format(e))
                 sys.exit(1)
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
 else:
     app = default_app()

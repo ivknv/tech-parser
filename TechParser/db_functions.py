@@ -18,19 +18,28 @@ def loadClassifier(interesting_articles=None, blacklist=None):
         classifier.counts = {k: Counter(v) for k, v in json.loads(classifier_counts).items()}
         classifier.sample_counts = json.loads(classifier_sample_counts)
     except ValueError:
-        if interesting_articles is None:
-            interesting_articles = get_interesting_articles()
-        if blacklist is None:
-            blacklist = get_blacklist()
-        
-        for i in interesting_articles:
-            classifier.add_article(i, 'interesting')
-        
-        for i in blacklist:
-            classifier.add_article(i, 'boring')
-            
-        classifier.apply_changes()
+        trainClassifier(classifier, interesting_articles, blacklist)
         saveClassifier(classifier)
+    
+    return classifier
+
+def trainClassifier(classifier=None, interesting_articles=None, blacklist=None):
+    if classifier is None:
+        classifier = TextClassifier(['interesting', 'boring'])
+    
+    if interesting_articles is None:
+        interesting_articles = get_interesting_articles()
+    
+    if blacklist is None:
+            blacklist = get_blacklist()
+    
+    for i in interesting_articles:
+        classifier.add_article(i, 'interesting')
+    
+    for i in blacklist:
+        classifier.add_article(i, 'boring')
+        
+    classifier.apply_changes()
     
     return classifier
 
