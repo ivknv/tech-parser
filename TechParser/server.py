@@ -150,6 +150,12 @@ class Validator(object):
             for i in data['perfect_word_count']:
                 if i < 1:
                     self.add_error('perfect_word_count', 'Each number in perfect_word_count should be greater than 0')
+            try:
+                ngrams = int(data['ngrams'])
+                if ngrams < 1:
+                    self.add_error('ngrams', 'ngrams must be greater than 0')
+            except ValueError:
+                self.add_error('ngrams', 'ngrams must be an integer')
         elif data['type'] == 'rss_feeds':
             feed = data['rss_feed']
             feed_name = data['rss_feed_name']
@@ -539,6 +545,7 @@ def update_config():
         
         data['perfect_word_count'] = perfect_word_count
         data['enable_caching'] = request.POST.getunicode('v_enable_caching', False) == 'on'
+        data['ngrams'] = request.POST.getunicode('v_ngrams', get_conf.config.ngrams)
         
         validator.validate(**data)
         
@@ -562,9 +569,12 @@ def update_config():
         get_conf.config.password = data['password']
         get_conf.config.enable_pocket = data['enable_pocket'] 
         get_conf.config.perfect_word_count = data['perfect_word_count']
+        get_conf.config.ngrams = data['ngrams']
         if not validator.errors.get('perfect_word_count'):
             get_conf.config.perfect_word_count = perfect_word_count
         get_conf.config.enable_caching = data['enable_caching']
+        if not validator.errors.get('ngrams'):
+            get_conf.config.ngrams = int(data['ngrams'])
     elif type_ == 'parsers':
         for parser in get_conf.config.sites_to_parse.values():
             h = parser['hash']

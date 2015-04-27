@@ -324,3 +324,9 @@ perfect_word_count = (25, 50, 100, 150, 300, 600, 1200)
 
 # Enable page caching
 enable_caching = True
+
+# Raise this number to make classifier more accurate
+###########################################################
+# Keep in mind that bigger number means bigger disk usage #
+###########################################################
+ngrams = 1

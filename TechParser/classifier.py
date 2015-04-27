@@ -11,6 +11,9 @@ from collections import Counter
 from TechParser.py2x import unicode_, chr, htmlentitydefs
 from TechParser import get_conf
 
+if get_conf.config is None:
+    get_conf.set_config_auto()
+
 import nltk.stem
 
 ENGLISH_STOPWORDS = []
@@ -30,8 +33,11 @@ class TextClassifier(object):
     tokenize_regex = re.compile(r'\w+\'\w{1,2}|\w+[#\+]*')
     remove_tags_regex = re.compile(r'<.*?>')
     
-    def __init__(self, categories):
+    def __init__(self, categories, ngrams=None):
         self._counts_change, self.counts, self.sample_counts, self._sample_counts_change = {}, {}, {}, {}
+        if ngrams is None:
+            ngrams = get_conf.config.ngrams
+        self.ngrams = ngrams
         for i in categories:
             self._counts_change[i] = Counter()
             self.counts[i] = Counter()
@@ -130,22 +136,41 @@ class TextClassifier(object):
         return TextClassifier.replace_irregular_words(text)
     
     @staticmethod
-    def prepare_article(article):
-        return TextClassifier.prepare_counter(article['title'] + ' ' + article['summary'])
+    def prepare_ngrams(text, n=1):
+        words = TextClassifier.prepare_words(text)
+        
+        for i in range(len(words)):
+            sliced1 = words[i:i+n]
+            
+            yield ' '.join(sliced1)
+            
+            len_sliced1 = len(sliced1)
+            
+            for j in range(1, n):
+                sliced2 = words[i:i+j]
+                len_sliced2 = len(sliced2)
+                if len_sliced2 >= j and len_sliced1 != len_sliced2:
+                    yield ' '.join(sliced2)
+                else:
+                    break
     
     @staticmethod
-    def prepare_counter(text):
-        return Counter(TextClassifier.prepare_words(text))
+    def prepare_article(article, n=1):
+        return TextClassifier.prepare_counter(article['title'] + ' ' + article['summary'], n)
+    
+    @staticmethod
+    def prepare_counter(text, n=1):
+        return Counter(TextClassifier.prepare_ngrams(text, n))
     
     def classify_text(self, text):
         """Get probabilities for text"""
         
-        return self.classify_features(TextClassifier.prepare_counter(text))
+        return self.classify_features(TextClassifier.prepare_counter(text, self.ngrams))
     
     def classify_article(self, article):
         """Get probabilities for article"""
         
-        return self.classify_features(TextClassifier.prepare_article(article))
+        return self.classify_features(TextClassifier.prepare_article(article, self.ngrams))
     
     def add_sample(self, features, category):
         """Increment counters"""
@@ -191,7 +216,7 @@ class TextClassifier(object):
     def add_article(self, article, category):
         """Add article as sample"""
         
-        self.add_sample(TextClassifier.prepare_counter(article['title'] + ' ' + article['summary']), category)
+        self.add_sample(TextClassifier.prepare_counter(article['title'] + ' ' + article['summary'], self.ngrams), category)
     
     def apply_changes(self):
         """Update actual counters"""
@@ -271,7 +296,7 @@ if __name__ == '__main__':
     print('Loading irregular words...')
     TextClassifier.load_irregular_words()
     
-    c = TextClassifier(['interesting', 'boring'])
+    c = TextClassifier(['interesting', 'boring'], ngrams=1)
     
     print('Training classifier...')
     for i in h:
