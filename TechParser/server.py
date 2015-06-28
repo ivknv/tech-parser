@@ -275,7 +275,8 @@ def show_history(page_number=1):
                                page_num=page_number,
                                q=q, page='history',
                                config=get_conf.config).decode('utf8')
-    cache_data('cached_history_{0}_{1}'.format(page_number, hexlify(q.encode('utf8')).decode('utf8')), html)
+    if len(requested_page):
+        cache_data('cached_history_{0}_{1}'.format(page_number, hexlify(q.encode('utf8')).decode('utf8')), html)
     return html
 
 @route('/blacklist')
@@ -320,7 +321,8 @@ def show_blacklist(page_number=1):
                                  page_num=page_number,
                                  q=q, page='blacklist',
                                  config=get_conf.config).decode('utf8')
-    cache_data('cached_blacklist_{0}_{1}'.format(page_number, hexlify(q.encode('utf8')).decode('utf8')), html)
+    if len(requested_page):
+        cache_data('cached_blacklist_{0}_{1}'.format(page_number, hexlify(q.encode('utf8')).decode('utf8')), html)
     return html
 
 def has_words(qs, article):
@@ -384,6 +386,8 @@ def article_list(page_number=1):
         main_page = mylookup.get_template("articles.html")
         cache['templates']['articles.html'] = main_page
     
+    cache_page = False
+    
     if get_conf.config.data_format == 'db':
         if q:
             articles = select_all_articles()
@@ -405,10 +409,16 @@ def article_list(page_number=1):
                             append(escape_link(article))
             
             num_pages = page_number - 1 + math.ceil(n / 30.0)
+            cache_page = True
         else:
             requested_page = select_articles_from_page(page_number)
             requested_page = list(map(lambda x: escape_link(x), requested_page))
-            num_pages = int(get_var('num_pages', 1))
+            num_pages = int(get_var('num_pages', 0))
+            if num_pages == 0:
+                num_pages += 1
+                cache_page = False
+            else:
+                cache_page = True
     else:
         # TODO reduce memory usage
         try:
@@ -421,11 +431,13 @@ def article_list(page_number=1):
             qs = q.lower().split()
             articles = iter(filter(lambda x: has_words(qs, x), articles.values()))
             articles = iter(map(lambda x: escape_link(x), articles))
+            cache_page = True
         else:
             articles = iter(map(lambda x: escape_link(x), articles.values()))
-     
+        
         articles = split_into_pages(articles, 30)
         num_pages = len(articles)
+        
         try:
             requested_page = articles[page_number-1]
         except IndexError:
@@ -439,8 +451,11 @@ def article_list(page_number=1):
                             q=q, page='main',
                             config=get_conf.config,
                             is_parsing=get_var('parsing', '0') == '1').decode('utf8')
+    if not cache_page:
+        cache_page = bool(len(requested_page))
     
-    cache_data('cached_main_{0}_{1}'.format(page_number, hexlify(q.encode('utf8')).decode('utf8')), html)
+    if cache_page:
+        cache_data('cached_main_{0}_{1}'.format(page_number, hexlify(q.encode('utf8')).decode('utf8')), html)
     return html
 
 @route('/login')
