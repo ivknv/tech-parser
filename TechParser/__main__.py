@@ -393,10 +393,24 @@ Available commands: start|stop|restart|update|run HOST:PORT|lock|unlock|locked?|
             set_var('parsing', '0')
         elif args.action[0] == 'locked?':
             log({'0': 'False', '1': 'True'}.get(get_var('parsing', '0'), 'False'))
-        elif args.action[0] == 'rerank':
+        elif args.action[0] == 'train':
+            log('Training classifier...')
+            saveClassifier(trainClassifier())
+        elif args.action[0] == 'rerank':            
+            path = os.path.join(get_conf.logdir, "articles_dumped")
+            articles = save.load_from_somewhere()
+            
+            if isinstance(articles, OrderedDict):
+                articles = articles.values()
+            
             log('Ranking articles...')
-            classifier = trainClassifier()
-            saveClassifier(classifier)
+            
+            articles = sorted(recommend.rank_articles(articles), key=itemgetter(1), reverse=True)
+            articles = OrderedDict([(i[0]['link'], i[0]) for i in articles])
+            
+            save.dump_somewhere(articles, path)
+            server.remove_cache()
+            
         elif args.action[0] == "run":
             if len(args.action) == 1:
                 addr = get_conf.config.host + ":" + get_conf.config.port
