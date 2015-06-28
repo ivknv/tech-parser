@@ -7,6 +7,7 @@ import json
 import datetime
 import math
 import codecs
+import hashlib
 from base64 import binascii
 hexlify = binascii.hexlify
 
@@ -30,6 +31,9 @@ logdir = os.path.join(logdir, ".tech-parser")
 mylookup = TemplateLookup(directories=template_dir_path,
                           default_filters=["decode.utf8"],
                           input_encoding="utf-8", output_encoding="utf-8")
+
+def hash_string(string):
+    return hashlib.md5(string.encode()).hexdigest()
 
 liked_links = set()
 disliked_links = set()
@@ -621,7 +625,7 @@ def update_config():
                 response['deleted'].append((feed_name, h))
                 continue
             data['rss_feed_name'] = request.POST.getunicode('name_{0}'.format(h), feed_name)
-            new_hash = hash(data['rss_feed_name'])
+            new_hash = hash_string(data['rss_feed_name'])
             data['rss_feed']['hash'] = new_hash
             data['rss_feed']['short-name'] = request.POST.getunicode('sn_{0}'.format(h), feed['short-name'])
             data['rss_feed']['url'] = request.POST.getunicode('url_{0}'.format(h), feed['url'])
@@ -683,7 +687,7 @@ def update_config():
             data['rss_feed']['enabled'] = request.POST.getunicode('new_feed_enabled', '0') == '1'
             data['rss_feed']['priority'] = request.POST.getunicode('new_feed_priority', '1.0')
             validator.validate(**data)
-            data['rss_feed']['hash'] = hash(data['rss_feed_name'])
+            data['rss_feed']['hash'] = hash_string(data['rss_feed_name'])
             if 'rss_feed_new_feed' not in validator.errors:
                 get_conf.config.rss_feeds[data['rss_feed_name']] = {'short-name': data['rss_feed']['short-name'],
                                                             'url': data['rss_feed']['url'],
