@@ -60,6 +60,9 @@ def rank_articles(articles, classifier=None, word_bias=False):
         yield (article, score)
         
 def add_article(addr):
+    if get_conf.config.data_format == 'db':
+        return getArticleFromHistoryByLink(addr)
+    
     path = os.path.join(get_conf.logdir, 'articles_dumped')
     
     try:
@@ -73,6 +76,9 @@ def add_article(addr):
             add_to_interesting(article)
 
 def add_article_to_blacklist(addr):
+    if get_conf.config.data_format == 'db':
+        return getArticleFromBlacklistByLink(addr)
+    
     path = os.path.join(get_conf.logdir, 'articles_dumped')
     
     try:
