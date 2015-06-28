@@ -223,7 +223,7 @@ def rm_from_history(addr):
     remove_cache()
 
 def remove_cache(name=None):
-    path = os.path.join(module_path, 'cache')
+    path = os.path.join(get_conf.logdir, 'cache')
     try:
         contents = os.listdir(path)
     except OSError:
@@ -352,7 +352,7 @@ def set_liked(articles):
 
 def cache_data(name, value):
     if get_conf.config.enable_caching:
-        path = os.path.join(module_path, 'cache')
+        path = os.path.join(get_conf.logdir, 'cache')
         if not os.path.exists(path):
             os.makedirs(path)
         with codecs.open(os.path.join(path, name), 'w', encoding='utf8') as f:
@@ -360,7 +360,7 @@ def cache_data(name, value):
 
 def get_cache(name, default=None):
     try:
-        with codecs.open(os.path.join(module_path, 'cache', name), encoding='utf8') as f:
+        with codecs.open(os.path.join(get_conf.logdir, 'cache', name), encoding='utf8') as f:
             return f.read()
     except IOError:
         return default
