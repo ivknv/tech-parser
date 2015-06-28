@@ -1,25 +1,31 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import imp, os, json
+import imp
+import os
+import json
+import hashlib
 
 logdir = os.path.expanduser("~")
 logdir = os.path.join(logdir, ".tech-parser")
 
 config = None
 
+def hash_string(string):
+    return hashlib.md5(string.encode()).hexdigest()
+
 class Config(object):
     def __init__(self, hide=False, filename='', **kwargs):
         self.sites_to_parse = kwargs.get('sites_to_parse')
         
         for k,v in self.sites_to_parse.items():
-            v.setdefault('hash', hash(k))
+            v['hash'] = hash_string(k)
             v.setdefault('priority', 1.0)
         
         self.rss_feeds = kwargs.get('rss_feeds')
         
         for k,v in self.rss_feeds.items():
-            v.setdefault('hash', hash(k))
+            v['hash'] = hash_string(k)
             v.setdefault('priority', 1.0)
         
         self.interesting_words = kwargs.get('interesting_words')
@@ -77,14 +83,14 @@ class Config(object):
         d = {}
         d['sites_to_parse'] = {k: {'module': v['module'].__name__,
             'kwargs': v['kwargs'],
-            'hash': hash(k),
+            'hash': hash_string(k),
             'enabled': v['enabled'],
             'priority': v.get('priority', 1.0)}
             for k,v in module.sites_to_parse.items()}
         d['rss_feeds'] = module.rss_feeds
         
         for k,v in d['rss_feeds'].items():
-            v.setdefault('hash', hash(k))
+            v['hash'] =  hash_string(k)
             v.setdefault('priority', 1.0)
         
         d['interesting_words'] = module.interesting_words
@@ -136,10 +142,10 @@ def set_config(parser_config):
     config = parser_config
     
     for k,v in config.sites_to_parse.items():
-        v.setdefault('hash', hash(k))
+        v['hash'] = hash_string(k)
 
     for k,v in config.rss_feeds.items():
-        v.setdefault('hash', hash(k))
+        v['hash'] = hash_string(k)
 
 def set_config_from_fname(fname):
     set_config(get_config(fname))
